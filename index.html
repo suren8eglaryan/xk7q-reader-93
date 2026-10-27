@@ -36,7 +36,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 .w{border-radius:4px}
 .w.sel{background:var(--sel)}
 .w[data-n]{position:relative}
-.w[data-n]::before{content:attr(data-n);position:absolute;left:var(--cx,50%);bottom:calc(100% - .2em);transform:translateX(-50%);text-indent:0;text-align:center;font-size:.55em;font-style:italic;line-height:1.2;color:var(--nc,#b4b4b4);white-space:nowrap}
+.w[data-n]::before{content:attr(data-n);position:absolute;left:var(--cx,50%);bottom:calc(100% - .2em);transform:translateX(-50%);text-indent:0;text-align:center;font-size:.55em;font-style:italic;line-height:1.2;color:var(--nc,#d4d4d4);white-space:nowrap;pointer-events:none}
 #noteRow{flex-wrap:wrap}
 #sw{flex:1 1 100%;display:flex;gap:12px;padding-top:2px}
 #sw i{width:28px;height:28px;border-radius:50%;border:3px solid transparent;box-sizing:border-box;box-shadow:0 0 0 1px rgba(128,128,128,.35)}
@@ -52,12 +52,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 .ic.on{opacity:1;box-shadow:0 2px 10px rgba(0,0,0,.15)}
 #phrase{min-height:1.3em;font-weight:600;overflow-wrap:anywhere}
 #empty{padding:60px 24px;text-align:center;font:17px -apple-system,Helvetica,sans-serif;line-height:1.5}
-#book.noann .w[data-n]::before{display:none}
-#vars{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:8;max-height:62vh;overflow:auto;padding:12px;border-radius:14px;background:var(--bar);box-shadow:0 6px 24px rgba(0,0,0,.25);font:15px -apple-system,Helvetica,sans-serif}
-#vars h4{margin:10px 0 6px;font-size:13px;opacity:.6;font-weight:600}
-#vars .chips,#vars .top{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-#vars .chips button,#vars .top button{background:var(--bg)}
-#vars input{flex:1;min-width:0;font-size:17px;padding:8px 10px;border:0;border-radius:10px;background:var(--bg);color:var(--fg)}
+#book.noann:not(.hs) .w[data-n]::before{display:none}
 .hide{display:none!important}
 </style>
 </head>
@@ -69,7 +64,6 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <button id="prev">‹</button><button id="next">›</button>
 </div>
 <div id="empty">Откройте EPUB-файл.<br>Тапайте по одному или нескольким словам и нажимайте «Перевод» (откроется Reverso).<br>Кнопка с ручкой справа внизу включает режим подписей: вписывайте перевод над словами. Нажмите на неё ещё раз, чтобы выключить.</div>
-<div id="vars" class="hide"></div>
 <div id="noteRow" class="hide"><input id="noteIn" type="text" placeholder="Подпись над словом" autocapitalize="off"><button id="noteOk">OK</button><div id="sw"></div></div>
 <div id="set" class="hide">
   <div><span>Размер</span><button data-a="f-">A−</button><button data-a="f+">A+</button></div>
@@ -130,7 +124,6 @@ function show(i){
   book.innerHTML=chapters[i];
   wrapWords(book);
   applyNotes();
-  observeAll();
   clearSel();
   window.scrollTo(0,0);
 }
@@ -152,20 +145,18 @@ function markSw(){
 }
 function applyNotes(){
   var ws=book.querySelectorAll(".w");
-  ws.forEach(function(w){w.removeAttribute("data-n");w.removeAttribute("data-g");w.style.removeProperty("--nc");w.style.removeProperty("--cx")});
+  ws.forEach(function(w){w.removeAttribute("data-n");w.style.removeProperty("--nc");w.style.removeProperty("--cx")});
   Object.keys(notes).forEach(function(k){
     if(k.indexOf(idx+":")!==0)return;
     var nt=normNote(notes[k]),ids=[+k.split(":")[1]].concat(nt.m||[]);
     var a=ws[ids[0]],b=ws[ids[ids.length-1]];
     if(!a||!b)return;
     a.setAttribute("data-n",nt.t);
-    ids.slice(1).forEach(function(i){if(ws[i])ws[i].setAttribute("data-g","1")});
     a.style.setProperty("--nc",nt.c);
     var ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
     var cx=Math.abs(rb.top-ra.top)<ra.height*0.6?(Math.max(ra.right,rb.right)-ra.left)/2:ra.width/2;
     a.style.setProperty("--cx",cx+"px");
   });
-  if(S.auto)ws.forEach(function(w){setAuto(w,lw(w))});
 }
 function saveNote(){
   var ws=selected(),v=$("noteIn").value.trim();
@@ -183,13 +174,12 @@ function updateBar(){
   var words=selected().map(function(e){return e.textContent});
   $("phrase").textContent=words.join(" ");
   $("card").classList.toggle("hide",!words.length);
+  book.classList.toggle("hs",words.length>0);
   if(words.length)$("go").href=reversoUrl(words.join(" "));
 }
 book.addEventListener("click",function(e){
   var w=e.target.closest(".w");
   if(!w)return;
-  var rc=w.getBoundingClientRect();
-  if(w.hasAttribute("data-n")&&!book.classList.contains("noann")&&e.clientY<rc.top+rc.height*0.2){openVars(w);return}
   if(mode==="phrase"){w.classList.toggle("sel")}
   else if(!selected().length){
     var g=groupOf(w);
@@ -198,7 +188,7 @@ book.addEventListener("click",function(e){
       g.ids.forEach(function(i){if(all[i])all[i].classList.add("sel")});
       editKey=g.key;noteColor=g.note.c;$("noteIn").value=g.note.t;
     }else{
-      w.classList.add("sel");editKey=null;$("noteIn").value="";
+      w.classList.add("sel");editKey=null;noteColor="#d4d4d4";$("noteIn").value="";
     }
     markSw();
     $("noteRow").classList.remove("hide");
@@ -214,12 +204,12 @@ $("noteOk").onclick=saveNote;
 $("noteIn").addEventListener("keydown",function(e){if(e.key==="Enter")saveNote()});
 $("clear").onclick=clearSel;
 
-var S={fs:28,pad:36,theme:"white",nc:"#b4b4b4",auto:true};
+var S={fs:28,pad:36,theme:"white",show:false};
 try{var sv=JSON.parse(localStorage.getItem("rr3")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
 function applyS(){
   document.documentElement.setAttribute("data-theme",S.theme);
   book.style.fontSize=S.fs+"px";
-  book.classList.toggle("noann",!S.auto);
+  book.classList.toggle("noann",!S.show);
   book.style.paddingLeft=book.style.paddingRight=S.pad+"px";
   try{localStorage.setItem("rr3",JSON.stringify(S))}catch(x){}
   applyNotes();
@@ -234,11 +224,10 @@ $("set").addEventListener("click",function(e){
   if(a==="p-")S.pad=Math.max(4,S.pad-4);
   if(a==="p+")S.pad=Math.min(90,S.pad+4);
   if(a.indexOf("t:")===0)S.theme=a.slice(2);
-  if(a.indexOf("au:")===0)S.auto=a.slice(3)==="1";
+  if(a.indexOf("au:")===0)S.show=a.slice(3)==="1";
   applyS();
-  if(a.indexOf("au:")===0&&S.auto)observeAll();
 });
-noteColor=S.nc;
+noteColor="#d4d4d4";
 ["#d4d4d4","#b4b4b4","#8e8e8e","#5f5f5f","#2d2d2d"].forEach(function(c){
   var i=document.createElement("i");
   i.setAttribute("data-c",c);i.style.background=c;
@@ -247,87 +236,10 @@ noteColor=S.nc;
 $("sw").addEventListener("click",function(e){
   var i=e.target.closest("i");
   if(!i)return;
-  noteColor=i.getAttribute("data-c");S.nc=noteColor;applyS();markSw();
+  noteColor=i.getAttribute("data-c");markSw();
 });
 markSw();
 window.addEventListener("resize",applyNotes);
-var POS={noun:"сущ.",verb:"глагол",adjective:"прил.",adverb:"нареч.",preposition:"предлог",conjunction:"союз",pronoun:"местоим.",interjection:"межд.",article:"артикль",determiner:"определитель",abbreviation:"сокр."};
-var tr={},pend={},failed={},waiting={},queue=[],active=0,obs=null,vw=null,trT=0;
-try{tr=JSON.parse(localStorage.getItem("tr1")||"{}")}catch(x){}
-function lw(w){return w.textContent.toLowerCase().replace(/^['’\-]+|['’\-]+$/g,"")}
-function setAuto(w,k){
-  var r=tr[k];
-  if(r&&r.t&&!w.hasAttribute("data-n")&&!w.hasAttribute("data-g"))w.setAttribute("data-n",r.t);
-}
-function trSave(){clearTimeout(trT);trT=setTimeout(function(){try{localStorage.setItem("tr1",JSON.stringify(tr))}catch(x){}},800)}
-function want(k){
-  if(!k||tr[k]||pend[k]||failed[k])return;
-  pend[k]=1;queue.push(k);pump();
-}
-function pump(){
-  while(active<4&&queue.length){
-    (function(k){
-      active++;
-      fetch("https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&dt=bd&q="+encodeURIComponent(k))
-        .then(function(r){return r.json()})
-        .then(function(d){
-          var t=(d[0]&&d[0][0]&&d[0][0][0])||"";
-          tr[k]={t:t,v:(d[1]||[]).map(function(p){return [p[0],p[1]]})};
-          trSave();
-        })
-        .catch(function(){failed[k]=1})
-        .then(function(){
-          delete pend[k];active--;
-          if(S.auto)(waiting[k]||[]).forEach(function(w){setAuto(w,k)});
-          delete waiting[k];
-          if(vw&&lw(vw)===k&&!$("vars").classList.contains("hide"))renderVars();
-          pump();
-        });
-    })(queue.shift());
-  }
-}
-function observeAll(){
-  if(!("IntersectionObserver" in window))return;
-  if(obs)obs.disconnect();
-  obs=new IntersectionObserver(function(es){
-    es.forEach(function(e){
-      if(!e.isIntersecting||!S.auto)return;
-      var w=e.target,k=lw(w);
-      obs.unobserve(w);
-      if(tr[k])setAuto(w,k);else{(waiting[k]=waiting[k]||[]).push(w);want(k)}
-    });
-  },{rootMargin:"400px 0px"});
-  book.querySelectorAll(".w").forEach(function(w){obs.observe(w)});
-}
-function setNote(w,text){
-  var g=groupOf(w),key=g?g.key:idx+":"+w.getAttribute("data-i");
-  if(text)notes[key]={t:text,c:g?g.note.c:noteColor,m:g?(g.note.m||[]):[]};else delete notes[key];
-  persist();applyNotes();
-}
-function closeVars(){$("vars").classList.add("hide");vw=null}
-function applyVar(t){if(vw)setNote(vw,t);closeVars()}
-function mk(tag,txt,cls){var e=document.createElement(tag);if(txt)e.textContent=txt;if(cls)e.className=cls;return e}
-function openVars(w){vw=w;want(lw(w));renderVars();$("vars").classList.remove("hide")}
-function renderVars(){
-  var k=lw(vw),r=tr[k],box=$("vars");
-  box.innerHTML="";
-  var top=mk("div","","top"),inp=mk("input"),ok=mk("button","OK");
-  inp.value=vw.getAttribute("data-n")||"";
-  ok.onclick=function(){applyVar(inp.value.trim())};
-  inp.addEventListener("keydown",function(e){if(e.key==="Enter")applyVar(inp.value.trim())});
-  top.appendChild(inp);top.appendChild(ok);box.appendChild(top);
-  box.appendChild(mk("h4",k+(r?"":" — загрузка…")));
-  if(r)(r.v||[]).forEach(function(p){
-    box.appendChild(mk("h4",POS[p[0]]||p[0]));
-    var c=mk("div","","chips");
-    p[1].forEach(function(s){var b=mk("button",s);b.onclick=function(){applyVar(s)};c.appendChild(b)});
-    box.appendChild(c);
-  });
-  var row=mk("div","","top"),a=mk("button","Авто-перевод"),x=mk("button","Закрыть");
-  row.style.marginTop="12px";
-  a.onclick=function(){applyVar("")};x.onclick=closeVars;
-  row.appendChild(a);row.appendChild(x);box.appendChild(row);
-}
 applyS();
 $("prev").onclick=function(){show(idx-1)};
 $("next").onclick=function(){show(idx+1)};
