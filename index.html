@@ -34,7 +34,8 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #book blockquote{margin:1em 1.5em;font-style:italic}
 #book img,#book svg{display:none}
 .w{border-radius:4px}
-.w.sel{background:var(--sel)}
+.w.sel{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.18em}
+.w.hit{background:rgba(128,128,128,.3);border-radius:4px}
 .w[data-n]{position:relative}
 .w[data-n]::before{content:attr(data-n);position:absolute;left:var(--cx,50%);bottom:calc(100% - .2em);transform:translateX(-50%);text-indent:0;text-align:center;font-size:.55em;font-style:italic;line-height:1.2;color:var(--nc,#d4d4d4);white-space:nowrap;pointer-events:none}
 #noteRow{flex-wrap:wrap}
@@ -53,6 +54,16 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #phrase{min-height:1.3em;font-weight:600;overflow-wrap:anywhere}
 #empty{padding:60px 24px;text-align:center;font:17px -apple-system,Helvetica,sans-serif;line-height:1.5}
 #book.noann:not(.hs) .w[data-n]::before{display:none}
+#sb{padding:8px 10px}
+#sb svg{width:20px;height:20px;fill:currentColor;display:block}
+#sp{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:8;max-height:70vh;overflow:auto;padding:12px;border-radius:14px;background:var(--bar);box-shadow:0 6px 24px rgba(0,0,0,.25);font:15px -apple-system,Helvetica,sans-serif}
+#sp .top{display:flex;gap:8px}
+#sp input{flex:1;min-width:0;font-size:17px;padding:8px 10px;border:0;border-radius:10px;background:var(--bg);color:var(--fg)}
+#sp button{background:var(--bg)}
+#scount{margin:8px 2px;opacity:.6;font-size:13px}
+#sp .res{display:block;width:100%;text-align:left;margin-bottom:6px;font:15px/1.35 Georgia,serif}
+#sp .res small{display:block;opacity:.5;font:12px -apple-system,Helvetica,sans-serif}
+#sp .res b{background:rgba(128,128,128,.3)}
 .hide{display:none!important}
 </style>
 </head>
@@ -60,10 +71,12 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 <div id="top">
   <label class="btn">Открыть EPUB<input id="file" type="file" accept=".epub,application/epub+zip" hidden></label>
   <span id="title"></span>
+  <button id="sb" aria-label="Поиск"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
   <button id="aa">Aa</button>
   <button id="prev">‹</button><button id="next">›</button>
 </div>
 <div id="empty">Откройте EPUB-файл.<br>Тапайте по одному или нескольким словам и нажимайте «Перевод» (откроется Reverso).<br>Кнопка с ручкой справа внизу включает режим подписей: вписывайте перевод над словами. Нажмите на неё ещё раз, чтобы выключить.</div>
+<div id="sp" class="hide"><div class="top"><input id="sq" type="search" placeholder="Поиск по книге"><button id="sgo">Найти</button><button id="sx">✕</button></div><div id="scount"></div><div id="sres"></div></div>
 <div id="noteRow" class="hide"><input id="noteIn" type="text" placeholder="Подпись над словом" autocapitalize="off"><button id="noteOk">OK</button><div id="sw"></div></div>
 <div id="set" class="hide">
   <div><span>Размер</span><button data-a="f-">A−</button><button data-a="f+">A+</button></div>
@@ -240,13 +253,92 @@ $("sw").addEventListener("click",function(e){
 });
 markSw();
 window.addEventListener("resize",applyNotes);
+function idb(){return new Promise(function(res,rej){var r=indexedDB.open("reader",1);r.onupgradeneeded=function(){r.result.createObjectStore("b")};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}})}
+function idbPut(v){return idb().then(function(db){db.transaction("b","readwrite").objectStore("b").put(v,"last")}).catch(function(){})}
+function idbGet(){return idb().then(function(db){return new Promise(function(res){var q=db.transaction("b").objectStore("b").get("last");q.onsuccess=function(){res(q.result)};q.onerror=function(){res(null)}})}).catch(function(){return null})}
+function loadPos(){try{return JSON.parse(localStorage.getItem("pos:"+bookId))}catch(x){return null}}
+function gotoWord(i){
+  var w=book.querySelector('.w[data-i="'+i+'"]');
+  if(w)window.scrollTo(0,Math.max(0,w.getBoundingClientRect().top+window.scrollY-85));
+}
+var spT=0;
+function savePos(){
+  if(book.classList.contains("hide"))return;
+  var ws=book.querySelectorAll(".w"),lo=0,hi=ws.length-1;
+  if(!ws.length)return;
+  while(lo<hi){var mid=(lo+hi)>>1;if(ws[mid].getBoundingClientRect().top<90)lo=mid+1;else hi=mid}
+  try{localStorage.setItem("pos:"+bookId,JSON.stringify({ch:idx,i:+ws[lo].getAttribute("data-i")}))}catch(x){}
+}
+window.addEventListener("scroll",function(){clearTimeout(spT);spT=setTimeout(savePos,400)},{passive:true});
+document.addEventListener("visibilitychange",function(){if(document.hidden)savePos()});
+window.addEventListener("pagehide",savePos);
+var texts=[],lower=[];
+function buildTexts(){
+  var d=document.createElement("div");
+  texts=chapters.map(function(h){d.innerHTML=h;return d.textContent});
+  lower=texts.map(function(t){return t.toLowerCase()});
+}
+function closeSearch(){$("sp").classList.add("hide");$("sq").blur()}
+function doSearch(){
+  var q=$("sq").value.trim().toLowerCase(),box=$("sres"),out=[],n=0;
+  box.innerHTML="";
+  if(q.length<2){$("scount").textContent="Введите минимум 2 символа";return}
+  for(var c=0;c<lower.length&&n<200;c++){
+    var p=0;
+    while(n<200&&(p=lower[c].indexOf(q,p))>-1){out.push({c:c,o:p});n++;p+=q.length}
+  }
+  $("scount").textContent=n?"Найдено: "+n+(n>=200?"+":""):"Ничего не найдено";
+  out.forEach(function(r){
+    var t=texts[r.c],a=Math.max(0,r.o-35),b=Math.min(t.length,r.o+q.length+55);
+    var btn=document.createElement("button"),sm=document.createElement("small"),m=document.createElement("b");
+    btn.className="res";sm.textContent="часть "+(r.c+1);m.textContent=t.substr(r.o,q.length);
+    btn.appendChild(sm);
+    btn.appendChild(document.createTextNode((a>0?"…":"")+t.slice(a,r.o).replace(/\s+/g," ")));
+    btn.appendChild(m);
+    btn.appendChild(document.createTextNode(t.slice(r.o+q.length,b).replace(/\s+/g," ")+(b<t.length?"…":"")));
+    btn.onclick=function(){goHit(r,q.length)};
+    box.appendChild(btn);
+  });
+}
+function goHit(r,len){
+  closeSearch();
+  if(r.c!==idx)show(r.c);
+  var wk=document.createTreeWalker(book,NodeFilter.SHOW_TEXT),n,pos=0,sn=null,so=0,en=null,eo=0,e=r.o+len;
+  while((n=wk.nextNode())){
+    var l=n.nodeValue.length;
+    if(!sn&&r.o<pos+l){sn=n;so=r.o-pos}
+    if(sn&&e<=pos+l){en=n;eo=e-pos;break}
+    pos+=l;
+  }
+  if(!sn||!en)return;
+  var rg=document.createRange();
+  rg.setStart(sn,so);rg.setEnd(en,eo);
+  window.scrollTo(0,Math.max(0,rg.getBoundingClientRect().top+window.scrollY-170));
+  var hits=[];
+  book.querySelectorAll(".w").forEach(function(w){if(rg.intersectsNode(w)){w.classList.add("hit");hits.push(w)}});
+  setTimeout(function(){hits.forEach(function(w){w.classList.remove("hit")})},4000);
+}
+$("sb").onclick=function(){
+  if(!chapters.length)return;
+  $("sp").classList.toggle("hide");
+  if(!$("sp").classList.contains("hide"))$("sq").focus();
+};
+$("sx").onclick=closeSearch;
+$("sgo").onclick=doSearch;
+$("sq").addEventListener("keydown",function(e){if(e.key==="Enter")doSearch()});
 applyS();
+idbGet().then(function(v){if(v&&v.buf)openBook(v.buf,v.name)});
 $("prev").onclick=function(){show(idx-1)};
 $("next").onclick=function(){show(idx+1)};
 
 $("file").addEventListener("change",async function(){
   var f=this.files[0];
   if(!f)return;
+  var buf=await f.arrayBuffer();
+  idbPut({name:f.name,buf:buf});
+  openBook(buf,f.name);
+});
+async function openBook(f,fname){
   try{
     var zip=await JSZip.loadAsync(f);
     var cont=new DOMParser().parseFromString(await zip.file("META-INF/container.xml").async("string"),"text/xml");
@@ -256,7 +348,7 @@ $("file").addEventListener("change",async function(){
     var manifest={};
     opf.querySelectorAll("manifest > item").forEach(function(it){manifest[it.getAttribute("id")]=it.getAttribute("href")});
     var t=opf.getElementsByTagNameNS("*","title")[0];
-    $("title").textContent=t?t.textContent:f.name;
+    $("title").textContent=t?t.textContent:fname;
     bookId=$("title").textContent;
     try{notes=JSON.parse(localStorage.getItem("rn:"+bookId)||"{}")}catch(x){notes={}}
     chapters=[];
@@ -275,11 +367,15 @@ $("file").addEventListener("change",async function(){
     if(!chapters.length)throw new Error("empty");
     $("empty").classList.add("hide");
     book.classList.remove("hide");
-    show(0);
+    buildTexts();
+    var pos=loadPos();
+    show(pos&&pos.ch<chapters.length?pos.ch:0);
+    if(pos&&pos.ch<chapters.length)gotoWord(pos.i);
   }catch(err){
+    $("empty").classList.remove("hide");
     $("empty").textContent="Не удалось прочитать этот EPUB.";
   }
-});
+}
 </script>
 </body>
 </html>
