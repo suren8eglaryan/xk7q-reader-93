@@ -37,7 +37,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 .w.sel{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.18em}
 .w.hit{background:rgba(128,128,128,.3);border-radius:4px}
 .w[data-n]{position:relative}
-.w[data-n]::before{content:attr(data-n);position:absolute;left:var(--cx,50%);bottom:calc(100% - .35em);transform:translateX(-50%);text-indent:0;text-align:center;font-size:.55em;font-style:italic;line-height:1.2;color:var(--nc,#d4d4d4);white-space:nowrap;pointer-events:none}
+.w[data-n]::before{content:attr(data-n);position:absolute;left:var(--cx,50%);bottom:calc(100% - .6em);transform:translateX(-50%);text-indent:0;text-align:center;font-size:.55em;font-style:italic;line-height:1.2;color:var(--nc,#d4d4d4);white-space:nowrap;pointer-events:none}
 #noteRow{flex-wrap:wrap}
 #sw{flex:1 1 100%;display:flex;gap:12px;padding-top:2px}
 #sw i{width:28px;height:28px;border-radius:50%;border:3px solid transparent;box-sizing:border-box;box-shadow:0 0 0 1px rgba(128,128,128,.35)}
@@ -91,7 +91,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 <div id="bar">
   <div id="card" class="hide">
     <div class="hd"><div id="phrase"></div><button id="clear" aria-label="Закрыть">✕</button></div>
-    <div class="row"><a id="gg" class="btn" href="#" target="_blank" rel="noopener">Google</a><a id="go" class="btn" href="#" target="_blank" rel="noopener">Reverso</a></div>
+    <div class="row"><a id="gg" class="btn" href="#">Google</a><a id="go" class="btn" href="#" target="_blank" rel="noopener">Reverso</a></div>
   </div>
   <div id="dock">
     <button id="mN" class="ic" aria-label="Подпись"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>
@@ -193,7 +193,7 @@ function updateBar(){
   book.classList.toggle("hs",words.length>0);
   if(words.length){
     $("go").href=reversoUrl(words.join(" "));
-    $("gg").href="https://translate.google.com/?sl=en&tl=ru&op=translate&text="+encodeURIComponent(words.join(" "));
+    $("gg").href="googletranslate://?sl=en&tl=ru&text="+encodeURIComponent(words.join(" "));
   }
 }
 book.addEventListener("click",function(e){
