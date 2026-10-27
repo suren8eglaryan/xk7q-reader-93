@@ -69,7 +69,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <div><span>Русский</span><button data-a="ru:1">Показать</button><button data-a="ru:0">Скрыть</button></div>
   <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Бежевый</button><button data-a="t:dark">Тёмный</button></div>
   <div><span>Перевод</span><input id="aUrl" placeholder="API URL" autocapitalize="off" autocorrect="off"></div>
-  <div><span>Формат</span><select id="aFmt"><option value="anthropic">Anthropic</option><option value="openai">OpenAI</option></select></div>
+  <div><span>Формат</span><select id="aFmt"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option></select></div>
   <div><span>Ключ</span><input id="aKey" type="password" placeholder="API key"></div>
   <div><span>Модель</span><input id="aMod" placeholder="model" autocapitalize="off" autocorrect="off"></div>
   <div><button id="aOk">Сохранить</button><button id="aClr">Очистить кэш</button></div>
@@ -111,7 +111,10 @@ function kv(st,mode,fn){return db().then(function(d){return new Promise(function
 /* translation */
 function toast(m){var t=$("toast");t.textContent=m+" (тап — повторить)";t.classList.remove("hide")}
 async function callApi(user){
-  var c=S.api,base=c.url.replace(/\/+$/,""),anth=c.fmt!=="openai",r,j;
+  try{return await callApi2(user)}catch(e){if(e instanceof TypeError)throw new Error("Нет связи с сервером ("+e.message+"). Вероятно, сервер не разрешает запросы из браузера (CORS)");throw e}
+}
+async function callApi2(user){
+  var c=S.api,base=c.url.replace(/\/+$/,""),anth=c.fmt==="anthropic",r,j;
   if(anth)r=await fetch(base.replace(/\/v1$/,"")+"/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:c.model,max_tokens:8000,system:SYS,messages:[{role:"user",content:user}]})});
   else r=await fetch(base+"/chat/completions",{method:"POST",headers:{"content-type":"application/json","Authorization":"Bearer "+c.key},body:JSON.stringify({model:c.model,temperature:0.2,messages:[{role:"system",content:SYS},{role:"user",content:user}]})});
   if(!r.ok)throw new Error("API "+r.status+": "+(await r.text()).slice(0,100));
@@ -227,7 +230,7 @@ $("set").addEventListener("click",function(e){
   if(a.indexOf("ru:")===0)S.ru=a.slice(3)==="1";
   applyS();
 });
-$("aFmt").value=S.api.fmt||"anthropic";$("aUrl").value=S.api.url;$("aKey").value=S.api.key;$("aMod").value=S.api.model;
+$("aFmt").value=S.api.fmt||"openai";$("aUrl").value=S.api.url;$("aKey").value=S.api.key;$("aMod").value=S.api.model;
 $("aOk").onclick=function(){
   S.api={fmt:$("aFmt").value,url:$("aUrl").value.trim(),key:$("aKey").value.trim(),model:$("aMod").value.trim()};
   applyS();$("set").classList.add("hide");kick();
