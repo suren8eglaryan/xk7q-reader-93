@@ -58,7 +58,9 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #card .hd #phrase{flex:1}
 #clear{width:32px;height:32px;padding:0;border-radius:50%;flex:none;line-height:1}
 #set input{flex:1;min-width:0;font-size:16px;padding:8px 10px;border:0;border-radius:10px;background:var(--bg);color:var(--fg)}
-#ai{font-weight:600}
+#ai,#sent{font-weight:600}
+#card .row{flex-wrap:wrap}
+#phrase{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 #aist{font-size:13px;opacity:.7}
 #an{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:9;max-height:72vh;overflow:auto;padding:14px;border-radius:14px;background:var(--bar);box-shadow:0 6px 24px rgba(0,0,0,.25);font:16px -apple-system,Helvetica,sans-serif}
 #an .ans{font-size:20px;font-weight:700}
@@ -84,7 +86,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <button id="aa">Aa</button>
   <button id="prev">‹</button><button id="next">›</button>
 </div>
-<div id="empty">Откройте EPUB-файл.<br>Тапайте по словам, чтобы выделить их, и нажмите «ИИ»: перевод появится над словами. Тап по подписи открывает разбор слова.<br>Ключ ИИ вставьте в меню Aa.</div>
+<div id="empty">Откройте EPUB-файл.<br>Тапните по слову и нажмите «Предложение»: ИИ переведёт всё предложение подписями над словами. «Слово» даёт словарный перевод слова или выбранной фразы. Тап по подписи открывает разбор слова.<br>Ключ ИИ вставьте в меню Aa.</div>
 <div id="sp" class="hide"><div class="top"><input id="sq" type="search" placeholder="Поиск по книге"><button id="sgo">Найти</button><button id="sx">✕</button></div><div id="scount"></div><div id="sres"></div></div>
 <div id="an" class="hide"></div>
 <div id="set" class="hide">
@@ -104,7 +106,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <div id="card" class="hide">
     <div class="hd"><div id="phrase"></div><button id="clear" aria-label="Закрыть">✕</button></div>
     <div id="aist" class="hide"></div>
-    <div class="row"><button id="ai">ИИ</button><a id="gg" class="btn" href="#">Google</a><a id="go" class="btn" href="#" target="_blank" rel="noopener">Reverso</a></div>
+    <div class="row"><button id="sent">Предложение</button><button id="ai">Слово</button><a id="gg" class="btn" href="#">Google</a><a id="go" class="btn" href="#" target="_blank" rel="noopener">Reverso</a></div>
   </div>
 </div>
 <script>
@@ -202,6 +204,7 @@ book.addEventListener("click",function(e){
 });
 $("clear").onclick=clearSel;
 $("ai").onclick=doAi;
+$("sent").onclick=doSent;
 
 var S={fs:28,pad:36,theme:"white",show:false};
 try{var sv=JSON.parse(localStorage.getItem("rr3")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
@@ -265,10 +268,15 @@ function matchCase(src,t){
 }
 var SYS=["You are a precise English-to-Russian dictionary assistant inside an e-reader.",
 "The user gives a passage with the TARGET marked by [[double brackets]]. Several separate marked pieces form ONE expression (for example a phrasal verb split by other words).",
-"Translate ONLY the target, as it is used in this passage, into Russian, in the exact grammatical form needed to write it above the original (tense, person, number, gender and case must fit the Russian sentence).",
-"Reply with JSON only, no markdown: {\"t\":\"1-3 word Russian rendering in context\",\"ipa\":\"/American IPA of the target/\",\"pos\":\"part of speech of the target here, in Russian\",\"info\":\"short grammar note in Russian, e.g. время: прошедшее, or empty\",\"groups\":[{\"pos\":\"Russian name of a part of speech, e.g. Существительное\",\"items\":[{\"f\":\"translation in the form that fits this passage\",\"l\":\"dictionary form\"}]}]}.",
-"groups: every part of speech the target can have in English (the first group is the one used here), 2-6 common translations each, most relevant first. For the part of speech used here, f must be inflected to fit the passage (for example in the past tense: вызвал, заставил). For other parts of speech give natural dictionary forms.",
+"Translate ONLY the target into Russian in plain DICTIONARY form, with no inflection to fit the sentence (verbs in the infinitive, nouns in nominative singular, adjectives in masculine nominative singular; keep fixed expressions as they are). Choose the sense that fits this passage.",
+"Reply with JSON only, no markdown: {\"t\":\"1-3 word Russian dictionary-form translation for this passage\",\"ipa\":\"/American IPA of the target/\",\"pos\":\"part of speech of the target here, in Russian\",\"info\":\"short grammar note about the English form in Russian, e.g. время: прошедшее, or empty\",\"groups\":[{\"pos\":\"Russian name of a part of speech, e.g. Существительное\",\"items\":[{\"f\":\"translation in dictionary form\",\"l\":\"\"}]}]}.",
+"groups: every part of speech the target can have in English (the first group is the one used here), 2-6 common translations each, most relevant first; every f is a plain dictionary form.",
 "Use lowercase except for proper nouns. No text outside the JSON."].join(" ");
+var SYS_S=["You are an expert English-to-Russian translator inside an e-reader.",
+"The user gives one English sentence and its words numbered 1..N.",
+"Translate the whole sentence into correct Russian that stays as close to the original as possible: keep the English wording, meaning and word order wherever Russian grammar allows, do not embellish or paraphrase, but use fully correct Russian grammar (endings, cases, gender, number, tense, agreement).",
+"Then split the translation into aligned chunks that follow the ENGLISH word order. Each chunk lists the numbers of the English word(s) it renders and the Russian text for them. Every English word number appears in exactly one chunk; words with no Russian counterpart (articles, auxiliaries, particles) go into the chunk of the neighbouring word they belong to. Chunks are small: usually one English word, or a short group when the words only make sense together (phrasal verbs, idioms, prepositional phrases). Read in English order, the Russian texts of all chunks must form the translation of the sentence.",
+"Reply with JSON only, no markdown: {\"c\":[{\"w\":[1],\"r\":\"...\"},{\"w\":[2,3],\"r\":\"...\"}]}. Use lowercase except for proper nouns and use no punctuation inside r except hyphens."].join(" ");
 function rootOf(b){return b.trim().replace(/\/+$/,"").replace(/\/(chat\/completions|messages)$/,"").replace(/\/v1$/,"")}
 function fmt(){var f=lsGet("aifmt");if(f==="openai"||f==="anthropic")return f;return /^claude/i.test(lsGet("aimodel"))?"anthropic":"openai"}
 function aiCfg(){
@@ -284,19 +292,20 @@ function aiCfg(){
   if(k.indexOf("sk-or-")===0)return {p:"o",u:"https://openrouter.ai/api/v1/chat/completions",k:k,m:m||"meta-llama/llama-3.3-70b-instruct:free"};
   return {bad:1};
 }
-async function aiAsk(usr){
+async function aiAsk(usr,sys){
+  sys=sys||SYS;
   var c=aiCfg(),r,d,txt;
   if(!c)throw new Error("Добавьте ключ ИИ в меню Aa");
   if(c.nom)throw new Error("Укажите модель: кнопка «Список моделей» в меню Aa");
   if(c.bad)throw new Error("Не удалось определить сервис по ключу (поддерживаются Gemini, Groq, OpenRouter)");
   if(c.p==="g"){
-    r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(c.m)+":generateContent",{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":c.k},body:JSON.stringify({systemInstruction:{parts:[{text:SYS}]},contents:[{role:"user",parts:[{text:usr}]}],generationConfig:{responseMimeType:"application/json",temperature:0.2}})});
+    r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(c.m)+":generateContent",{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":c.k},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:"user",parts:[{text:usr}]}],generationConfig:{responseMimeType:"application/json",temperature:0.2}})});
     d=await r.json();
     if(!r.ok)throw new Error((d.error&&d.error.message)||("Ошибка "+r.status));
     var cand=(d.candidates||[])[0];
     txt=cand&&cand.content&&cand.content.parts?cand.content.parts.filter(function(p){return !p.thought}).map(function(p){return p.text||""}).join(""):"";
   }else if(c.p==="a"){
-    var ab=JSON.stringify({model:c.m,max_tokens:1500,system:SYS,messages:[{role:"user",content:usr}]});
+    var ab=JSON.stringify({model:c.m,max_tokens:4000,system:sys,messages:[{role:"user",content:usr}]});
     var hd={"Content-Type":"application/json","x-api-key":c.k,"anthropic-version":"2023-06-01"};
     try{r=await fetch(c.u,{method:"POST",headers:Object.assign({"anthropic-dangerous-direct-browser-access":"true"},hd),body:ab})}
     catch(e1){r=await fetch(c.u,{method:"POST",headers:hd,body:ab})}
@@ -304,7 +313,7 @@ async function aiAsk(usr){
     if(!r.ok)throw new Error((d.error&&(d.error.message||String(d.error)))||("Ошибка "+r.status));
     txt=(d.content||[]).map(function(p){return p.text||""}).join("");
   }else{
-    var body={model:c.m,temperature:0.2,messages:[{role:"system",content:SYS},{role:"user",content:usr}]};
+    var body={model:c.m,temperature:0.2,messages:[{role:"system",content:sys},{role:"user",content:usr}]};
     if(c.j)body.response_format={type:"json_object"};
     r=await fetch(c.u,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+c.k},body:JSON.stringify(body)});
     d=await r.json();
@@ -327,6 +336,69 @@ function ctxText(first){
   out=out.replace(/\s+/g," ").trim();
   if(out.length>900){var i=Math.max(0,out.indexOf("[[")-450);out=out.slice(i,i+900)}
   return out;
+}
+var ABBR=/^(mr|mrs|ms|dr|st|prof|sr|jr|vs|etc|mt|fig|gen|col|capt|lt|sgt|rev|hon)$/i;
+function sentenceOf(w){
+  var blk=w.closest("p,li,blockquote,h1,h2,h3,h4,h5,h6,div")||book;
+  var sents=[],cur={words:[],text:""},last=null,pend=false;
+  (function walk(n){
+    n.childNodes.forEach(function(c){
+      if(c.nodeType===3){
+        var t=c.nodeValue;
+        if(pend&&/^\s/.test(t)&&cur.words.length){sents.push(cur);cur={words:[],text:""}}
+        pend=false;
+        cur.text+=t;
+        var e=cur.words.length?/[.!?…]["'”’)\]]*(\s|$)/.exec(t):null;
+        if(e&&!(last&&ABBR.test(last.textContent)&&/^\s*\./.test(t))){
+          if(e[1]==="")pend=true;
+          else{sents.push(cur);cur={words:[],text:""}}
+        }
+      }else if(c.classList&&c.classList.contains("w")){
+        pend=false;cur.words.push(c);cur.text+=c.textContent;last=c;
+      }else walk(c);
+    });
+  })(blk);
+  if(cur.words.length)sents.push(cur);
+  for(var i=0;i<sents.length;i++)if(sents[i].words.indexOf(w)>-1)return sents[i];
+  return null;
+}
+function isCap(t){return /^[A-ZÀ-Þ]/.test(t)&&!/^I(['’].*)?$/.test(t)}
+function caseChunk(els,r,first){
+  var tx=els.map(function(e){return e.textContent});
+  var L=tx.join("").replace(/[^A-Za-z]/g,"");
+  if(L.length>1&&L===L.toUpperCase())return r.toUpperCase();
+  var cap=tx.some(function(t,i){return isCap(t)||(els[i]===first&&/^[A-ZÀ-Þ]/.test(t))});
+  return cap?r.charAt(0).toUpperCase()+r.slice(1):r.charAt(0).toLowerCase()+r.slice(1);
+}
+async function doSent(){
+  var ws=selected();
+  if(!ws.length)return;
+  var sn=sentenceOf(ws[0]);
+  if(!sn){st("Не удалось найти предложение");return}
+  ws.forEach(function(x){x.classList.remove("sel")});
+  sn.words.forEach(function(x){x.classList.add("sel")});
+  updateBar();
+  st("Перевожу предложение…");
+  try{
+    var nums=sn.words.map(function(x,i){return (i+1)+":"+x.textContent}).join(" ");
+    var d=await aiAsk("Sentence: "+sn.text.replace(/\s+/g," ").trim()+"\nWords: "+nums,SYS_S);
+    var seen={},chunks=[],N=sn.words.length;
+    (d.c||[]).forEach(function(c){
+      var ids=(c.w||[]).map(Number).filter(function(n){return n>=1&&n<=N&&!seen[n]}).sort(function(a,b){return a-b});
+      if(!ids.length||!c.r)return;
+      ids.forEach(function(n){seen[n]=1});
+      chunks.push({ids:ids,r:String(c.r).trim()});
+    });
+    if(!chunks.length)throw new Error("Пустой ответ ИИ");
+    sn.words.forEach(function(x){var g=groupOf(x);if(g)delete notes[g.key]});
+    chunks.forEach(function(c){
+      var els=c.ids.map(function(n){return sn.words[n-1]});
+      var di=els.map(function(e){return +e.getAttribute("data-i")});
+      notes[idx+":"+di[0]]={t:caseChunk(els,c.r,sn.words[0]),c:"#d4d4d4",m:di.slice(1),s:els.map(function(e){return e.textContent}).join(" ")};
+    });
+    persist();applyNotes();
+    st(chunks.map(function(c){return c.r}).join(" "));
+  }catch(e){var em=e.message||"Ошибка";st(/Failed to fetch|Load failed|NetworkError/i.test(em)?"Не удалось связаться с сервером: проверьте адрес. Сервер может не разрешать запросы из браузера":em)}
 }
 async function doAi(){
   var ws=selected();
