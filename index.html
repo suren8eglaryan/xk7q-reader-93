@@ -27,10 +27,10 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #book blockquote{margin:1em 1.5em;font-style:italic}
 #book img,#book svg{display:none}
 .s{margin:0 0 .45em;text-indent:0}
-.ru{color:var(--ru);font-style:normal;font-weight:400}
+.ru{display:block;margin:.05em 0 .35em;text-indent:0;color:var(--ru);font-style:normal;font-weight:400}
 #book.norus .ru{display:none}
 .w,.r{border-radius:4px}
-.w.sel,.g.sel,.r.sel{color:var(--sel)}
+.w.sel,.g.sel,.r.sel{color:var(--sel);font-weight:700}
 .w.hit{background:rgba(128,128,128,.3)}
 #set,#sp{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:6;max-height:75vh;overflow:auto;padding:12px;border-radius:14px;background:var(--bar);box-shadow:0 6px 24px rgba(0,0,0,.25);font:15px -apple-system,Helvetica,sans-serif;display:flex;flex-direction:column;gap:10px}
 #set div,#sp .top{display:flex;gap:8px;align-items:center}
@@ -49,7 +49,8 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #card .hd{display:flex;align-items:flex-start;gap:8px}
 #phrase{flex:1;font-weight:600;overflow-wrap:anywhere}
 #clear{width:32px;height:32px;padding:0;border-radius:50%;flex:none}
-#toast{position:fixed;left:12px;right:12px;bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:9;padding:10px 12px;border-radius:12px;background:#b3261e;color:#fff;font:14px -apple-system,Helvetica,sans-serif}
+#toast{position:fixed;left:12px;right:12px;bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:9;padding:10px 12px;border-radius:12px;background:#2b2b2b;color:#fff;font:14px -apple-system,Helvetica,sans-serif}
+#toast.err{background:#b3261e}
 #empty{padding:60px 24px;text-align:center;font:17px -apple-system,Helvetica,sans-serif;line-height:1.5}
 #fab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:7;display:flex;flex-direction:column;gap:12px;align-items:center}
 .fc{width:52px;height:52px;border-radius:50%;border:0;padding:0;background:var(--bar);color:var(--fg);box-shadow:0 3px 12px rgba(0,0,0,.25);font:600 18px -apple-system,Helvetica,sans-serif;display:flex;align-items:center;justify-content:center;text-decoration:none}
@@ -77,7 +78,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <button id="aa">Aa</button>
   <button id="prev">‹</button><button id="next">›</button>
 </div>
-<div id="empty">Откройте EPUB-файл.<br>Под каждым английским предложением появится русский перевод. Тап по слову подсвечивает его перевод.<br>Сначала введите ключ API: Aa → Перевод.</div>
+<div id="empty">Откройте EPUB-файл.<br>Тап по слову переводит его предложение и подсвечивает слово. Снимите выделение — перевод спрячется.<br>Сначала введите ключ API: Aa → Перевод.</div>
 <div id="sp" class="hide"><div class="top"><input id="sq" type="search" placeholder="Поиск по книге"><button id="sgo">Найти</button><button id="sx">✕</button></div><div id="scount"></div><div id="sres"></div></div>
 <div id="set" class="hide">
   <div><span>Размер</span><button data-a="f-">A−</button><button data-a="f+">A+</button></div>
@@ -102,7 +103,7 @@ var $=function(i){return document.getElementById(i)},book=$("book");
 var S={fs:26,pad:36,theme:"white",ru:true,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
 var SEL="p,h1,h2,h3,h4,h5,h6,li";
-var SYS="You are a precise translation engine for a bilingual English-to-Russian book reader. Input: one paragraph as numbered words plus the original text. Reply with ONLY JSON, no prose:\n{\"s\":[[[from,to,\"ru\"],...],...]}\n- s = sentences in order; sentence = list of units; unit = [first word number, last word number, Russian text].\n- Units cover every word number exactly once, in order, no gaps.\n- A unit is a group of neighbouring English words that belong together and are translated together: article+noun (a book), 'to'+verb (to enjoy), auxiliary+verb, phrasal verb (went on), fixed phrase or idiom, preposition+noun when Russian needs a case. Every other word is its own unit. Never make a unit larger than needed.\n- The Russian texts of the units, read in order, form one accurate, natural, grammatically correct Russian sentence (right cases, gender, number, tense, agreement) in the SAME word order as the English. Reorder only when Russian truly cannot say it that way; then merge the reordered words into one unit.\n- Translate precisely: pick the meaning that fits the context; no embellishment, no omissions, no additions.\n- A unit's Russian text is never empty. Put punctuation (commas, dashes, quotes, brackets, final period) inside the Russian text of the neighbouring unit, as in the English. Capitalize the first Russian word of each sentence. Keep tokens like fn1 and digits unchanged; keep ALL-CAPS names in caps.";
+var SYS="You are a precise translation engine for a bilingual English-to-Russian book reader. Input: one sentence as numbered words, its text, and the surrounding paragraph for context only. Translate ONLY the sentence. Reply with ONLY JSON, no prose:\n{\"u\":[[from,to,\"ru\"],...]}\n- unit = [first word number, last word number, Russian text].\n- Units cover every word number exactly once, in order, no gaps.\n- Split the sentence into the smallest meaningful units, roughly one per content word (noun, verb, adjective, adverb). Attach to a content word only the small words that have no Russian word of their own: articles (the, a, an), 'to' before an infinitive, auxiliaries (was smoking, had done), 'of' when it becomes a genitive ending (of war = \"войны\"), a particle of a phrasal verb (went on), words of an idiom. A preposition that is translated by a separate Russian word is its own unit. Example: 'from | the savagery | of war' = 'от | зверств | войны'; 'to heal' = 'восстановиться'; 'a book' = 'книгу'. Never make a unit larger than needed.\n- The Russian texts of the units, read in order, form one accurate, natural, grammatically correct Russian sentence (right cases, gender, number, tense, agreement) in the SAME word order as the English. Reorder only when Russian truly cannot say it that way; then merge the reordered words into one unit.\n- Translate precisely: pick the meaning that fits the context; no embellishment, no omissions, no additions.\n- A unit's Russian text is never empty. Put punctuation (commas, dashes, quotes, brackets, final period) inside the Russian text of the neighbouring unit, as in the English. Capitalize the first Russian word of each sentence. Keep tokens like fn1 and digits unchanged; keep ALL-CAPS names in caps.";
 var SYS2="You are a bilingual English-Russian dictionary. Reply with ONLY JSON: {\"ipa\":\"American IPA in square brackets\",\"pos\":[{\"n\":\"part of speech in Russian, capitalized\",\"t\":[\"Russian translations, most common first, max 6\"]}],\"rel\":[\"up to 5 related English words\"]}. Include every common part of speech of the word.";
 
 function resolve(base,href){var o=[];(base+href).split("/").forEach(function(p){if(p==="..")o.pop();else if(p&&p!==".")o.push(p)});return decodeURIComponent(o.join("/"))}
@@ -126,7 +127,14 @@ var dbp=null;
 function db(){return dbp||(dbp=new Promise(function(res,rej){var r=indexedDB.open("reader2",1);r.onupgradeneeded=function(){r.result.createObjectStore("b");r.result.createObjectStore("t")};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}}))}
 function kv(st,mode,fn){return db().then(function(d){return new Promise(function(res){var q=fn(d.transaction(st,mode).objectStore(st));q.onsuccess=function(){res(q.result)};q.onerror=function(){res(null)}})}).catch(function(){return null})}
 /* translation */
-function toast(m,p){var t=$("toast");t.textContent=m+(p?"":" (тап — повторить)");t.classList.remove("hide");if(p)setTimeout(function(){t.classList.add("hide")},2000)}
+var bt=null,busyOwner=0,tapN=0,curRu=null,curS=null,retry=null;
+function toast(m,p){var t=$("toast");clearInterval(bt);busyOwner=0;t.classList.remove("hide");t.classList.toggle("err",!p);t.textContent=m+(p||!retry?"":" (тап — повторить)");if(p)setTimeout(function(){t.classList.add("hide")},2000)}
+function busy(on,msg,own){
+  var t=$("toast");
+  if(!on){if(busyOwner===own){clearInterval(bt);busyOwner=0;t.classList.add("hide")}return}
+  clearInterval(bt);busyOwner=own;t.classList.remove("hide","err");var t0=Date.now();
+  function f(){t.textContent=msg+" "+((Date.now()-t0)/1000).toFixed(1)+" с"}f();bt=setInterval(f,100);
+}
 async function callApi(user,sys){
   try{return await callApi2(user,sys)}catch(e){if(e instanceof TypeError)throw new Error("Нет связи с сервером ("+e.message+"). Вероятно, сервер не разрешает запросы из браузера (CORS)");throw e}
 }
@@ -140,82 +148,86 @@ async function callApi2(user,sys){
   return anth?j.content.map(function(x){return x.text||""}).join(""):j.choices[0].message.content;
 }
 function fix(d,n){
-  var s=d&&d.s,nx=0,out=[];if(!Array.isArray(s))return null;
-  for(var a=0;a<s.length;a++){
-    if(!Array.isArray(s[a])||!s[a].length)return null;var us=[];
-    for(var k=0;k<s[a].length;k++){var u=s[a][k];
-      if(!Array.isArray(u)||+u[0]!==nx||+u[1]<nx||typeof u[2]!=="string")return null;
-      us.push([+u[0],+u[1],u[2]]);nx=+u[1]+1}
-    out.push(us);
-  }
+  var u=d&&d.u,nx=0,out=[];if(!Array.isArray(u))return null;
+  for(var k=0;k<u.length;k++){var x=u[k];
+    if(!Array.isArray(x)||+x[0]!==nx||+x[1]<nx||typeof x[2]!=="string")return null;
+    out.push([+x[0],+x[1],x[2]]);nx=+x[1]+1}
   return nx===n?out:null;
 }
-async function translate(el){
-  var c=S.api;if(!c.key||!c.model)throw new Error("Укажите ключ и модель: Aa → Перевод");
-  var ws=el._ws,user="Words:\n"+ws.map(function(w,i){return i+":"+w.textContent}).join(" ")+"\n\nText:\n"+el.textContent.replace(/\s+/g," ").trim();
-  for(var t=0;t<2;t++){
-    var o=await callApi(user,SYS),m=o.match(/\{[\s\S]*\}/);
-    try{var d=fix(JSON.parse(m[0]),ws.length);if(d)return d}catch(e){}
+function sents(el){
+  if(el._ss)return el._ss;
+  var ws=el._ws,ss=[],a=0,AB=/^(mr|mrs|ms|dr|st|mt|prof|sr|jr|vs|no|etc)$/i;
+  for(var i=0;i<ws.length-1;i++){
+    var rg=document.createRange();rg.setStartAfter(ws[i]);rg.setEndBefore(ws[i+1]);var b=rg.toString(),pw=ws[i].textContent;
+    if(/[.!?…]['"”’»)\]]*\s+['"“‘«(\[—–-]*$/.test(b)&&/^[A-Z0-9À-ÖØ-Þ]/.test(ws[i+1].textContent)&&!(b.charAt(0)==="."&&(AB.test(pw)||/^[A-Z]$/.test(pw)))){ss.push([a,i]);a=i+1}
   }
-  var b=[[[0,ws.length-1,"(перевод не удался)"]]];b.bad=1;return b;
+  ss.push([a,ws.length-1]);return (el._ss=ss);
 }
-function pump(){
-  while(!paused&&active<3&&queue.length){
-    var j=queue.shift();if(j.g!==gen)continue;active++;
-    work(j).then(function(){active--;pump()});
-  }
+async function loadSent(el,k,my){
+  var ws=el._ws,sn=sents(el)[k],key="v4|"+bookId+"|"+idx+"|"+el._k+"|"+k;
+  var d=await kv("t","readonly",function(st){return st.get(key)});
+  if(d)return{d:d,key:key};
+  if(!S.api.key||!S.api.model)throw new Error("Укажите ключ и модель: Aa → Перевод");
+  var rg=document.createRange();rg.setStartBefore(ws[sn[0]]);
+  if(ws[sn[1]+1])rg.setEndBefore(ws[sn[1]+1]);else rg.setEnd(el,el.childNodes.length);
+  var words=ws.slice(sn[0],sn[1]+1).map(function(w,i){return i+":"+w.textContent}).join(" ");
+  var user="Words:\n"+words+"\n\nSentence:\n"+rg.toString().replace(/\s+/g," ").trim()+"\n\nParagraph (context only):\n"+el.textContent.replace(/\s+/g," ").trim().slice(0,1500);
+  busy(true,"Перевожу предложение…",my);
+  try{
+    for(var t=0;t<2;t++){
+      var o=await callApi(user,SYS),d2=null;
+      try{d2=fix(JSON.parse(o.match(/\{[\s\S]*\}/)[0]),sn[1]-sn[0]+1)}catch(e){}
+      if(d2){kv("t","readwrite",function(st){return st.put(d2,key)});return{d:d2,key:key}}
+    }
+    throw new Error("Модель вернула неверный формат");
+  }finally{busy(false,"",my)}
 }
-async function work(j){
-  var el=j.el,key="v2|"+bookId+"|"+idx+"|"+el._k,d=await kv("t","readonly",function(s){return s.get(key)});
-  if(j.g!==gen)return;
-  if(!d){
-    try{d=await translate(el)}catch(e){el._st=0;paused=true;toast(e.message);return}
-    if(j.g!==gen)return;
-    if(!d.bad)kv("t","readwrite",function(s){return s.put(d,key)});
-  }
-  el._key=key;render(el,d);el._st=2;
+function place(el,k,ru){
+  var ws=el._ws,ss=sents(el),nx=ss[k+1]?ws[ss[k+1][0]]:null;
+  if(!nx){el.appendChild(ru);return}
+  var n=nx.previousSibling;
+  if(n&&n.nodeType===3){var m=n.nodeValue.search(/\s\S*$/);if(m>-1)n=n.splitText(m+1);nx.parentNode.insertBefore(ru,n)}
+  else nx.parentNode.insertBefore(ru,nx);
 }
-function render(el,d){
-  var h0=el.getBoundingClientRect().height,ws=el._ws,divs=[];el._d=d;
-  d.forEach(function(sent){sent.forEach(function(u){for(var i=u[0];i<u[1];i++){var n=ws[i].nextSibling;
-    if(n&&n.nodeType===3&&!n.nodeValue.trim()&&n.nextSibling===ws[i+1]){var g=document.createElement("span");g.className="g";n.parentNode.insertBefore(g,n);g.appendChild(n);ws[i]._g=g}}})});
-  d.forEach(function(sent,k){
-    var en=document.createElement("div"),ru=document.createElement("div"),s=document.createElement("div");
-    en.className="en";ru.className="ru";ru.lang="ru";s.className="s";
-    if(k<d.length-1){var rg=document.createRange();rg.setStart(el,0);rg.setEndBefore(ws[d[k+1][0][0]]);en.appendChild(rg.extractContents())}
-    else while(el.firstChild)en.appendChild(el.firstChild);
-    sent.forEach(function(u,j){
-      var sp=document.createElement("span");sp.className="r";sp.textContent=u[2];
+function showSent(el,k,d,key){
+  var ws=el._ws,sn=sents(el)[k],ru=el._ru&&el._ru[k];
+  if(!ru){
+    ru=document.createElement("span");ru.className="ru";ru.lang="ru";
+    d.forEach(function(u,j){
+      var sp=document.createElement("span");sp.className="r";sp.textContent=u[2];sp._u=u;sp._d=d;sp._key=key;sp._w=[];
+      for(var i=u[0];i<=u[1];i++){var w=ws[sn[0]+i];w._r=sp;sp._w.push(w)}
+      for(var i2=u[0];i2<u[1];i2++){var w2=ws[sn[0]+i2],n=w2.nextSibling;
+        if(n&&n.nodeType===3&&!n.nodeValue.trim()&&n.nextSibling===ws[sn[0]+i2+1]){var g=document.createElement("span");g.className="g";n.parentNode.insertBefore(g,n);g.appendChild(n);w2._g=g}}
       if(j)ru.appendChild(document.createTextNode(" "));ru.appendChild(sp);
-      sp._u=u;sp._el=el;sp._w=[];for(var i=u[0];i<=u[1];i++){ws[i]._r=sp;sp._w.push(ws[i])}
     });
-    s.appendChild(en);s.appendChild(ru);divs.push(s);
-  });
-  while(el.firstChild)el.removeChild(el.firstChild);
-  divs.forEach(function(x){el.appendChild(x)});
-  var r=el.getBoundingClientRect(),dh=r.height-h0;
-  if(r.bottom<60&&dh)window.scrollBy(0,dh);
-  if(selW.length&&el.contains(selW[0]))pick(selW[0]._r?selW[0]._r._w:selW,selW[0]._r||null);
+    (el._ru=el._ru||{})[k]=ru;
+  }
+  place(el,k,ru);curRu=ru;
 }
-function watch(){
-  if(io)io.disconnect();
-  io=new IntersectionObserver(function(es){
-    es.forEach(function(e){if(e.isIntersecting&&!e.target._st){e.target._st=1;queue.push({el:e.target,g:gen})}});
-    pump();
-  },{rootMargin:"1500px 0px 2500px 0px"});
-  blocks=[].filter.call(book.querySelectorAll(SEL),function(e){return !e.querySelector(SEL)&&e.querySelector(".w")});
-  blocks.forEach(function(e,k){e._k=k;e._ws=[].slice.call(e.querySelectorAll(".w"));io.observe(e)});
+function hideRu(){if(curRu&&curRu.parentNode)curRu.parentNode.removeChild(curRu);curRu=null;curS=null}
+async function tapWord(w){
+  var el=w.closest(SEL)||book;if(!el._ws)el._ws=[].slice.call(el.querySelectorAll(".w"));
+  var ss=sents(el),i=el._ws.indexOf(w),k=0;while(k<ss.length-1&&i>ss[k][1])k++;
+  var id=el._k+":"+k;
+  if(curS===id){if(w._r)pick(w._r._w,w._r);else pick([w],null);return}
+  var t0=w.getBoundingClientRect().top;hideRu();
+  var dt=w.getBoundingClientRect().top-t0;if(dt)window.scrollBy(0,dt);
+  pick([w],null);curS=id;retry=null;var my=++tapN;
+  try{
+    var r;
+    if(el._ru&&el._ru[k])r={};else r=await loadSent(el,k,my);
+    if(my!==tapN)return;
+    showSent(el,k,r.d,r.key);
+    var cw=selW[0];pick(cw&&cw._r?cw._r._w:selW,cw&&cw._r||null);
+  }catch(e){if(my===tapN){curS=null;retry=function(){tapWord(w)};toast(e.message)}}
 }
-function kick(){
-  $("toast").classList.add("hide");paused=false;queue=[];
-  blocks.forEach(function(e){if(e._st!==2){e._st=0;io.unobserve(e);io.observe(e)}});
-}
-$("toast").onclick=kick;
+function kick(){$("toast").classList.add("hide")}
+$("toast").onclick=function(){if(retry){var f=retry;retry=null;$("toast").classList.add("hide");f()}};
 /* reader */
 function show(i){
   if(i<0||i>=chapters.length)return;
   idx=i;gen++;queue=[];paused=false;$("toast").classList.add("hide");
-  book.innerHTML=chapters[i];wrapWords(book);clearSel();window.scrollTo(0,0);watch();
+  book.innerHTML=chapters[i];wrapWords(book);clearSel();window.scrollTo(0,0);book.querySelectorAll(SEL).forEach(function(e,k){e._k=k});
 }
 var selW=[],selR=null,edR=null;
 function pick(ws,r){
@@ -224,7 +236,7 @@ function pick(ws,r){
   ws.forEach(function(w){w.classList.add("sel");if(w._g)w._g.classList.add("sel")});
   if(r)r.classList.add("sel");upd();
 }
-function clearSel(){book.querySelectorAll(".sel").forEach(function(e){e.classList.remove("sel")});selW=[];selR=null;upd()}
+function clearSel(){tapN++;busy(false,"",busyOwner);hideRu();book.querySelectorAll(".sel").forEach(function(e){e.classList.remove("sel")});selW=[];selR=null;upd()}
 function upd(){
   var p=selW.map(function(w){return w.textContent}).join(" ");
   $("rv").href="https://context.reverso.net/translation/english-russian/"+encodeURIComponent(p).replace(/%20/g,"+");
@@ -236,7 +248,7 @@ book.addEventListener("click",function(e){
   var w=e.target.closest(".w");
   if(!w){clearSel();return}
   if(selW.indexOf(w)>-1){card(w.textContent);return}
-  pick(w._r?w._r._w:[w],w._r||null);
+  tapWord(w);
 });
 /* fab */
 function fab(o){$("fb").classList.toggle("hide",o);$("rv").classList.toggle("hide",!o);$("gg").classList.toggle("hide",!o)}
@@ -251,7 +263,7 @@ $("dim").onclick=closeS;
 function edit(r){edR=r;$("edi").value=r._u[2];openS("ed");setTimeout(function(){$("edi").focus()},50)}
 $("eds").onclick=function(){
   var v=$("edi").value.trim();
-  if(v&&edR){edR._u[2]=v;edR.textContent=v;var el=edR._el;kv("t","readwrite",function(s){return s.put(el._d,el._key)})}
+  if(v&&edR){edR._u[2]=v;edR.textContent=v;var r0=edR;kv("t","readwrite",function(s){return s.put(r0._d,r0._key)})}
   closeS();
 };
 $("edc").onclick=closeS;
