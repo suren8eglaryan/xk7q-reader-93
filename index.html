@@ -103,7 +103,7 @@ var $=function(i){return document.getElementById(i)},book=$("book");
 var S={fs:26,pad:36,theme:"white",ru:true,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
 var SEL="p,h1,h2,h3,h4,h5,h6,li";
-var SYS="You are a precise translation engine for a bilingual English-to-Russian book reader. Input: one sentence as numbered words, its text, and the surrounding paragraph for context only. Translate ONLY the sentence. Reply with ONLY JSON, no prose:\n{\"u\":[[from,to,\"ru\"],...]}\n- unit = [first word number, last word number, Russian text].\n- Units cover every word number exactly once, in order, no gaps.\n- Split the sentence into the smallest meaningful units, roughly one per content word (noun, verb, adjective, adverb). Attach to a content word only the small words that have no Russian word of their own: articles (the, a, an), 'to' before an infinitive, auxiliaries (was smoking, had done), 'of' when it becomes a genitive ending (of war = \"войны\"), a particle of a phrasal verb (went on), words of an idiom. A preposition that is translated by a separate Russian word is its own unit. Example: 'from | the savagery | of war' = 'от | зверств | войны'; 'to heal' = 'восстановиться'; 'a book' = 'книгу'. Never make a unit larger than needed.\n- The Russian texts of the units, read in order, form one accurate, natural, grammatically correct Russian sentence (right cases, gender, number, tense, agreement) in the SAME word order as the English. Reorder only when Russian truly cannot say it that way; then merge the reordered words into one unit.\n- Translate precisely: pick the meaning that fits the context; no embellishment, no omissions, no additions.\n- A unit's Russian text is never empty. Put punctuation (commas, dashes, quotes, brackets, final period) inside the Russian text of the neighbouring unit, as in the English. Capitalize the first Russian word of each sentence. Keep tokens like fn1 and digits unchanged; keep ALL-CAPS names in caps.";
+var SYS="You are a precise translation engine for a bilingual English-to-Russian book reader. Input: one sentence as numbered words, its text, and the surrounding paragraph for context only. Translate ONLY the sentence. Reply with ONLY JSON, no prose:\n{\"u\":[[[word numbers],\"ru\"],...]}\n- A unit = [list of word numbers, Russian text]. List units in the order their Russian text is read. Every word number appears in exactly one unit.\n- Build units from grammar, not adjacency: the words of a unit need not be neighbours. Each content word (noun, verb, adjective, adverb, pronoun, number) gets its own unit. Small words join the unit of the word they grammatically belong to: an article or determiner goes with its noun, not with an adjective in between; an auxiliary and 'to' go with their verb; 'of' goes with the noun it turns into a genitive; a particle goes with its phrasal verb. A preposition that has its own Russian word is its own unit. Adjectives and adverbs are always their own units.\n- Example: \"The shattered world was still smoking from the savagery of war.\" (The0 shattered1 world2 was3 still4 smoking5 from6 the7 savagery8 of9 war10) -> {\"u\":[[[1],\"Разрушенный\"],[[0,2],\"мир\"],[[4],\"всё ещё\"],[[3,5],\"дымился\"],[[6],\"от\"],[[7,8],\"жестокости\"],[[9,10],\"войны.\"]]}\n- The Russian texts of the units, read in order, form one accurate, natural, grammatically correct Russian sentence (right cases, gender, number, tense, agreement) in the SAME word order as the English. Reorder only when Russian truly cannot say it that way; then merge the reordered words into one unit.\n- Translate precisely: pick the meaning that fits the context; no embellishment, no omissions, no additions.\n- A unit's Russian text is never empty. Put punctuation (commas, dashes, quotes, brackets, final period) inside the Russian text of the neighbouring unit, as in the English. Capitalize the first Russian word of each sentence. Keep tokens like fn1 and digits unchanged; keep ALL-CAPS names in caps.";
 var SYS2="You are a bilingual English-Russian dictionary. Reply with ONLY JSON: {\"ipa\":\"American IPA in square brackets\",\"pos\":[{\"n\":\"part of speech in Russian, capitalized\",\"t\":[\"Russian translations, most common first, max 6\"]}],\"rel\":[\"up to 5 related English words\"]}. Include every common part of speech of the word.";
 
 function resolve(base,href){var o=[];(base+href).split("/").forEach(function(p){if(p==="..")o.pop();else if(p&&p!==".")o.push(p)});return decodeURIComponent(o.join("/"))}
@@ -148,11 +148,14 @@ async function callApi2(user,sys){
   return anth?j.content.map(function(x){return x.text||""}).join(""):j.choices[0].message.content;
 }
 function fix(d,n){
-  var u=d&&d.u,nx=0,out=[];if(!Array.isArray(u))return null;
+  var u=d&&d.u,seen={},cnt=0,out=[];if(!Array.isArray(u))return null;
   for(var k=0;k<u.length;k++){var x=u[k];
-    if(!Array.isArray(x)||+x[0]!==nx||+x[1]<nx||typeof x[2]!=="string")return null;
-    out.push([+x[0],+x[1],x[2]]);nx=+x[1]+1}
-  return nx===n?out:null;
+    if(!Array.isArray(x)||!Array.isArray(x[0])||!x[0].length||typeof x[1]!=="string")return null;
+    var ids=x[0].map(Number).sort(function(p,q){return p-q});
+    for(var j=0;j<ids.length;j++){var id=ids[j];if(!(id>=0&&id<n)||seen[id])return null;seen[id]=1;cnt++}
+    out.push([ids,x[1]]);
+  }
+  return cnt===n?out:null;
 }
 function sents(el){
   if(el._ss)return el._ss;
@@ -164,7 +167,7 @@ function sents(el){
   ss.push([a,ws.length-1]);return (el._ss=ss);
 }
 async function loadSent(el,k,my){
-  var ws=el._ws,sn=sents(el)[k],key="v4|"+bookId+"|"+idx+"|"+el._k+"|"+k;
+  var ws=el._ws,sn=sents(el)[k],key="v5|"+bookId+"|"+idx+"|"+el._k+"|"+k;
   var d=await kv("t","readonly",function(st){return st.get(key)});
   if(d)return{d:d,key:key};
   if(!S.api.key||!S.api.model)throw new Error("Укажите ключ и модель: Aa → Перевод");
@@ -194,10 +197,10 @@ function showSent(el,k,d,key){
   if(!ru){
     ru=document.createElement("span");ru.className="ru";ru.lang="ru";
     d.forEach(function(u,j){
-      var sp=document.createElement("span");sp.className="r";sp.textContent=u[2];sp._u=u;sp._d=d;sp._key=key;sp._w=[];
-      for(var i=u[0];i<=u[1];i++){var w=ws[sn[0]+i];w._r=sp;sp._w.push(w)}
-      for(var i2=u[0];i2<u[1];i2++){var w2=ws[sn[0]+i2],n=w2.nextSibling;
-        if(n&&n.nodeType===3&&!n.nodeValue.trim()&&n.nextSibling===ws[sn[0]+i2+1]){var g=document.createElement("span");g.className="g";n.parentNode.insertBefore(g,n);g.appendChild(n);w2._g=g}}
+      var sp=document.createElement("span");sp.className="r";sp.textContent=u[1];sp._u=u;sp._d=d;sp._key=key;sp._w=[];
+      u[0].forEach(function(id,q){var w=ws[sn[0]+id];w._r=sp;sp._w.push(w);
+        if(q&&id===u[0][q-1]+1){var w0=ws[sn[0]+id-1],n=w0.nextSibling;
+          if(n&&n.nodeType===3&&!n.nodeValue.trim()&&n.nextSibling===w){var g=document.createElement("span");g.className="g";n.parentNode.insertBefore(g,n);g.appendChild(n);w0._g=g}}});
       if(j)ru.appendChild(document.createTextNode(" "));ru.appendChild(sp);
     });
     (el._ru=el._ru||{})[k]=ru;
@@ -260,10 +263,10 @@ function esc(t){return String(t).replace(/[&<>]/g,function(c){return{"&":"&amp;"
 function openS(id){$("dim").classList.remove("hide");$(id).classList.remove("hide")}
 function closeS(){["dim","sheet","ed"].forEach(function(i){$(i).classList.add("hide")})}
 $("dim").onclick=closeS;
-function edit(r){edR=r;$("edi").value=r._u[2];openS("ed");setTimeout(function(){$("edi").focus()},50)}
+function edit(r){edR=r;$("edi").value=r._u[1];openS("ed");setTimeout(function(){$("edi").focus()},50)}
 $("eds").onclick=function(){
   var v=$("edi").value.trim();
-  if(v&&edR){edR._u[2]=v;edR.textContent=v;var r0=edR;kv("t","readwrite",function(s){return s.put(r0._d,r0._key)})}
+  if(v&&edR){edR._u[1]=v;edR.textContent=v;var r0=edR;kv("t","readwrite",function(s){return s.put(r0._d,r0._key)})}
   closeS();
 };
 $("edc").onclick=closeS;
