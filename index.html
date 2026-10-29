@@ -84,12 +84,13 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <button id="aa">Aa</button>
   <button id="prev">‹</button><button id="next">›</button>
 </div>
-<div id="empty">Откройте EPUB-файл.<br>Выделяйте любые слова тапом. Повторный тап по выделенному слову открывает карточку с разбором в контексте предложения.<br>Сначала введите ключ API: Aa → Перевод.</div>
+<div id="empty">Откройте EPUB-файл.<br>Тап по слову переводит его предложение и подсвечивает слово. Снимите выделение — перевод спрячется.<br>Сначала введите ключ API: Aa → Перевод.</div>
 <div id="sp" class="hide"><div class="top"><input id="sq" type="search" placeholder="Поиск по книге"><button id="sgo">Найти</button><button id="sx">✕</button></div><div id="scount"></div><div id="sres"></div></div>
 <div id="set" class="hide">
   <div><span>Размер</span><button data-a="f-">A−</button><button data-a="f+">A+</button></div>
   <div><span>Поля</span><button data-a="p-">Меньше</button><button data-a="p+">Больше</button></div>
-    <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Бежевый</button><button data-a="t:dark">Тёмный</button></div>
+  <div><span>Русский</span><button data-a="ru:1">Показать</button><button data-a="ru:0">Скрыть</button></div>
+  <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Бежевый</button><button data-a="t:dark">Тёмный</button></div>
   <div><span>Перевод</span><input id="aUrl" placeholder="API URL" autocapitalize="off" autocorrect="off"></div>
   <div><span>Формат</span><select id="aFmt"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option></select></div>
   <div><span>Ключ</span><input id="aKey" type="password" placeholder="API key"></div>
@@ -101,6 +102,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 <div id="fab"><a id="rv" class="fc hide" target="_blank" rel="noopener" style="color:#1a6fd1">R</a><a id="gg" class="fc hide" style="color:#d93025">G</a><button id="fb" class="fc">文A</button></div>
 <div id="dim" class="hide"></div>
 <div id="sheet" class="sheet hide"></div>
+<div id="ed" class="sheet hide"><input id="edi" autocapitalize="off" autocorrect="off"><div class="r2"><button id="eds">Сохранить</button><button id="edc">Отмена</button></div></div>
 <script>
 var chapters=[],idx=0,bookId="book",gen=0,blocks=[],queue=[],active=0,paused=false,io=null;
 var $=function(i){return document.getElementById(i)},book=$("book");
@@ -163,6 +165,16 @@ async function callApi2(user,sys){
   j=await r.json();
   return anth?j.content.map(function(x){return x.text||""}).join(""):j.choices[0].message.content;
 }
+function fix(d,n){
+  var u=d&&d.u,seen={},cnt=0,out=[];if(!Array.isArray(u))return null;
+  for(var k=0;k<u.length;k++){var x=u[k];
+    if(!Array.isArray(x)||!Array.isArray(x[0])||!x[0].length||typeof x[1]!=="string")return null;
+    var ids=x[0].map(Number).sort(function(p,q){return p-q});
+    for(var j=0;j<ids.length;j++){var id=ids[j];if(!(id>=0&&id<n)||seen[id])return null;seen[id]=1;cnt++}
+    out.push([ids,x[1]]);
+  }
+  return cnt===n?out:null;
+}
 function sents(el){
   if(el._ss)return el._ss;
   var ws=el._ws,ss=[],a=0,AB=/^(mr|mrs|ms|dr|st|mt|prof|sr|jr|vs|no|etc)$/i;
@@ -172,6 +184,64 @@ function sents(el){
   }
   ss.push([a,ws.length-1]);return (el._ss=ss);
 }
+async function loadSent(el,k,my){
+  var ws=el._ws,sn=sents(el)[k],key="v5|"+bookId+"|"+idx+"|"+el._k+"|"+k;
+  var d=await kv("t","readonly",function(st){return st.get(key)});
+  if(d)return{d:d,key:key};
+  if(!S.api.key||!S.api.model)throw new Error("Укажите ключ и модель: Aa → Перевод");
+  var rg=document.createRange();rg.setStartBefore(ws[sn[0]]);
+  if(ws[sn[1]+1])rg.setEndBefore(ws[sn[1]+1]);else rg.setEnd(el,el.childNodes.length);
+  var words=ws.slice(sn[0],sn[1]+1).map(function(w,i){return i+":"+w.textContent}).join(" ");
+  var user="Words:\n"+words+"\n\nSentence:\n"+rg.toString().replace(/\s+/g," ").trim()+"\n\nParagraph (context only):\n"+el.textContent.replace(/\s+/g," ").trim().slice(0,1500);
+  busy(true,"Перевожу предложение…",my);
+  try{
+    for(var t=0;t<2;t++){
+      var o=await callApi(user,SYS),d2=null;
+      try{d2=fix(JSON.parse(o.match(/\{[\s\S]*\}/)[0]),sn[1]-sn[0]+1)}catch(e){}
+      if(d2){kv("t","readwrite",function(st){return st.put(d2,key)});return{d:d2,key:key}}
+    }
+    throw new Error("Модель вернула неверный формат");
+  }finally{busy(false,"",my)}
+}
+function place(el,k,ru){
+  var ws=el._ws,ss=sents(el),nx=ss[k+1]?ws[ss[k+1][0]]:null;
+  if(!nx){el.appendChild(ru);return}
+  var n=nx.previousSibling;
+  if(n&&n.nodeType===3){var m=n.nodeValue.search(/\s\S*$/);if(m>-1)n=n.splitText(m+1);nx.parentNode.insertBefore(ru,n)}
+  else nx.parentNode.insertBefore(ru,nx);
+}
+function showSent(el,k,d,key){
+  var ws=el._ws,sn=sents(el)[k],ru=el._ru&&el._ru[k];
+  if(!ru){
+    ru=document.createElement("span");ru.className="ru";ru.lang="ru";
+    d.forEach(function(u,j){
+      var sp=document.createElement("span");sp.className="r";sp.textContent=u[1];sp._u=u;sp._d=d;sp._key=key;sp._w=[];
+      u[0].forEach(function(id,q){var w=ws[sn[0]+id];w._r=sp;sp._w.push(w);
+        if(q&&id===u[0][q-1]+1){var w0=ws[sn[0]+id-1],n=w0.nextSibling;
+          if(n&&n.nodeType===3&&!n.nodeValue.trim()&&n.nextSibling===w){var g=document.createElement("span");g.className="g";n.parentNode.insertBefore(g,n);g.appendChild(n);w0._g=g}}});
+      if(j)ru.appendChild(document.createTextNode(" "));ru.appendChild(sp);
+    });
+    (el._ru=el._ru||{})[k]=ru;
+  }
+  place(el,k,ru);curRu=ru;
+}
+function hideRu(){if(curRu&&curRu.parentNode)curRu.parentNode.removeChild(curRu);curRu=null;curS=null}
+async function tapWord(w){
+  var el=w.closest(SEL)||book;if(!el._ws)el._ws=[].slice.call(el.querySelectorAll(".w"));
+  var ss=sents(el),i=el._ws.indexOf(w),k=0;while(k<ss.length-1&&i>ss[k][1])k++;
+  var id=el._k+":"+k;
+  if(curS===id){if(w._r)pick(w._r._w,w._r);else pick([w],null);return}
+  var t0=w.getBoundingClientRect().top;hideRu();
+  var dt=w.getBoundingClientRect().top-t0;if(dt)window.scrollBy(0,dt);
+  pick([w],null);curS=id;retry=null;var my=++tapN;
+  try{
+    var r;
+    if(el._ru&&el._ru[k])r={};else r=await loadSent(el,k,my);
+    if(my!==tapN)return;
+    showSent(el,k,r.d,r.key);
+    var cw=selW[0];pick(cw&&cw._r?cw._r._w:selW,cw&&cw._r||null);
+  }catch(e){if(my===tapN){curS=null;retry=function(){tapWord(w)};toast(e.message)}}
+}
 function kick(){$("toast").classList.add("hide")}
 $("toast").onclick=function(){if(retry){var f=retry;retry=null;$("toast").classList.add("hide");f()}};
 /* reader */
@@ -180,20 +250,26 @@ function show(i){
   idx=i;gen++;queue=[];paused=false;$("toast").classList.add("hide");
   book.innerHTML=chapters[i];wrapWords(book);clearSel();window.scrollTo(0,0);book.querySelectorAll(SEL).forEach(function(e,k){e._k=k});
 }
-var selW=[];
-function phrase(ws){var o="";ws.forEach(function(w,i){if(i)o+=(+w.getAttribute("data-i")===+ws[i-1].getAttribute("data-i")+1)?" ":" … ";o+=w.textContent});return o}
-function paint(){book.querySelectorAll(".w.sel").forEach(function(e){e.classList.remove("sel")});selW.forEach(function(w){w.classList.add("sel")});upd()}
-function clearSel(){selW=[];paint()}
+var selW=[],selR=null,edR=null;
+function pick(ws,r){
+  book.querySelectorAll(".sel").forEach(function(e){e.classList.remove("sel")});
+  selW=ws;selR=r;
+  ws.forEach(function(w){w.classList.add("sel");if(w._g)w._g.classList.add("sel")});
+  if(r)r.classList.add("sel");upd();
+}
+function clearSel(){tapN++;busy(false,"",busyOwner);hideRu();book.querySelectorAll(".sel").forEach(function(e){e.classList.remove("sel")});selW=[];selR=null;upd()}
 function upd(){
-  var p=phrase(selW).replace(/ … /g," ");
+  var p=selW.map(function(w){return w.textContent}).join(" ");
   $("rv").href="https://context.reverso.net/translation/english-russian/"+encodeURIComponent(p).replace(/%20/g,"+");
   $("gg").href="googletranslate://?sl=en&tl=ru&text="+encodeURIComponent(p);
 }
 book.addEventListener("click",function(e){
+  var r=e.target.closest(".r");
+  if(r){if(r===selR)edit(r);else pick(r._w,r);return}
   var w=e.target.closest(".w");
   if(!w){clearSel();return}
-  if(selW.indexOf(w)>-1){card();return}
-  selW.push(w);selW.sort(function(a,b){return a.compareDocumentPosition(b)&4?-1:1});paint();
+  if(selW.indexOf(w)>-1){openCard(ctxBlocks([w]),w.textContent);return}
+  tapWord(w);
 });
 /* fab */
 function fab(o){$("fb").classList.toggle("hide",o);$("rv").classList.toggle("hide",!o);$("gg").classList.toggle("hide",!o)}
@@ -203,8 +279,15 @@ document.addEventListener("click",function(e){if(!e.target.closest("#fab"))fab(f
 /* sheets */
 function esc(t){return String(t).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
 function openS(id){$("dim").classList.remove("hide");$(id).classList.remove("hide")}
-function closeS(){["dim","sheet"].forEach(function(i){$(i).classList.add("hide")})}
+function closeS(){["dim","sheet","ed"].forEach(function(i){$(i).classList.add("hide")})}
 $("dim").onclick=closeS;
+function edit(r){edR=r;$("edi").value=r._u[1];openS("ed");setTimeout(function(){$("edi").focus()},50)}
+$("eds").onclick=function(){
+  var v=$("edi").value.trim();
+  if(v&&edR){edR._u[1]=v;edR.textContent=v;var r0=edR;kv("t","readwrite",function(s){return s.put(r0._d,r0._key)})}
+  closeS();
+};
+$("edc").onclick=closeS;
 function ctxBlocks(ws){
   var seen={},bl=[];
   ws.forEach(function(w){
@@ -223,7 +306,6 @@ function ctxBlocks(ws){
 }
 function hash(t){var h=5381;for(var i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return (h>>>0).toString(36)+t.length}
 var cardTok=0;
-function card(){if(selW.length)openCard(ctxBlocks(selW),phrase(selW))}
 async function openCard(bl,title){
   var my=++cardTok,sh=$("sheet"),d;
   var user=bl.map(function(b,j){return "Sentence "+(j+1)+": "+b.text+"\nWords: "+b.words.map(function(w,i){return i+":"+w}).join(" ")+"\nSelected: "+b.sel.join(",")}).join("\n\n");
