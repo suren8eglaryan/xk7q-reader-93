@@ -68,13 +68,21 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 
 #ed input{width:100%;font-size:18px;padding:12px;border:0;border-radius:12px;background:var(--bar);color:var(--fg)}
 .r2{display:flex;gap:10px;margin-top:12px}.r2 button{flex:1;background:var(--bar)}
-.sec{font-size:13px;font-weight:700;letter-spacing:.06em;color:#9a9a9a;margin:20px 0 6px}
-.lvg{color:#4f9d7e;font-weight:600;font-size:18px}
-.here{margin-left:8px;font-size:12px;font-weight:600;color:#4f9d7e}
-.alone{padding:9px 12px;border-radius:12px;background:var(--bar);font-size:15px}
-.cl{margin-top:6px;cursor:pointer}.cl b{font-size:18px}
-.tag{display:inline-block;padding:0 8px;border-radius:8px;background:var(--bar);font-size:13px;margin-left:8px}
-.mo{display:block;margin:2px 0 0 22px;color:#4a7be0}
+.sec{font-size:14px;font-weight:700;letter-spacing:.06em;color:#a8a8a8;margin:22px 0 8px}
+#sheet{height:50vh;max-height:50vh;box-shadow:0 -2px 14px rgba(0,0,0,.12);padding:16px 25px calc(24px + env(safe-area-inset-bottom,0px))}
+#sheet .ct{font-size:25px;font-weight:700;margin:2px 44px 4px 0}
+#sheet .mut{font-size:16px}
+#sheet .ph{font-size:20px;font-weight:600;margin:18px 0 4px}
+#sheet ul{list-style:none;margin:4px 0;padding:0}
+#sheet li{position:relative;padding-left:17px;margin:9px 0;font-size:19px;line-height:1.3}
+#sheet li::before{content:"";position:absolute;left:1px;top:.58em;width:4px;height:4px;border-radius:50%;background:currentColor}
+#sheet .mo{display:block;margin:6px 0 0 3px;color:#4a7be0;font-size:19px}
+#sheet .mo::before{content:"•••";color:#555;margin-right:14px;letter-spacing:1px}
+#cx{position:absolute;top:12px;right:16px}
+#book.cardopen{padding-bottom:55vh}
+.alone{padding:9px 12px;border-radius:12px;background:var(--bar);font-size:16px}
+.cl{margin-top:8px;cursor:pointer}.cl b{font-size:20px}
+.tag{display:inline-block;padding:1px 9px;border-radius:9px;background:var(--bar);font-size:14px;margin-left:8px}
 .w.col{color:color-mix(in srgb,var(--sel) 65%,var(--fg))}
 #book.ital .ru{font-style:italic}
 #set input[type=color]{flex:none;width:52px;height:38px;padding:2px}
@@ -119,14 +127,12 @@ try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign
 var SEL="p,h1,h2,h3,h4,h5,h6,li";
 var SYS="You are a precise translation engine for a bilingual English-to-Russian book reader. Input: one sentence as numbered words, its text, and the surrounding paragraph for context only. Translate ONLY the sentence. Reply with ONLY JSON, no prose:\n{\"t\":\"complete Russian translation of the sentence\",\"u\":[[[word numbers],\"ru\"],...]}\n- First write in t the complete Russian translation of the sentence as a good literary translator would: accurate, fluent, natural, with correct Russian grammar AND punctuation (put the commas Russian requires, e.g. before чтобы, когда, что, который, even if English has none), staying close to the English word order and structure wherever Russian allows. Never translate an English construction word by word when Russian has an established equivalent (e.g. 'lucky enough to pick up' = 'посчастливилось раздобыть'): make such a construction one unit. Then split t into units: the unit texts, joined by single spaces in listed order, must reproduce t exactly.\n- A unit = [list of word numbers, Russian text]. List units in the order their Russian text is read. Every word number appears in exactly one unit.\n- Build units from grammar, not adjacency: the words of a unit need not be neighbours. Each content word (noun, verb, adjective, adverb, pronoun, number) gets its own unit. Small words join the unit of the word they grammatically belong to: an article or determiner goes with its noun, not with an adjective in between; an auxiliary and 'to' go with their verb; 'of' goes with the noun it turns into a genitive; a particle goes with its phrasal verb. A preposition that has its own Russian word is its own unit. Adjectives and adverbs are always their own units.\n- Example: \"The shattered world was still smoking from the savagery of war.\" (The0 shattered1 world2 was3 still4 smoking5 from6 the7 savagery8 of9 war10) -> {\"u\":[[[1],\"Разрушенный\"],[[0,2],\"мир\"],[[4],\"всё ещё\"],[[3,5],\"дымился\"],[[6],\"от\"],[[7,8],\"жестокости\"],[[9,10],\"войны.\"]]}\n- The Russian texts of the units, read in order, form one accurate, natural, grammatically correct Russian sentence (right cases, gender, number, tense, agreement) in the SAME word order as the English. Reorder only when Russian truly cannot say it that way; then merge the reordered words into one unit.\n- Translate precisely: pick the meaning that fits the context; no embellishment, no omissions, no additions.\n- A unit's Russian text is never empty. Put punctuation (commas, dashes, quotes, brackets, final period) inside the Russian text of the neighbouring unit, as in the English. Capitalize the first Russian word of each sentence. Keep tokens like fn1 and digits unchanged; keep ALL-CAPS names in caps.";
 var SYS3=`You are an English-teaching assistant in a reading app for a Russian-speaking learner. Input: one to three sentences, each as numbered words, its text, and the number of the word the learner tapped. Decide the part of speech and meaning of the tapped word from the WHOLE sentence (e.g. in "a very different kind of god", kind is a noun meaning "вид, род", not an adjective). Reply with ONLY JSON, every string as short as possible:
-{"lvl":"CEFR level A1-C2 of the word in the meaning used here",
-"ipa":"American IPA in square brackets",
-"pos":"part of speech used in this sentence, in Russian, capitalized",
-"tr":[{"n":"Part of speech in Russian, capitalized","t":["translations, most common first, max 6"],"c":1}],
+{"ipa":"American IPA in square brackets",
+"pos":"part of speech of the tapped word in THIS sentence, in Russian, normal case (only the first letter uppercase, e.g. Глагол, Существительное)",
+"tr":[{"n":"Part of speech in Russian, same normal case","t":["translations, most common first, up to 10"]}],
 "col":{"w":[word numbers of the collocation / phrasal verb / phrase the tapped word belongs to, including the tapped word],"text":"the phrase as written","type":"фразовый глагол | коллокация | словосочетание | устойчивое выражение","m":["translations or meanings of the whole phrase, first the one that fits this sentence, max 4"]},
-"idioms":[{"w":[word numbers],"text":"idiom as written","m":"meaning in Russian"}],
-"rel":["up to 4 related English words"]}
-Rules: "tr" lists the parts of speech of the word (max 3 groups); the group for the part of speech used in this sentence comes first, has "c":1, and its first translation is the one that fits the sentence. Set "col" to null if the tapped word is independent and does not belong to any collocation, phrasal verb or phrase in this sentence. "idioms" lists idioms found anywhere in the sentence (empty array if none). Word numbers refer to the numbered words of the sentence.`;
+"idioms":[{"w":[word numbers],"text":"idiom as written","m":"meaning in Russian"}]}
+Rules: "tr" lists EVERY part of speech the word can be (max 5 groups); the group for the part of speech used in this sentence comes first and its first translation is the one that fits the sentence. Set "col" to null if the tapped word is independent and does not belong to any collocation, phrasal verb or phrase in this sentence. "idioms" lists idioms found anywhere in the sentence (empty array if none). Word numbers refer to the numbered words of the sentence.`;
 var SYS2="You are a bilingual English-Russian dictionary. Reply with ONLY JSON: {\"ipa\":\"American IPA in square brackets\",\"pos\":[{\"n\":\"part of speech in Russian, capitalized\",\"t\":[\"Russian translations, most common first, max 6\"]}],\"rel\":[\"up to 5 related English words\"]}. Include every common part of speech of the word.";
 
 function resolve(base,href){var o=[];(base+href).split("/").forEach(function(p){if(p==="..")o.pop();else if(p&&p!==".")o.push(p)});return decodeURIComponent(o.join("/"))}
@@ -300,8 +306,8 @@ book.addEventListener("click",function(e){
   var r=e.target.closest(".r");
   if(r){if(r===selR)edit(r);else pick(r._w,r);return}
   var w=e.target.closest(".w");
-  if(!w){clearSel();return}
-  if(selW.indexOf(w)>-1){openCard(ctxBlocks([w]),w.textContent);return}
+  if(!w){clearSel();closeS();return}
+  if(selW.indexOf(w)>-1){openCard(ctxBlocks([w]),w.textContent,w);return}
   tapWord(w);
 });
 /* fab */
@@ -311,8 +317,8 @@ document.addEventListener("click",function(e){if(!e.target.closest("#fab"))fab(f
 ["rv","gg"].forEach(function(i){$(i).addEventListener("click",function(e){if(!selW.length){e.preventDefault();toast("Сначала выделите слово",1)}else setTimeout(function(){fab(false)},300)})});
 /* sheets */
 function esc(t){return String(t).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
-function openS(id){$("dim").classList.remove("hide");$(id).classList.remove("hide")}
-function closeS(){["dim","sheet","ed"].forEach(function(i){$(i).classList.add("hide")});book.querySelectorAll(".w.col").forEach(function(e){e.classList.remove("col")});cardB=null}
+function openS(id){if(id==="ed")$("dim").classList.remove("hide");else book.classList.add("cardopen");$(id).classList.remove("hide")}
+function closeS(){["dim","sheet","ed"].forEach(function(i){$(i).classList.add("hide")});book.querySelectorAll(".w.col").forEach(function(e){e.classList.remove("col")});cardB=null;book.classList.remove("cardopen")}
 $("dim").onclick=closeS;
 function edit(r){edR=r;$("edi").value=r._u[1];openS("ed");setTimeout(function(){$("edi").focus()},50)}
 $("eds").onclick=function(){
@@ -348,12 +354,14 @@ function lis(arr,n){
   var h="<ul>";(arr||[]).forEach(function(x,j){h+="<li"+(j>=n?' class="more hide"':"")+">"+esc(x)+"</li>"});
   h+="</ul>";if((arr||[]).length>n)h+='<a class="mo">Еще '+(arr.length-n)+"</a>";return h;
 }
-async function openCard(bl,title){
+function cap(t){t=String(t||"").toLowerCase();return t.charAt(0).toUpperCase()+t.slice(1)}
+async function openCard(bl,title,anchor){
   var my=++cardTok,sh=$("sheet"),d;cardB=bl[0].ws?bl[0]:null;
   var user=bl.map(function(b,j){return "Sentence "+(j+1)+": "+b.text+"\nWords: "+b.words.map(function(w,i){return i+":"+w}).join(" ")+"\nTapped word: "+b.sel.join(",")}).join("\n\n");
-  var key="c3|"+hash(user);
-  sh.innerHTML='<div class="t2"><span class="lvg" id="lv"></span><button class="ib" id="cx">✕</button></div><div class="ct">'+esc(title)+'</div><div id="cb" class="mut">Анализирую… 0.0 с</div>';
-  openS("sheet");$("cx").onclick=closeS;
+  var key="c4|"+hash(user);
+  sh.innerHTML='<button class="ib" id="cx">✕</button><div class="ct">'+esc(title)+'</div><div id="cb" class="mut">Анализирую… 0.0 с</div>';
+  openS("sheet");$("cx").onclick=closeS;sh.scrollTop=0;
+  if(anchor){var ar=anchor.getBoundingClientRect();if(ar.bottom>innerHeight*0.45)window.scrollBy(0,ar.bottom-innerHeight*0.3)}
   d=await kv("t","readonly",function(st){return st.get(key)});
   if(my!==cardTok)return;
   if(!d){
@@ -365,15 +373,14 @@ async function openCard(bl,title){
     }catch(e){
       clearInterval(iv);if(my!==cardTok)return;
       $("cb").innerHTML="<div>"+esc("Не удалось: "+e.message)+'</div><a class="mo" id="rt">Повторить</a>';
-      $("rt").onclick=function(){openCard(bl,title)};return;
+      $("rt").onclick=function(){openCard(bl,title,anchor)};return;
     }
     clearInterval(iv);if(my!==cardTok)return;
   }
-  if($("lv"))$("lv").textContent=d.lvl||"";
-  var h='<div class="sec">ПЕРЕВОДЫ</div><div class="mut">'+[d.ipa,d.pos].filter(Boolean).map(esc).join(" · ")+"</div>";
-  d.tr.slice(0,3).forEach(function(g){h+='<div class="ph">'+esc(g.n||"")+(g.c?'<span class="here">в этом предложении</span>':"")+"</div>"+lis(g.t,3)});
+  var h='<div class="mut">'+[d.ipa,cap(d.pos)].filter(Boolean).map(esc).join(" · ")+'</div><div class="sec">ПЕРЕВОДЫ</div>';
+  d.tr.slice(0,5).forEach(function(g){h+='<div class="ph">'+esc(cap(g.n))+"</div>"+lis(g.t,3)});
   if(bl[0].ws){
-    h+='<div class="sec">РАЗБОР В ПРЕДЛОЖЕНИИ</div>';
+    h+='<div class="sec">В ПРЕДЛОЖЕНИИ</div>';
     if(d.col&&d.col.text){
       h+='<div class="cl" data-i="'+esc(JSON.stringify(d.col.w||[]))+'"><b>'+esc(d.col.text)+'</b><span class="tag">'+esc(d.col.type||"")+"</span></div>"+lis(d.col.m,4);
     }else h+='<div class="alone">Самостоятельное слово: в этом предложении оно не входит ни в какое сочетание.</div>';
@@ -382,7 +389,6 @@ async function openCard(bl,title){
       d.idioms.forEach(function(x){h+='<div class="cl" data-i="'+esc(JSON.stringify(x.w||[]))+'"><b>'+esc(x.text||"")+'</b></div><div class="mut" style="margin:2px 0 8px">'+esc(x.m||"")+"</div>"});
     }
   }
-  if(Array.isArray(d.rel)&&d.rel.length)h+='<div class="mut" style="margin-top:16px">Родственные слова:</div><div>'+d.rel.slice(0,5).map(function(x){return '<a class="rl">'+esc(x)+"</a>"}).join(", ")+"</div>";
   var cb=$("cb");if(cb)cb.outerHTML='<div id="cb">'+h+"</div>";
   if(d.col&&d.col.w)showCol(d.col.w);
 }
