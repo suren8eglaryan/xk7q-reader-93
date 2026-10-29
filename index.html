@@ -69,7 +69,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #ed input{width:100%;font-size:18px;padding:12px;border:0;border-radius:12px;background:var(--bar);color:var(--fg)}
 .r2{display:flex;gap:10px;margin-top:12px}.r2 button{flex:1;background:var(--bar)}
 .sec{font-size:14px;font-weight:700;letter-spacing:.06em;color:#a8a8a8;margin:22px 0 8px}
-#sheet{height:50vh;max-height:50vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -2px 14px rgba(0,0,0,.12);padding:16px 25px 0}
+#sheet{height:40vh;max-height:40vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -2px 14px rgba(0,0,0,.12);padding:16px 25px 0}
 .chd{flex:none;padding-bottom:10px;background:var(--bg)}
 .cbody{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
 #sheet .ct{font-size:25px;font-weight:700;margin:2px 44px 4px 0}
@@ -81,7 +81,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #sheet .mo{display:block;margin:6px 0 0 3px;color:#4a7be0;font-size:19px}
 #sheet .mo::before{content:"•••";color:#555;margin-right:14px;letter-spacing:1px}
 #cx{position:absolute;top:12px;right:16px}
-#book.cardopen{padding-bottom:55vh}
+#book.cardopen{padding-bottom:45vh}
 .alone{padding:9px 12px;border-radius:12px;background:var(--bar);font-size:16px}
 .cl{margin-top:8px;cursor:pointer}.cl b{font-size:20px}
 .tag{display:inline-block;padding:1px 9px;border-radius:9px;background:var(--bar);font-size:14px;margin-left:8px}
@@ -259,7 +259,7 @@ async function openCard(bl,title,anchor){
   var key="c4|"+hash(user);
   sh.innerHTML='<button class="ib" id="cx">✕</button><div class="chd"><div class="ct">'+esc(title)+'</div><div class="mut" id="chm"></div></div><div id="cb" class="cbody mut">Анализирую… 0.0 с</div>';
   openS("sheet");$("cx").onclick=closeS;sh.scrollTop=0;
-  if(anchor){var ar=anchor.getBoundingClientRect();if(ar.bottom>innerHeight*0.45)window.scrollBy(0,ar.bottom-innerHeight*0.3)}
+  if(anchor){var ar=anchor.getBoundingClientRect();if(ar.bottom>innerHeight*0.5)window.scrollBy(0,ar.bottom-innerHeight*0.35)}
   d=await kv("t","readonly",function(st){return st.get(key)});
   if(my!==cardTok)return;
   if(!d){
