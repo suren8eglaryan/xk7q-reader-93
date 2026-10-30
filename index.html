@@ -90,26 +90,30 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #set select{flex:1}
 #fb{font-size:26px}
 #fb.act{opacity:1}
-.an{display:block;margin:.55em 0 1em;text-align:left;text-indent:0;font-style:normal;font-weight:400;hyphens:none;-webkit-hyphens:none;line-height:1.35;color:var(--fg)}
-.an .tr{color:var(--ru);font-style:italic;margin-bottom:.45em}
-.an .sg{border-top:1px solid var(--bar);padding:.55em 0}
-.an .sgh{display:flex;justify-content:space-between;gap:12px;cursor:pointer}
-.an .wsr{display:flex;flex-wrap:wrap;gap:.1em .7em}
-.an .wd{display:inline-flex;flex-direction:column}
-.an .wd b{font-weight:600}
-.an small{font-size:.6em;color:var(--ru);font-weight:400}
-.an .sru{color:var(--ru);margin-top:.2em}
-.an .chev{flex:none;opacity:.45;transition:transform .15s;align-self:flex-start}
-.an .sgb{margin-top:.55em}
-.an .wc{background:var(--bar);border-radius:16px;padding:.6em .85em;margin:.5em 0}
-.an .wh{display:flex;align-items:baseline;gap:.55em;flex-wrap:wrap}
-.an .wh b{font-weight:600}
-.an .pos{font-size:.6em;padding:.05em .7em;border-radius:1em;background:var(--bg)}
-.an .wh .chev{margin-left:auto}
-.an .wc i{display:block;margin-top:.15em}
-.an .nt{color:var(--ru);font-size:.8em;margin-top:.2em}
-.an .dx{margin-top:.5em;padding-top:.5em;border-top:1px solid var(--bg);font-size:.8em;line-height:1.45}
-.an .lk{margin-top:.3em}.an .lk a{color:#4a7be0}
+.an{display:block;margin:.5em 0 1em;text-align:left;text-indent:0;font-style:normal;font-weight:400;hyphens:none;-webkit-hyphens:none;line-height:1.3;color:var(--fg)}
+.an .sg{border-top:1px solid color-mix(in srgb,var(--fg) 12%,transparent);padding:.6em 0}
+.an .sgh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;cursor:pointer}
+.an .wsr{display:flex;flex-wrap:wrap;gap:.15em .75em;align-items:flex-end}
+.an .wd{display:inline-flex;flex-direction:column;align-items:center;text-align:center}
+.an small{font-size:.58em;color:var(--ru);font-weight:400;line-height:1.25;white-space:nowrap}
+.an i{font-style:italic;font-weight:400;color:var(--ru)}
+.an .sru{margin-top:.25em}
+.an .chev{flex:none;opacity:.4;transition:transform .15s;line-height:1;margin-top:.9em}
+.an .sgb{margin-top:.4em}
+.an .wc{padding:.55em 0;border-top:1px dashed color-mix(in srgb,var(--fg) 20%,transparent);cursor:pointer}
+.an .sgb .wc:first-child{border-top:0}
+.an .wh{display:flex;align-items:baseline;gap:.5em}
+.an .wh .chev{margin:0 0 0 auto}
+.an .wp{font-size:.6em;color:var(--ru)}
+.an .wr{margin-top:.1em}
+.an .nt{color:var(--ru);font-size:.75em;margin-top:.15em}
+.an .dx{margin-top:.5em;font-size:.82em;line-height:1.4;cursor:default}
+.an .sec{font-size:.62em;letter-spacing:.06em;color:var(--ru);margin:.9em 0 .3em;font-weight:600}
+.an .pt{font-size:.75em;color:var(--ru);margin-left:.5em}
+.an .pm{margin:.1em 0 .4em}
+.an .pg{margin:.25em 0}.an .pl{color:var(--ru);margin-right:.4em}
+.an .al{color:var(--ru)}
+.an .lk{margin-top:.5em}.an .lk a{color:#4a7be0}
 </style>
 </head>
 <body>
@@ -127,10 +131,11 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <div><span>Поля</span><button data-a="p-">Меньше</button><button data-a="p+">Больше</button></div>
   <div><span>Выделение</span><input type="color" id="cSel"><button data-a="cs0">Сброс</button></div>
   <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Бежевый</button><button data-a="t:dark">Тёмный</button></div>
+  <div><span>Сервис</span><select id="aProf"></select><button id="aNew">+</button></div>
   <div><span>API</span><input id="aUrl" placeholder="API URL" autocapitalize="off" autocorrect="off"></div>
-  <div><span>Формат</span><select id="aFmt"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option></select></div>
+  <div><span>Формат</span><select id="aFmt"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="gemini">Gemini</option></select></div>
   <div><span>Ключ</span><input id="aKey" type="password" placeholder="API key"></div>
-  <div><span>Модель</span><select id="aPre"><option value="">Выбрать…</option><option>claude-haiku-5-5</option><option>claude-sonnet-5-5</option><option>claude-opus-5-5</option></select><button id="aLs">Список</button></div>
+  <div><span>Модель</span><select id="aPre"><option value="">Выбрать…</option><option>claude-haiku-5-5</option><option>claude-sonnet-5-5</option><option>claude-opus-5-5</option><option>gemini-2.5-flash</option><option>gemini-2.5-pro</option><option>gemini-2.5-flash-lite</option></select><button id="aLs">Список</button></div>
   <div><span></span><input id="aMod" placeholder="model" autocapitalize="off" autocorrect="off"></div>
   <div><button id="aOk">Сохранить</button><button id="aClr">Очистить кэш</button></div>
 </div>
@@ -142,11 +147,15 @@ var chapters=[],idx=0,bookId="book",gen=0,blocks=[],queue=[],active=0,paused=fal
 var $=function(i){return document.getElementById(i)},book=$("book");
 var S={fs:26,pad:36,theme:"white",ru:true,cSel:null,cRu:null,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
+if(!Array.isArray(S.profs)||!S.profs.length){S.profs=[Object.assign({n:"Основной"},S.api),{n:"Gemini",fmt:"gemini",url:"https://generativelanguage.googleapis.com/v1beta",key:"",model:"gemini-2.5-flash"}];S.pi=0}
+if(!(S.pi>=0&&S.pi<S.profs.length))S.pi=0;
+S.api=S.profs[S.pi];
 var SEL="p,h1,h2,h3,h4,h5,h6,li";
 var SYS4=`You are an English teacher's engine in a reading app for a Russian-speaking learner. Input: ONE sentence as numbered words, its text, and the paragraph for context. Analyse the whole sentence. Reply with ONLY JSON:
-{"tr":"complete Russian translation: literal and faithful to the author's wording and word order, but grammatically correct Russian with correct punctuation",
-"seg":[{"ru":"Russian translation of this segment, literal but grammatical","w":[{"i":0,"ipa":"American IPA in square brackets","pos":"ONE Russian word: существительное, глагол, прилагательное, наречие, местоимение, предлог, союз, артикль, числительное, частица, междометие","ru":"translation of the word as used in this sentence (for an article or similar: не переводится)","n":"one short Russian line about its role or form here (tense, case, what it belongs to) or empty","m":0}]}]}
-Rules: segments split the sentence into meaningful chunks in order (clauses, phrases, prepositional groups), typically 2-6 words each: not one word per segment, and not the whole sentence unless it is very short. Every word number appears exactly once, in order. The segment translations joined in order must read as "tr". "m" is 1 if the word can in general be several parts of speech (e.g. fly, kind, light), otherwise 0. Keep every string as short as possible.`;
+{"tr":"complete Russian translation, literal and faithful to the author's wording and word order, but grammatically correct Russian (for your own reasoning; it is not shown to the user)",
+"seg":[{"ru":"Russian translation of this segment, literal but grammatical","w":[{"i":0,"ipa":"American IPA without brackets","pos":"ONE Russian word: существительное, глагол, прилагательное, наречие, местоимение, предлог, союз, артикль, числительное, частица, междометие","ru":"translation of the word as used in this sentence (for an article or similar: не переводится)","n":"one short Russian line about its role or form here (tense, case, what it belongs to) or empty string","m":0}]}],
+"phr":[{"w":[word numbers],"text":"the phrase as written","type":"фразовый глагол | коллокация | словосочетание | идиома","m":["translations or meanings of the whole phrase, first the one that fits this sentence, max 4"]}]}
+Rules: segments split the sentence into meaningful chunks in order (clauses, phrases, prepositional groups), typically 2-6 words each: not one word per segment, and not the whole sentence unless it is very short. Every word number appears exactly once, in order. The segment translations joined in order must read as "tr". "m" is 1 if the word can in general be several parts of speech (e.g. fly, kind, light), otherwise 0. "phr" lists phrasal verbs, collocations, fixed phrases and idioms present in the sentence (max 6, empty array if none); words need not be adjacent. Keep every string as short as possible.`;
 var SYS5=`You are a bilingual English-Russian dictionary. Reply with ONLY JSON: {"pos":[{"n":"Part of speech in Russian, only the first letter uppercase","t":["Russian translations, most common first, up to 8"]}]}. List EVERY part of speech the word can be (max 5).`;
 
 function resolve(base,href){var o=[];(base+href).split("/").forEach(function(p){if(p==="..")o.pop();else if(p&&p!==".")o.push(p)});return decodeURIComponent(o.join("/"))}
@@ -179,16 +188,28 @@ function busy(on,msg,own){
   function f(){t.textContent=msg+" "+((Date.now()-t0)/1000).toFixed(1)+" с"}f();bt=setInterval(f,100);
 }
 async function callApi(user,sys){
-  try{return await callApi2(user,sys)}catch(e){if(e instanceof TypeError)throw new Error("Нет связи с сервером ("+e.message+"). Вероятно, сервер не разрешает запросы из браузера (CORS)");throw e}
+  try{return await callApi2(user,sys)}catch(e){if(e instanceof TypeError)throw new Error("Нет связи с сервером ("+e.message+"). Проверьте интернет и VPN: сервис мог быть недоступен из вашей сети. Если сайт сервиса открывается, причина в запрете браузерных запросов (CORS)");throw e}
 }
+var GBASE="https://generativelanguage.googleapis.com/v1beta";
 async function callApi2(user,sys){
   if(!S.api.key||!S.api.model)throw new Error("Укажите ключ и модель: Aa → Перевод");
-  var c=S.api,base=c.url.replace(/\/+$/,""),anth=c.fmt==="anthropic",r,j;
+  var c=S.api,base=c.url.replace(/\/+$/,""),r,j,anth=c.fmt==="anthropic",gem=c.fmt==="gemini";
   if(anth)r=await fetch(base.replace(/\/v1$/,"")+"/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:c.model,max_tokens:8000,system:sys,messages:[{role:"user",content:user}]})});
+  else if(gem){
+    var gm=c.model.replace(/^models\//,""),gc={temperature:0.2,responseMimeType:"application/json"};
+    if(/2\.5-flash/.test(gm))gc.thinkingConfig={thinkingBudget:0};
+    r=await fetch((base||GBASE)+"/models/"+encodeURIComponent(gm)+":generateContent?key="+encodeURIComponent(c.key),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:"user",parts:[{text:user}]}],generationConfig:gc})});
+  }
   else r=await fetch(base+"/chat/completions",{method:"POST",headers:{"content-type":"application/json","Authorization":"Bearer "+c.key},body:JSON.stringify({model:c.model,temperature:0.2,messages:[{role:"system",content:sys},{role:"user",content:user}]})});
-  if(!r.ok)throw new Error("API "+r.status+": "+(await r.text()).slice(0,100));
+  if(!r.ok)throw new Error("API "+r.status+": "+(await r.text()).slice(0,120));
   j=await r.json();
-  return anth?j.content.map(function(x){return x.text||""}).join(""):j.choices[0].message.content;
+  if(anth)return j.content.map(function(x){return x.text||""}).join("");
+  if(gem){
+    var cd=j.candidates&&j.candidates[0],t=((cd&&cd.content&&cd.content.parts)||[]).map(function(x){return x.text||""}).join("");
+    if(!t)throw new Error("Gemini вернул пустой ответ"+(cd&&cd.finishReason?" ("+cd.finishReason+")":""));
+    return t;
+  }
+  return j.choices[0].message.content;
 }
 function fix(d,n){
   var u=d&&d.u,seen={},cnt=0,out=[];if(!Array.isArray(u))return null;
@@ -262,16 +283,27 @@ function fixA(d,n){
   }
   return c===n?d:null;
 }
+function ip(t){return String(t||"").replace(/[\[\]\/]/g,"").trim()}
+function dxHtml(x,phr){
+  var a=[],id=[];
+  phr.forEach(function(p){if(p&&Array.isArray(p.w)&&p.w.map(Number).indexOf(x.i)>-1)(/идиом/i.test(p.type||"")?id:a).push(p)});
+  function it(p){return "<div>"+esc(p.text||"")+'<span class="pt">'+esc(p.type||"")+'</span></div><div class="pm"><i>'+esc((p.m||[]).join("; "))+"</i></div>"}
+  var h='<div class="sec">В ПРЕДЛОЖЕНИИ</div>';
+  if(a.length)a.forEach(function(p){h+=it(p)});
+  else h+='<div class="al">Самостоятельное слово: ни к какому сочетанию в предложении не относится.</div>';
+  if(id.length){h+='<div class="sec">ИДИОМЫ</div>';id.forEach(function(p){h+=it(p)})}
+  if(x.m)h+='<div class="sec">ПЕРЕВОДЫ</div><div class="dd">Загрузка…</div>';
+  return h;
+}
 function buildAn(el,sn,d){
-  var ws=el._ws,node=document.createElement("div");node.className="an";
-  var h='<div class="tr">'+esc(d.tr)+"</div>";
+  var ws=el._ws,node=document.createElement("div"),h="",phr=Array.isArray(d.phr)?d.phr:[];node.className="an";
   d.seg.forEach(function(sg){
     h+='<div class="sg"><div class="sgh"><div><div class="wsr">';
-    sg.w.forEach(function(x){h+='<span class="wd"><b>'+esc(wtext(el,sn[0]+x.i))+"</b><small>"+esc(x.ipa||"")+"</small></span>"});
-    h+='</div><div class="sru">'+esc(sg.ru||"")+'</div></div><span class="chev">⌄</span></div><div class="sgb hide">';
+    sg.w.forEach(function(x){h+='<span class="wd"><small>'+esc(ip(x.ipa))+"</small><span>"+esc(wtext(el,sn[0]+x.i))+"</span></span>"});
+    h+='</div><div class="sru"><i>'+esc(sg.ru||"")+'</i></div></div><span class="chev">⌄</span></div><div class="sgb hide">';
     sg.w.forEach(function(x){
       var word=ws[sn[0]+x.i].textContent;
-      h+='<div class="wc" data-w="'+esc(word)+'" data-m="'+(x.m?1:0)+'"><div class="wh"><b>'+esc(word)+"</b><small>"+esc(x.ipa||"")+'</small><span class="pos">'+esc(x.pos||"")+"</span>"+(x.m?'<span class="chev">⌄</span>':"")+"</div><i>"+esc(x.ru||"")+"</i>"+(x.n?'<div class="nt">'+esc(x.n)+"</div>":"")+"</div>";
+      h+='<div class="wc" data-w="'+esc(word)+'"><div class="wh"><span class="wn">'+esc(word)+"</span><small>"+esc(ip(x.ipa))+'</small><span class="wp">· '+esc(x.pos||"")+'</span><span class="chev">⌄</span></div><div class="wr"><i>'+esc(x.ru||"")+"</i></div>"+(x.n?'<div class="nt">'+esc(x.n)+"</div>":"")+'<div class="dx hide">'+dxHtml(x,phr)+"</div></div>";
     });
     h+="</div></div>";
   });
@@ -284,7 +316,7 @@ async function analyze(){
   var rg=document.createRange();rg.setStartBefore(ws[sn[0]]);
   if(ws[sn[1]+1])rg.setEndBefore(ws[sn[1]+1]);else rg.setEnd(el,el.childNodes.length);
   var user="Words:\n"+s.ws.map(function(w,i){return i+":"+w.textContent}).join(" ")+"\n\nSentence:\n"+rg.toString().replace(/\s+/g," ").trim()+"\n\nParagraph (context only):\n"+el.textContent.replace(/\s+/g," ").trim().slice(0,1200);
-  var key="a1|"+hash(user),my=++anTok,d=await kv("t","readonly",function(st){return st.get(key)});
+  var key="a2|"+hash(user),my=++anTok,d=await kv("t","readonly",function(st){return st.get(key)});
   if(!d){
     busy(true,"Анализирую предложение…",my);
     try{
@@ -305,7 +337,7 @@ async function loadDict(box,word){
     catch(e){clearInterval(iv);box.textContent="Не удалось: "+e.message;return}
     clearInterval(iv);
   }
-  var h="";d.pos.forEach(function(g){h+="<div><b>"+esc(cap(g.n))+":</b> "+esc((g.t||[]).slice(0,8).join(", "))+"</div>"});
+  var h="";d.pos.forEach(function(g){h+='<div class="pg"><span class="pl">'+esc(cap(g.n))+':</span><i>'+esc((g.t||[]).slice(0,8).join(", "))+"</i></div>"});
   h+='<div class="lk"><a target="_blank" rel="noopener" href="https://context.reverso.net/translation/english-russian/'+encodeURIComponent(word)+'">Reverso</a> · <a href="googletranslate://?sl=en&tl=ru&text='+encodeURIComponent(word)+'">Google</a></div>';
   box.innerHTML=h;
 }
@@ -313,13 +345,14 @@ book.addEventListener("click",function(e){
   if(e.target.closest("a"))return;
   var an=e.target.closest(".an");
   if(an){
+    if(e.target.closest(".dx"))return;
     var wc=e.target.closest(".wc");
     if(wc){
-      if(wc.getAttribute("data-m")!=="1")return;
-      var box=wc.querySelector(".dx");
-      if(box){box.classList.toggle("hide");return}
-      box=document.createElement("div");box.className="dx";box.textContent="Загружаю…";wc.appendChild(box);
-      loadDict(box,wc.getAttribute("data-w"));return;
+      var dxb=wc.querySelector(".dx");dxb.classList.toggle("hide");
+      wc.querySelector(".chev").style.transform=dxb.classList.contains("hide")?"":"rotate(180deg)";
+      var dd=dxb.querySelector(".dd");
+      if(dd&&!dd._ld&&!dxb.classList.contains("hide")){dd._ld=1;loadDict(dd,wc.getAttribute("data-w"))}
+      return;
     }
     var hd=e.target.closest(".sgh");
     if(hd){var sb=hd.parentNode.querySelector(".sgb");sb.classList.toggle("hide");hd.querySelector(".chev").style.transform=sb.classList.contains("hide")?"":"rotate(180deg)"}
@@ -350,21 +383,32 @@ $("set").addEventListener("click",function(e){
   if(a==="cs0")S.cSel=null;
   applyS();
 });
-$("aFmt").value=S.api.fmt||"openai";$("aUrl").value=S.api.url;$("aKey").value=S.api.key;$("aMod").value=S.api.model;
+function fillProf(){
+  var p=S.api;
+  $("aProf").innerHTML=S.profs.map(function(x,i){return '<option value="'+i+'">'+esc(x.n)+"</option>"}).join("");
+  $("aProf").value=S.pi;$("aFmt").value=p.fmt||"openai";$("aUrl").value=p.url||"";$("aKey").value=p.key||"";$("aMod").value=p.model||"";
+}
+function readProf(){
+  var p=S.profs[S.pi];p.fmt=$("aFmt").value;p.url=$("aUrl").value.trim();p.key=$("aKey").value.trim();p.model=$("aMod").value.trim();S.api=p;
+}
+$("aProf").onchange=function(){readProf();S.pi=+this.value;S.api=S.profs[S.pi];fillProf();applyS()};
+$("aNew").onclick=function(){var n=prompt("Название сервиса");if(!n)return;readProf();S.profs.push({n:n,fmt:"openai",url:"",key:"",model:""});S.pi=S.profs.length-1;S.api=S.profs[S.pi];fillProf();applyS()};
+fillProf();
 $("cSel").oninput=function(){S.cSel=this.value;applyS()};
 $("aPre").onchange=function(){if(this.value)$("aMod").value=this.value};
 $("aLs").onclick=async function(){
   var c={url:$("aUrl").value.trim().replace(/\/+$/,""),key:$("aKey").value.trim(),fmt:$("aFmt").value};
   try{
-    var an=c.fmt==="anthropic",r=await fetch(an?c.url.replace(/\/v1$/,"")+"/v1/models":c.url+"/models",{headers:an?{"x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"}:{"Authorization":"Bearer "+c.key}});
+    var an=c.fmt==="anthropic",gm=c.fmt==="gemini",r=await fetch(gm?(c.url||GBASE)+"/models?pageSize=100&key="+encodeURIComponent(c.key):an?c.url.replace(/\/v1$/,"")+"/v1/models":c.url+"/models",gm?{}:{headers:an?{"x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"}:{"Authorization":"Bearer "+c.key}});
     if(!r.ok)throw new Error("API "+r.status);
-    var j=await r.json(),ids=(j.data||[]).map(function(m){return m.id}).filter(Boolean);
+    var j=await r.json(),ids=gm?(j.models||[]).filter(function(m){return !m.supportedGenerationMethods||m.supportedGenerationMethods.indexOf("generateContent")>-1}).map(function(m){return String(m.name).replace(/^models\//,"")}):(j.data||[]).map(function(m){return m.id}).filter(Boolean);
     if(!ids.length)throw new Error("список пуст");
     $("aPre").innerHTML='<option value="">Выбрать…</option>'+ids.map(function(i){return "<option>"+esc(i)+"</option>"}).join("");
   }catch(e){toast("Список моделей: "+e.message,1)}
 };
+$("aFmt").onchange=function(){if(this.value==="gemini"&&!/generativelanguage/.test($("aUrl").value))$("aUrl").value=GBASE};
 $("aOk").onclick=function(){
-  S.api={fmt:$("aFmt").value,url:$("aUrl").value.trim(),key:$("aKey").value.trim(),model:$("aMod").value.trim()};
+  readProf();
   applyS();$("set").classList.add("hide");kick();
 };
 $("aClr").onclick=function(){kv("t","readwrite",function(s){return s.clear()});if(chapters.length)show(idx)};
