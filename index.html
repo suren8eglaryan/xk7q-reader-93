@@ -154,6 +154,12 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #pager .pg{padding:0 12px}
 #pager .pg:first-child{padding:0 24px}
 #sheet .cbody{margin-right:-12px;padding-right:12px}
+#sheet{height:60vh;height:60dvh;max-height:60vh;max-height:60dvh}
+#book.cardopen{padding-bottom:65vh;padding-bottom:65dvh}
+#sheet .chd{font-size:17px}
+#sheet .chd .ct{font-size:25px}
+#sheet .chd .mut{font-size:16px}
+#sheet .chd .sec{font-size:14px}
 </style>
 </head>
 <body>
@@ -492,7 +498,8 @@ function showErr(e){
 async function openFor(a){
   var my=++cardTok,ar=a.w.getBoundingClientRect();
   buildSheet(a);paintAct();
-  if(ar.bottom>innerHeight*0.5)window.scrollBy(0,ar.bottom-innerHeight*0.35);
+  var tp=$("top").getBoundingClientRect().bottom-10,sp=$("sheet").getBoundingClientRect().top,cy=(tp+sp)/2;
+  window.scrollBy({top:(ar.top+ar.height/2)-cy,behavior:"smooth"});
   var t0=Date.now(),pend=2;clearInterval(ldIv);
   ldIv=setInterval(function(){document.querySelectorAll("#sheet .ld").forEach(function(e){e.textContent="Анализирую… "+((Date.now()-t0)/1000).toFixed(1)+" с"})},100);
   function fin(){if(--pend<=0)clearInterval(ldIv)}
