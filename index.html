@@ -136,6 +136,14 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #sheet .idp .pt .on,#sheet .idp .pi .on{color:var(--idi)}
 #sheet .pt{font-weight:700;line-height:1.25}
 #sheet .pi{margin-top:2px;line-height:1.3}
+:root{--fk:#000}
+:root[data-theme="dark"]{--fk:#f4f2ea}
+:root[data-theme="beige"]{--fk:#16150f}
+#sheet .mb .mtx{color:var(--fk)}
+#sheet .mb.hot .mtx{color:var(--sel)}
+#sheet li,#sheet .ph{color:var(--fk)}
+#pager .pg:first-child{padding:0 14px}
+.sh #rd{position:absolute;left:-6px;top:-4px}
 </style>
 </head>
 <body>
@@ -334,7 +342,7 @@ function fixM(d,n){
   for(var i=0;i<n;i++)if(u[i]!==1)return null;
   var idi=part(d.idi,function(x,w){return{w:w,text:String(x.text||""),m:arr(x.m),lit:String(x.lit||"")}});
   var wi=[];(Array.isArray(d.w)?d.w:[]).forEach(function(x){if(x&&+x.i>=0&&+x.i<n)wi[+x.i]={ipa:String(x.ipa||"").replace(/[\[\]\/]/g,"").trim(),pos:String(x.pos||"")}});
-  return{b:b,idi:idi,w:wi,long:b.some(function(x){return x.w.length>5})};
+  return{b:b,idi:idi,w:wi,long:b.some(function(x){return x.w.length>5}),missing:b.some(function(x){return !x.ru.length})};
 }
 function fixMem(d,n){
   var out=[];(d&&Array.isArray(d.m)?d.m:[]).forEach(function(x){
@@ -384,8 +392,11 @@ async function getA(a){
   var o=a.el;o._A=o._A||{};
   if(o._A[a.k]){a.A=o._A[a.k];return a.A}
   var n=a.ws.length,user=ctxUser(a),key="m4|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw&&raw.v===2?raw.d:null;
+  a.keyA=key;
   if(!d){
-    for(var t=0;t<2&&!d;t++){var out=await callApi(user,SYS6);try{d=fixM(JSON.parse(out.match(/\{[\s\S]*\}/)[0]),n)}catch(e){d=null}}
+    var best=null;
+    for(var t=0;t<2;t++){var out=await callApi(user,SYS6),c=null;try{c=fixM(JSON.parse(out.match(/\{[\s\S]*\}/)[0]),n)}catch(e){c=null}if(c&&(!best||(best.missing&&!c.missing)))best=c;if(best&&!best.missing)break}
+    d=best;
     if(!d)throw new Error("Модель вернула неверный формат");
     if(d.long)d=await splitLong(d,user);
     kv("t","readwrite",function(st){return st.put({v:2,d:d},key)});
@@ -393,7 +404,7 @@ async function getA(a){
   o._A[a.k]=d;a.A=d;return d;
 }
 async function getM(a){
-  var n=a.ws.length,user=ctxUser(a),key="mm1|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw?fixMem(raw,n):null;
+  var n=a.ws.length,user=ctxUser(a),key="mm1|"+hash(user),raw=(a.keyM=key,await kv("t","readonly",function(st){return st.get(key)})),d=raw?fixMem(raw,n):null;
   if(d)return d;
   for(var t=0;t<2&&!d;t++){var out=await callApi(user,SYS8),pr=null;try{pr=JSON.parse(out.match(/\{[\s\S]*\}/)[0]);d=fixMem(pr,n)}catch(e){d=null}if(d)kv("t","readwrite",function(st){return st.put(pr,key)})}
   if(!d)throw new Error("Модель вернула неверный формат");
@@ -409,9 +420,9 @@ async function getB(word){
 function dots(){var sh=$("sheet");sh.querySelectorAll(".dots i").forEach(function(d,i){d.classList.toggle("on",i===pageIdx)})}
 function buildSheet(a){
   var sh=$("sheet");
-  sh.innerHTML='<div class="sh"><div class="dots"><i></i><i></i></div><button class="ib" id="cx">✕</button></div><div id="pager"><div class="pg"><div class="chd" id="h1"><div class="sec" style="margin:0 0 4px">ФРАЗА</div></div><div class="cbody" id="b1"><div class="mut ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd" id="h2"><div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div></div><div class="cbody" id="b2"><div class="sec" style="margin-top:6px">ПЕРЕВОДЫ</div><div id="tr2" class="mut ld">Анализирую… 0.0 с</div></div></div></div>';
+  sh.innerHTML='<div class="sh"><button class="ib" id="rd" title="Повторить анализ">↻</button><div class="dots"><i></i><i></i></div><button class="ib" id="cx">✕</button></div><div id="pager"><div class="pg"><div class="chd" id="h1"><div class="sec" style="margin:0 0 4px">ФРАЗА</div></div><div class="cbody" id="b1"><div class="mut ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd" id="h2"><div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div></div><div class="cbody" id="b2"><div class="sec" style="margin-top:6px">ПЕРЕВОДЫ</div><div id="tr2" class="mut ld">Анализирую… 0.0 с</div></div></div></div>';
   sh.classList.remove("hide");book.classList.add("cardopen");
-  $("cx").onclick=closeSheet;
+  $("cx").onclick=closeSheet;$("rd").onclick=redo;
   var pg=$("pager");
   pg.onscroll=function(){var i=Math.round(pg.scrollLeft/pg.clientWidth);if(i!==pageIdx){pageIdx=i;dots()}};
   pg.scrollLeft=pageIdx*pg.clientWidth;dots();
@@ -433,7 +444,7 @@ function fillMem(a,list){
 function fillCards(a){
   var A=a.A,src=a.idi?{w:a.idi.w,t:"Идиома",e:"Idiom",ru:a.idi.m}:a.blk;
   $("h1").classList.toggle("idp",!!a.idi);$("h1").innerHTML=pHead(a,"ФРАЗА",src.w,roleOf(src));
-  $("b1").innerHTML='<div class="sec" style="margin-top:6px">ПЕРЕВОД</div>'+(src.ru&&src.ru.length?lis(src.ru,4):'<div class="mut">Перевод недоступен</div>')+'<div class="dv"></div><div class="sec" style="margin-top:0">ЧЛЕНЫ ПРЕДЛОЖЕНИЯ</div><div id="mem" class="mut ld">Анализирую… 0.0 с</div>';
+  $("b1").innerHTML='<div class="sec" style="margin-top:6px">ПЕРЕВОД</div>'+(src.ru&&src.ru.length?lis(src.ru,4):'<div class="mut">Перевод недоступен</div><a class="mo rt">Повторить анализ</a>')+'<div class="dv"></div><div class="sec" style="margin-top:0">ЧЛЕНЫ ПРЕДЛОЖЕНИЯ</div><div id="mem" class="mut ld">Анализирую… 0.0 с</div>';
   var wi=A.w[a.id]||{};
   $("h2").innerHTML='<div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div><div class="mut">'+[wi.ipa?"["+wi.ipa+"]":"",cap(wi.pos)].filter(Boolean).map(esc).join(" · ")+"</div>";
   var idi=a.idi||A.idi[0];
@@ -478,6 +489,14 @@ async function openFor(a){
     fin();
   });
 }
+function redo(){
+  if(!act)return;
+  var a=act;
+  [a.keyA,a.keyM].forEach(function(k){if(k)kv("t","readwrite",function(st){return st.delete(k)})});
+  if(a.el._A)delete a.el._A[a.k];
+  a.A=null;a.blk=null;a.idi=null;
+  openFor(a);
+}
 function tapWord(w){
   var o=sentOf(w),id=o.el._ws.indexOf(w)-o.sn[0];
   if(act&&act.w===w&&!$("sheet").classList.contains("hide")){closeSheet();return}
@@ -487,7 +506,7 @@ function tapWord(w){
 $("sheet").addEventListener("click",function(e){
   var m=e.target.closest(".mo");
   if(!m)return;
-  if(m.classList.contains("rt")){if(act)openFor(act);return}
+  if(m.classList.contains("rt")){redo();return}
   if(m.previousElementSibling){m.previousElementSibling.querySelectorAll(".more").forEach(function(x){x.classList.remove("hide")});m.remove()}
 });
 function applyS(){
