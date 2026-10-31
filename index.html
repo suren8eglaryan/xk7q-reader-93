@@ -88,6 +88,21 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 .w.col{color:color-mix(in srgb,var(--sel) 65%,var(--fg))}
 #set input[type=color]{flex:none;width:52px;height:38px;padding:2px}
 #set select{flex:1}
+.w.mg{color:var(--sel)}
+.w.du{text-decoration-line:underline;text-decoration-style:dashed;text-decoration-color:var(--sel);text-decoration-thickness:2px;text-underline-offset:5px}
+.w.su{text-decoration-line:underline;text-decoration-style:solid;text-decoration-color:var(--sel);text-decoration-thickness:2px;text-underline-offset:5px}
+#sheet{padding-top:10px}
+.sh{display:flex;justify-content:center;align-items:center;height:30px;position:relative;flex:none;margin-bottom:6px}
+.sh #cx{position:absolute;top:-4px;right:-6px}
+.dots{display:flex;gap:7px}.dots i{width:7px;height:7px;border-radius:50%;background:#d0d0d0}.dots i.on{background:#777}
+#pager{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -2px}
+#pager::-webkit-scrollbar{display:none}
+#pager .pg{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;min-height:0;padding:0 2px;box-sizing:border-box}
+.mb{margin:10px 0;padding-left:10px;border-left:2px dashed color-mix(in srgb,var(--fg) 15%,transparent)}
+.mb .mtx{font-size:19px}
+.mb.hot .mtx{color:var(--sel)}
+.mrr{font-size:18px}
+#sheet .chd .ct{margin-right:0}
 </style>
 </head>
 <body>
@@ -98,7 +113,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <button id="aa">Aa</button>
   <button id="prev">‹</button><button id="next">›</button>
 </div>
-<div id="empty">Откройте EPUB-файл.<br>Выделяйте слова тапом. Повторный тап по выделенному слову открывает карточку с разбором в контексте предложения.<br>Сначала введите ключ API: Aa → Перевод.</div>
+<div id="empty">Откройте EPUB-файл.<br>Коснитесь слова: в тексте подсветится член предложения, внизу откроются карточки «Члены предложения» и «Части речи» (переключаются свайпом).<br>Сначала введите ключ API: Aa → Перевод.</div>
 <div id="sp" class="hide"><div class="top"><input id="sq" type="search" placeholder="Поиск по книге"><button id="sgo">Найти</button><button id="sx">✕</button></div><div id="scount"></div><div id="sres"></div></div>
 <div id="set" class="hide">
   <div><span>Размер</span><button data-a="f-">A−</button><button data-a="f+">A+</button></div>
@@ -127,14 +142,21 @@ if(!Array.isArray(S.profs)||!S.profs.length){S.profs=[Object.assign({n:"Осно
 if(!(S.pi>=0&&S.pi<S.profs.length))S.pi=0;
 S.api=S.profs[S.pi];
 var SEL="p,h1,h2,h3,h4,h5,h6,li";
-var SYS3=`You are an English-teaching assistant in a reading app for a Russian-speaking learner. Input: one to three sentences, each as numbered words, its text, and the number of the word the learner tapped. Decide the part of speech and meaning of the tapped word from the WHOLE sentence (e.g. in "a very different kind of god", kind is a noun meaning "вид, род", not an adjective). Reply with ONLY JSON, every string as short as possible:
-{"ipa":"American IPA in square brackets",
-"pos":"part of speech of the tapped word in THIS sentence, in Russian, normal case (only the first letter uppercase, e.g. Глагол, Существительное)",
-"tr":[{"n":"Part of speech in Russian, same normal case","t":["translations, most common first, up to 10"]}],
-"col":{"w":[word numbers of the collocation / phrasal verb / phrase the tapped word belongs to, including the tapped word],"text":"the phrase as written","type":"фразовый глагол | коллокация | словосочетание | устойчивое выражение","m":["translations or meanings of the whole phrase, first the one that fits this sentence, max 4"]},
-"idioms":[{"w":[word numbers],"text":"idiom as written","m":"meaning in Russian"}]}
-Rules: "tr" lists EVERY part of speech the word can be (max 5 groups); the group for the part of speech used in this sentence comes first and its first translation is the one that fits the sentence. Set "col" to null if the tapped word is independent and does not belong to any collocation, phrasal verb or phrase in this sentence. "idioms" lists idioms found anywhere in the sentence (empty array if none). Word numbers refer to the numbered words of the sentence.`;
-var SYS2="You are a bilingual English-Russian dictionary. Reply with ONLY JSON: {\"ipa\":\"American IPA in square brackets\",\"pos\":[{\"n\":\"part of speech in Russian, capitalized\",\"t\":[\"Russian translations, most common first, max 6\"]}],\"rel\":[\"up to 5 related English words\"]}. Include every common part of speech of the word.";
+var SYS6=`You are a grammar engine in a reading app for a Russian-speaking learner of English. Input: ONE sentence as numbered words, its text, and the paragraph for context. Parse the sentence into its members (члены предложения) and give each word's part of speech. Reply with ONLY JSON:
+{"tr":"complete Russian translation, literal but grammatical (for your own reasoning, not shown)",
+"w":[{"i":0,"ipa":"American IPA without brackets","pos":"ONE Russian word: существительное, глагол, прилагательное, наречие, местоимение, предлог, союз, артикль, числительное, частица, междометие"}],
+"m":[{"w":[word numbers],"t":"role in Russian, e.g. Подлежащее","e":"role in English, e.g. Subject","ru":"literal grammatical Russian translation of the member","c":[child members]}],
+"phr":[{"w":[word numbers],"text":"phrase as written","type":"фразовый глагол | коллокация | словосочетание | идиома","m":["meanings, the one fitting this sentence first, max 4"]}]}
+Rules:
+- "w" has an entry for every word number.
+- Top-level members split the whole sentence into its main members in order (Подлежащее, Сказуемое or Сказуемая группа, Прямое дополнение, Косвенное дополнение, Обстоятельство (места, времени, образа действия, меры и степени, причины, цели), Определение, Придаточное предложение with its type, etc.). Together they contain every word number exactly once.
+- "c" splits a member into its inner members; they must contain exactly the words of the parent, each once. Use roles such as Глагол-связка (Linking verb), Именная часть сказуемого (Subject complement), Инфинитивное дополнение (Infinitive complement), Подчинительный союз (Subordinating conjunction), Определение (Participle phrase). Leave "c" empty for a member that is a single word or a tight unit that must not be split: article + noun (a book), infinitive or phrasal verb with its particles (to pick up), auxiliary + verb (was smoking). Depth at most 3.
+- Translations in "ru" are literal and faithful to the author's wording but correct Russian, so the member translations read in order as the full sentence.
+- "phr" lists phrasal verbs, collocations, fixed phrases and idioms present in the sentence (max 6, empty array if none); words need not be adjacent.
+- Keep every string short.
+Example for "I was lucky enough to pick up a book." (I0 was1 lucky2 enough3 to4 pick5 up6 a7 book8):
+{"tr":"Мне посчастливилось раздобыть книгу.","w":[{"i":0,"ipa":"aɪ","pos":"местоимение"},{"i":1,"ipa":"wʌz","pos":"глагол"},{"i":2,"ipa":"ˈlʌki","pos":"прилагательное"},{"i":3,"ipa":"ɪˈnʌf","pos":"наречие"},{"i":4,"ipa":"tuː","pos":"частица"},{"i":5,"ipa":"pɪk","pos":"глагол"},{"i":6,"ipa":"ʌp","pos":"наречие"},{"i":7,"ipa":"ə","pos":"артикль"},{"i":8,"ipa":"bʊk","pos":"существительное"}],"m":[{"w":[0],"t":"Подлежащее","e":"Subject","ru":"я","c":[]},{"w":[1,2,3,4,5,6],"t":"Сказуемая группа","e":"Predicate","ru":"был достаточно удачлив, чтобы раздобыть","c":[{"w":[1],"t":"Глагол-связка","e":"Linking verb","ru":"был","c":[]},{"w":[2],"t":"Именная часть сказуемого","e":"Subject complement","ru":"удачлив","c":[]},{"w":[3],"t":"Обстоятельство меры и степени","e":"Adverb of degree","ru":"достаточно","c":[]},{"w":[4,5,6],"t":"Инфинитивное дополнение","e":"Infinitive complement","ru":"чтобы раздобыть","c":[]}]},{"w":[7,8],"t":"Прямое дополнение","e":"Direct object","ru":"книгу","c":[]}],"phr":[{"w":[5,6],"text":"pick up","type":"фразовый глагол","m":["раздобыть","подобрать","забрать"]}]}`;
+var SYS7=`You are a bilingual English-Russian dictionary. Reply with ONLY JSON: {"pos":[{"n":"Part of speech in Russian, only the first letter uppercase","t":["Russian translations, most common first"]}]}. List EVERY part of speech the word can be (max 5). For each part of speech give 5 to 10 distinct translations (fewer only if the word really has fewer), covering different senses.`;
 
 function resolve(base,href){var o=[];(base+href).split("/").forEach(function(p){if(p==="..")o.pop();else if(p&&p!==".")o.push(p)});return decodeURIComponent(o.join("/"))}
 function wrapWords(root){
@@ -217,19 +239,16 @@ function show(i){
   book.innerHTML=chapters[i];wrapWords(book);clearSel();window.scrollTo(0,0);book.querySelectorAll(SEL).forEach(function(e,k){e._k=k});
 }
 var selW=[];
-function phrase(ws){var o="";ws.forEach(function(w,i){if(i)o+=(+w.getAttribute("data-i")===+ws[i-1].getAttribute("data-i")+1)?" ":" … ";o+=w.textContent});return o}
-function paint(){book.querySelectorAll(".w.sel").forEach(function(e){e.classList.remove("sel")});selW.forEach(function(w){w.classList.add("sel")});upd()}
-function clearSel(){selW=[];paint()}
+function clearSel(){closeSheet()}
 function upd(){
-  var p=phrase(selW).replace(/ … /g," ");
+  var p=selW.map(function(w){return w.textContent}).join(" ");
   $("rv").href="https://context.reverso.net/translation/english-russian/"+encodeURIComponent(p).replace(/%20/g,"+");
   $("gg").href="googletranslate://?sl=en&tl=ru&text="+encodeURIComponent(p);
 }
 book.addEventListener("click",function(e){
   var w=e.target.closest(".w");
-  if(!w){clearSel();closeS();return}
-  if(selW.indexOf(w)>-1){openCard(ctxBlocks([w]),w.textContent,w);return}
-  selW.push(w);selW.sort(function(a,b){return a.compareDocumentPosition(b)&4?-1:1});paint();
+  if(!w){closeSheet();return}
+  tapWord(w);
 });
 /* fab */
 function fab(o){$("fb").classList.toggle("hide",o);$("rv").classList.toggle("hide",!o);$("gg").classList.toggle("hide",!o)}
@@ -237,81 +256,151 @@ $("fb").onclick=function(){fab(true)};
 document.addEventListener("click",function(e){if(!e.target.closest("#fab"))fab(false)});
 ["rv","gg"].forEach(function(i){$(i).addEventListener("click",function(e){if(!selW.length){e.preventDefault();toast("Сначала выделите слово",1)}else setTimeout(function(){fab(false)},300)})});
 /* sheets */
-function esc(t){return String(t).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
-function openS(id){if(id==="ed")$("dim").classList.remove("hide");else book.classList.add("cardopen");$(id).classList.remove("hide")}
-function closeS(){["dim","sheet"].forEach(function(i){$(i).classList.add("hide")});book.querySelectorAll(".w.col").forEach(function(e){e.classList.remove("col")});cardB=null;book.classList.remove("cardopen")}
-$("dim").onclick=closeS;
-function ctxBlocks(ws){
-  var seen={},bl=[];
-  ws.forEach(function(w){
-    var el=w.closest(SEL)||book;if(!el._ws)el._ws=[].slice.call(el.querySelectorAll(".w"));
-    var ss=sents(el),i=el._ws.indexOf(w),k=0;while(k<ss.length-1&&i>ss[k][1])k++;
-    var id=el._k+":"+k,b=seen[id];
-    if(!b){
-      var sn=ss[k],rg=document.createRange();rg.setStartBefore(el._ws[sn[0]]);
-      if(el._ws[sn[1]+1])rg.setEndBefore(el._ws[sn[1]+1]);else rg.setEnd(el,el.childNodes.length);
-      b=seen[id]={o:sn[0],ws:el._ws,sel:[],text:rg.toString().replace(/\s+/g," ").trim(),words:el._ws.slice(sn[0],sn[1]+1).map(function(x){return x.textContent})};
-      bl.push(b);
-    }
-    b.sel.push(i-b.o);
-  });
-  return bl.slice(0,3);
-}
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function hash(t){var h=5381;for(var i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return (h>>>0).toString(36)+t.length}
-var cardTok=0,cardB=null;
+function cap(t){t=String(t||"").toLowerCase();return t.charAt(0).toUpperCase()+t.slice(1)}
+var act=null,cardTok=0,pageIdx=0,ldIv=null;
+function sentOf(w){
+  var el=w.closest(SEL)||book;if(!el._ws)el._ws=[].slice.call(el.querySelectorAll(".w"));
+  var ss=sents(el),i=el._ws.indexOf(w),k=0;while(k<ss.length-1&&i>ss[k][1])k++;
+  return{el:el,k:k,sn:ss[k]};
+}
+function pathOf(ms,id){var p=[];(function f(list){for(var k=0;k<list.length;k++){if(list[k].w.indexOf(id)>-1){p.push(list[k]);f(list[k].c||[]);return}}})(ms);return p}
+function memText(a,m){return m.w.map(function(i){return a.ws[i].textContent}).join(" ")}
+function roleOf(m){return [m.t,m.e].filter(Boolean).join(" · ")}
+function paintAct(){
+  book.querySelectorAll(".w.mg,.w.du,.w.su,.w.col").forEach(function(e){e.classList.remove("mg","du","su","col")});
+  if(!act)return;
+  var ws=act.ws,id=act.id;
+  if(act.path&&act.path.length){
+    var top=act.path[0],sm=null;
+    top.w.forEach(function(i){ws[i].classList.add("mg")});
+    for(var j=act.path.length-1;j>=0;j--)if(act.path[j].w.length>1){sm=act.path[j];break}
+    if(sm&&sm!==top)sm.w.forEach(function(i){if(i!==id)ws[i].classList.add("du")});
+  }
+  ws[id].classList.add("mg","su");
+}
+function closeSheet(){
+  cardTok++;act=null;selW=[];clearInterval(ldIv);
+  $("sheet").classList.add("hide");book.classList.remove("cardopen");paintAct();upd();
+}
 function showCol(ids){
   book.querySelectorAll(".w.col").forEach(function(e){e.classList.remove("col")});
-  if(!cardB||!cardB.ws||!ids)return;
-  ids.forEach(function(i){var w=cardB.ws[cardB.o+i];if(w)w.classList.add("col")});
+  if(act&&ids)ids.forEach(function(i){var w=act.ws[i];if(w)w.classList.add("col")});
 }
 function lis(arr,n){
   var h="<ul>";(arr||[]).forEach(function(x,j){h+="<li"+(j>=n?' class="more hide"':"")+">"+esc(x)+"</li>"});
   h+="</ul>";if((arr||[]).length>n)h+='<a class="mo">Еще '+(arr.length-n)+"</a>";return h;
 }
-function cap(t){t=String(t||"").toLowerCase();return t.charAt(0).toUpperCase()+t.slice(1)}
-async function openCard(bl,title,anchor){
-  var my=++cardTok,sh=$("sheet"),d;cardB=bl[0].ws?bl[0]:null;
-  var user=bl.map(function(b,j){return "Sentence "+(j+1)+": "+b.text+"\nWords: "+b.words.map(function(w,i){return i+":"+w}).join(" ")+"\nTapped word: "+b.sel.join(",")}).join("\n\n");
-  var key="c4|"+hash(user);
-  sh.innerHTML='<button class="ib" id="cx">✕</button><div class="chd"><div class="ct">'+esc(title)+'</div><div class="mut" id="chm"></div></div><div id="cb" class="cbody mut">Анализирую… 0.0 с</div>';
-  openS("sheet");$("cx").onclick=closeS;sh.scrollTop=0;
-  if(anchor){var ar=anchor.getBoundingClientRect();if(ar.bottom>innerHeight*0.5)window.scrollBy(0,ar.bottom-innerHeight*0.35)}
-  d=await kv("t","readonly",function(st){return st.get(key)});
-  if(my!==cardTok)return;
+function fixM(d,n){
+  if(!d||!Array.isArray(d.m)||!d.m.length)return null;
+  function nm(m){
+    if(!m||!Array.isArray(m.w))return null;
+    var ids=m.w.map(Number).filter(function(i){return i>=0&&i<n}).sort(function(a,b){return a-b});
+    if(!ids.length)return null;
+    var o={w:ids,t:String(m.t||""),e:String(m.e||""),ru:String(m.ru||""),c:[]};
+    if(Array.isArray(m.c)&&m.c.length){
+      var kids=m.c.map(nm).filter(Boolean),u={},cnt=0;
+      kids.forEach(function(k){k.w.forEach(function(i){u[i]=(u[i]||0)+1;cnt++})});
+      if(kids.length&&cnt===ids.length&&ids.every(function(i){return u[i]===1}))o.c=kids;
+    }
+    return o;
+  }
+  var ms=d.m.map(nm).filter(Boolean),u={};
+  ms.forEach(function(m){m.w.forEach(function(i){u[i]=(u[i]||0)+1})});
+  for(var i=0;i<n;i++)if(u[i]!==1)return null;
+  ms.sort(function(a,b){return a.w[0]-b.w[0]});
+  var wi=[];(Array.isArray(d.w)?d.w:[]).forEach(function(x){if(x&&+x.i>=0&&+x.i<n)wi[+x.i]={ipa:String(x.ipa||"").replace(/[\[\]\/]/g,"").trim(),pos:String(x.pos||"")}});
+  var phr=(Array.isArray(d.phr)?d.phr:[]).filter(function(p){return p&&Array.isArray(p.w)}).map(function(p){return{w:p.w.map(Number),text:String(p.text||""),type:String(p.type||""),m:Array.isArray(p.m)?p.m.map(String):[]}});
+  return{m:ms,w:wi,phr:phr};
+}
+async function getA(a){
+  if(a.A)return a.A;
+  var o=a.el;o._A=o._A||{};
+  if(o._A[a.k]){a.A=o._A[a.k];return a.A}
+  var ws=o._ws,sn=a.sn,rg=document.createRange();rg.setStartBefore(ws[sn[0]]);
+  if(ws[sn[1]+1])rg.setEndBefore(ws[sn[1]+1]);else rg.setEnd(o,o.childNodes.length);
+  var n=a.ws.length,user="Words:\n"+a.ws.map(function(w,i){return i+":"+w.textContent}).join(" ")+"\n\nSentence:\n"+rg.toString().replace(/\s+/g," ").trim()+"\n\nParagraph (context only):\n"+o.textContent.replace(/\s+/g," ").trim().slice(0,1200);
+  var key="m1|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw?fixM(raw,n):null;
   if(!d){
-    var t0=Date.now(),iv=setInterval(function(){var c=$("cb");if(c)c.textContent="Анализирую… "+((Date.now()-t0)/1000).toFixed(1)+" с"},100);
-    try{
-      var o=await callApi(user,SYS3);d=JSON.parse(o.match(/\{[\s\S]*\}/)[0]);
-      if(!Array.isArray(d.tr))throw new Error("неверный формат ответа");
-      kv("t","readwrite",function(st){return st.put(d,key)});
-    }catch(e){
-      clearInterval(iv);if(my!==cardTok)return;
-      $("cb").innerHTML="<div>"+esc("Не удалось: "+e.message)+'</div><a class="mo" id="rt">Повторить</a>';
-      $("rt").onclick=function(){openCard(bl,title,anchor)};return;
-    }
-    clearInterval(iv);if(my!==cardTok)return;
+    for(var t=0;t<2&&!d;t++){var out=await callApi(user,SYS6),pr=null;try{pr=JSON.parse(out.match(/\{[\s\S]*\}/)[0]);d=fixM(pr,n)}catch(e){d=null}if(d)kv("t","readwrite",function(st){return st.put(pr,key)})}
+    if(!d)throw new Error("Модель вернула неверный формат");
   }
-  var h="";
-  if(bl[0].ws){
-    h+='<div class="sec" style="margin-top:6px">В ПРЕДЛОЖЕНИИ</div>';
-    if(d.col&&d.col.text){
-      h+='<div class="cl" data-i="'+esc(JSON.stringify(d.col.w||[]))+'"><b>'+esc(d.col.text)+'</b><span class="tag">'+esc(d.col.type||"")+"</span></div>"+lis(d.col.m,4);
-    }else h+='<div class="alone">Самостоятельное слово: в этом предложении оно не входит ни в какое сочетание.</div>';
-    if(Array.isArray(d.idioms)&&d.idioms.length){
-      h+='<div class="sec">ИДИОМЫ</div>';
-      d.idioms.forEach(function(x){h+='<div class="cl" data-i="'+esc(JSON.stringify(x.w||[]))+'"><b>'+esc(x.text||"")+'</b></div><div class="mut" style="margin:2px 0 8px">'+esc(x.m||"")+"</div>"});
-    }
-  }
-  h+='<div class="sec">ПЕРЕВОДЫ</div>';
-  d.tr.slice(0,5).forEach(function(g){h+='<div class="ph">'+esc(cap(g.n))+"</div>"+lis(g.t,3)});
-  $("chm").textContent=[d.ipa,cap(d.pos)].filter(Boolean).join(" · ");
-  var cb=$("cb");if(cb)cb.outerHTML='<div id="cb" class="cbody">'+h+"</div>";
-  if(d.col&&d.col.w)showCol(d.col.w);
+  o._A[a.k]=d;a.A=d;return d;
+}
+async function getB(word){
+  var k="d2|"+word.toLowerCase(),d=await kv("t","readonly",function(st){return st.get(k)});
+  if(d&&Array.isArray(d.pos))return d;
+  var o=await callApi("Word: "+word,SYS7);d=JSON.parse(o.match(/\{[\s\S]*\}/)[0]);
+  if(!Array.isArray(d.pos))throw new Error("неверный формат ответа");
+  kv("t","readwrite",function(st){return st.put(d,k)});return d;
+}
+function buildSheet(a){
+  var sh=$("sheet");
+  sh.innerHTML='<div class="sh"><div class="dots"><i></i><i></i></div><button class="ib" id="cx">✕</button></div><div id="pager"><div class="pg"><div class="chd" id="h1"><div class="sec" style="margin:0 0 4px">ЧЛЕНЫ ПРЕДЛОЖЕНИЯ</div></div><div class="cbody" id="b1"><div class="mut ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd" id="h2"><div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div></div><div class="cbody" id="b2"><div id="ph2"></div><div class="sec">ПЕРЕВОДЫ</div><div id="tr2" class="mut ld">Анализирую… 0.0 с</div></div></div></div>';
+  sh.classList.remove("hide");book.classList.add("cardopen");
+  $("cx").onclick=closeSheet;
+  var pg=$("pager");
+  function dots(){sh.querySelectorAll(".dots i").forEach(function(d,i){d.classList.toggle("on",i===pageIdx)})}
+  pg.onscroll=function(){var i=Math.round(pg.scrollLeft/pg.clientWidth);if(i!==pageIdx){pageIdx=i;dots()}};
+  pg.scrollLeft=pageIdx*pg.clientWidth;dots();
+}
+function memHtml(a,m,d,flat){
+  var h='<div class="mb'+(m===a.path[a.path.length-1]?" hot":"")+'" style="margin-left:'+d*16+'px"><div class="mtx">'+esc(memText(a,m))+'</div><div class="mut">'+esc(roleOf(m))+"</div>"+(m.ru?'<div class="mrr">'+esc(m.ru)+"</div>":"")+"</div>";
+  if(!flat)(m.c||[]).forEach(function(c){h+=memHtml(a,c,d+1)});
+  return h;
+}
+function fillCards(a){
+  var top=a.path[0],h1='<div class="sec" style="margin:0 0 4px">ЧЛЕНЫ ПРЕДЛОЖЕНИЯ</div><div class="ct">'+esc(memText(a,top))+'</div><div class="mut">'+esc(roleOf(top))+"</div>"+(top.ru?'<div class="mrr" style="margin-top:3px">'+esc(top.ru)+"</div>":""),b="";
+  if(top.c&&top.c.length){b+='<div class="sec" style="margin-top:6px">СОСТАВ</div>';top.c.forEach(function(m){b+=memHtml(a,m,0)})}
+  else b+='<div class="alone" style="margin-top:8px">Этот член предложения не делится на части.</div>';
+  b+='<div class="sec">ВСЕ ЧЛЕНЫ ПРЕДЛОЖЕНИЯ</div>';
+  a.A.m.forEach(function(m){var o=memHtml(a,m,0,true);b+=m===top?o.replace('class="mb','class="mb hot'):o});
+  $("h1").innerHTML=h1;$("b1").innerHTML=b;
+  var wi=a.A.w[a.id]||{},word=a.w.textContent;
+  $("h2").innerHTML='<div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(word)+'</div><div class="mut">'+[wi.ipa?"["+wi.ipa+"]":"",cap(wi.pos)].filter(Boolean).map(esc).join(" · ")+"</div>";
+  var ph=(a.A.phr||[]).filter(function(p){return p.w.indexOf(a.id)>-1}),idi=ph.filter(function(p){return /идиом/i.test(p.type)}),oth=ph.filter(function(p){return !/идиом/i.test(p.type)});
+  function it(p){return '<div class="cl" data-i="'+esc(JSON.stringify(p.w))+'"><b>'+esc(p.text)+'</b><span class="tag">'+esc(p.type)+"</span></div>"+lis(p.m,4)}
+  var h='<div class="sec" style="margin-top:6px">В ПРЕДЛОЖЕНИИ</div>';
+  if(oth.length)oth.forEach(function(p){h+=it(p)});else h+='<div class="alone">Самостоятельное слово: в этом предложении оно не входит ни в какое сочетание.</div>';
+  if(idi.length){h+='<div class="sec">ИДИОМЫ</div>';idi.forEach(function(p){h+=it(p)})}
+  $("ph2").innerHTML=h;
+}
+function trHtml(a,d){
+  var ps=((a.A&&a.A.w[a.id]&&a.A.w[a.id].pos)||"").toLowerCase().slice(0,4),gs=d.pos.slice(0,5);
+  var first=gs.filter(function(g){return ps&&String(g.n||"").toLowerCase().slice(0,4)===ps}),rest=gs.filter(function(g){return first.indexOf(g)<0}),h="";
+  first.concat(rest).forEach(function(g){h+='<div class="ph">'+esc(cap(g.n))+"</div>"+lis(g.t,4)});
+  return h;
+}
+function showErr(e){
+  clearInterval(ldIv);
+  ["b1","tr2"].forEach(function(id){var b=$(id);if(b){b.classList.remove("ld");b.innerHTML="<div>"+esc("Не удалось: "+e.message)+'</div><a class="mo rt">Повторить</a>'}});
+}
+async function openFor(a){
+  var my=++cardTok,ar=a.w.getBoundingClientRect();
+  buildSheet(a);paintAct();
+  if(ar.bottom>innerHeight*0.5)window.scrollBy(0,ar.bottom-innerHeight*0.35);
+  var t0=Date.now();clearInterval(ldIv);
+  ldIv=setInterval(function(){document.querySelectorAll("#sheet .ld").forEach(function(e){e.textContent="Анализирую… "+((Date.now()-t0)/1000).toFixed(1)+" с"})},100);
+  var pB=getB(a.w.textContent).then(function(d){return{d:d}},function(e){return{e:e}});
+  try{await getA(a)}catch(e){if(my!==cardTok)return;showErr(e);return}
+  if(my!==cardTok)return;
+  a.path=pathOf(a.A.m,a.id);paintAct();fillCards(a);
+  var r=await pB;if(my!==cardTok)return;
+  clearInterval(ldIv);
+  var tr=$("tr2");tr.classList.remove("ld");
+  if(r.e)tr.innerHTML="<div>"+esc("Не удалось: "+r.e.message)+'</div><a class="mo rt">Повторить</a>';else tr.innerHTML=trHtml(a,r.d);
+}
+function tapWord(w){
+  var o=sentOf(w),id=o.el._ws.indexOf(w)-o.sn[0];
+  if(act&&act.w===w&&!$("sheet").classList.contains("hide")){closeSheet();return}
+  act={w:w,el:o.el,k:o.k,sn:o.sn,ws:o.el._ws.slice(o.sn[0],o.sn[1]+1),id:id,A:null,path:null};
+  selW=[w];upd();openFor(act);
 }
 $("sheet").addEventListener("click",function(e){
-  var m=e.target.closest(".mo"),l=e.target.closest(".rl"),c=e.target.closest(".cl");
+  var m=e.target.closest(".mo"),c=e.target.closest(".cl");
+  if(m&&m.classList.contains("rt")){if(act)openFor(act);return}
   if(m&&m.previousElementSibling){m.previousElementSibling.querySelectorAll(".more").forEach(function(x){x.classList.remove("hide")});m.remove()}
-  if(l){cardB=null;showCol(null);openCard([{words:[l.textContent],text:l.textContent,sel:[0]}],l.textContent)}
   if(c){try{showCol(JSON.parse(c.getAttribute("data-i")))}catch(x){}}
 });
 function applyS(){
