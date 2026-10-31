@@ -116,6 +116,26 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #sheet .wd{display:inline-flex;flex-direction:column;align-items:center;text-align:center;line-height:1.2}
 #sheet .wd>span{font-size:24px}
 #sheet .wd small{font-size:13px;color:#999;margin-top:2px}
+#sheet{font-size:calc(17px*var(--cf,1))}
+#sheet .sec{font-size:.82em}
+#sheet .ct{font-size:1.47em}
+#sheet .mut{font-size:.94em}
+#sheet .ph{font-size:1.18em}
+#sheet li{font-size:1.12em}
+#sheet .mo{font-size:1.12em}
+#sheet .alone{font-size:.94em}
+#sheet .tag{font-size:.82em}
+#sheet .mb .mtx{font-size:1.12em;margin-top:2px;color:var(--fg)}
+#sheet .mb .mrr{font-size:1.06em;margin-top:.55em;color:color-mix(in srgb,var(--fg) 50%,var(--bg))}
+#sheet .mb .mrr i{color:inherit}
+#sheet .mrole{font-size:.88em}
+#sheet .mrole::before{content:"\00B7";margin-right:.45em}
+#sheet .mb.hot .mtx{color:var(--sel)}
+#sheet .mtx,#sheet .mrr,#sheet li,#sheet .alone{text-align:justify;text-justify:inter-word;hyphens:auto;-webkit-hyphens:auto}
+#sheet .pt .on,#sheet .pi .on{color:var(--sel)}
+#sheet .idp .pt .on,#sheet .idp .pi .on{color:var(--idi)}
+#sheet .pt{font-weight:700;line-height:1.25}
+#sheet .pi{margin-top:2px;line-height:1.3}
 </style>
 </head>
 <body>
@@ -130,6 +150,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 <div id="sp" class="hide"><div class="top"><input id="sq" type="search" placeholder="Поиск по книге"><button id="sgo">Найти</button><button id="sx">✕</button></div><div id="scount"></div><div id="sres"></div></div>
 <div id="set" class="hide">
   <div><span>Размер</span><button data-a="f-">A−</button><button data-a="f+">A+</button></div>
+  <div><span>Карточки</span><button data-a="c-">A−</button><button data-a="c+">A+</button></div>
   <div><span>Поля</span><button data-a="p-">Меньше</button><button data-a="p+">Больше</button></div>
   <div><span>Выделение</span><input type="color" id="cSel"><button data-a="cs0">Сброс</button></div>
   <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Бежевый</button><button data-a="t:dark">Тёмный</button></div>
@@ -149,7 +170,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 <script>
 var chapters=[],idx=0,bookId="book",gen=0,blocks=[],queue=[],active=0,paused=false,io=null;
 var $=function(i){return document.getElementById(i)},book=$("book");
-var S={fs:26,pad:36,theme:"white",ru:true,cSel:null,cRu:null,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
+var S={fs:26,pad:36,theme:"white",ru:true,cSel:null,cRu:null,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
 if(!Array.isArray(S.profs)||!S.profs.length){S.profs=[Object.assign({n:"Основной"},S.api),{n:"Gemini",fmt:"gemini",url:"https://generativelanguage.googleapis.com/v1beta",key:"",model:"gemini-2.5-flash"}];S.pi=0}
 if(!(S.pi>=0&&S.pi<S.profs.length))S.pi=0;
@@ -158,20 +179,22 @@ var SEL="p,h1,h2,h3,h4,h5,h6,li";
 var SYS6=`You are a grammar engine in a reading app for a Russian-speaking learner of English. Input: ONE sentence as numbered words, its text, and the paragraph for context. Reply with ONLY JSON:
 {"tr":"complete Russian translation, literal but grammatical (for your own reasoning, not shown)",
 "w":[{"i":0,"ipa":"American IPA without brackets","pos":"ONE Russian word: существительное, глагол, прилагательное, наречие, местоимение, предлог, союз, артикль, числительное, частица, междометие"}],
-"b":[{"w":[word numbers],"t":"grammatical name of the block in Russian, e.g. Именная группа","e":"same in English, e.g. Noun phrase","ru":["translation of the block that fits this sentence","1-3 alternative translations"]}],
-"m":[{"w":[word numbers],"t":"member of the sentence in Russian, e.g. Подлежащее","e":"same in English, e.g. Subject","ru":"literal grammatical Russian translation of the member"}],
+"b":[{"q":"the question this block answers, in Russian: Кто? Какой? Что делал? Чей? Где? Когда? Что?","w":[word numbers],"t":"grammatical name of the block in Russian, e.g. Именная группа","e":"same in English, e.g. Noun phrase","ru":["translation of the block that fits this sentence","1-3 alternative translations"]}],
 "idi":[{"w":[word numbers],"text":"idiom as written","m":["meanings in Russian, best first, max 4"],"lit":"literal word-for-word translation"}]}
-Rules:
-- "w" has an entry for every word number.
-- "b" splits the WHOLE sentence into SHORT grammatical blocks, in order, each word in exactly one block. Think of questions about the sentence: each block answers one (Кто? Какой? Который что делал? Что делал? Где? Когда? Куда? Почему?). Typical blocks of 2-4 words: noun phrase (article/determiner + adjectives + noun stay together), relative-clause verb (who lived), prepositional phrase (preposition + its noun phrase), verb group (auxiliary / "to" / particle stay with the verb). An idiom must form a block of its own, with t "Идиома".
-- HARD LIMIT: a block has at most 5 words (usually 2-4). Never put a whole clause or a long phrase into one block: split it by its inner questions. A noun phrase is only determiner + adjectives + noun; an "of ..." phrase, an infinitive phrase (to be apportioned), a participle phrase and a relative clause are separate blocks.
-- Splitting example (blocks only): "The next of Kronos's children to be apportioned her divine duties was Demeter." -> [The next] [of Kronos's children] [to be apportioned] [her divine duties] [was Demeter] = следующий | из детей Кроноса | которому предстояло получить | свои божественные обязанности | была Деметра.
-- Block translations are literal and faithful to the author's wording, correct Russian.
-- "m" lists the full members of the sentence (Подлежащее, Сказуемое, Прямое дополнение, Косвенное дополнение, Обстоятельство with its kind, Определение, Придаточное предложение with its type...), in order, each word in exactly one member, no nesting; member translations read in order as the whole sentence.
-- "idi" lists idioms in the sentence (empty array if none). Do not mark ordinary phrasal verbs or collocations as idioms.
-- Keep every string short.
-Example for "The young boy who lived in a small village wanted to leave." (The0 young1 boy2 who3 lived4 in5 a6 small7 village8 wanted9 to10 leave11):
-{"tr":"Молодой мальчик, который жил в небольшой деревне, хотел уехать.","w":[{"i":0,"ipa":"ðə","pos":"артикль"},{"i":1,"ipa":"jʌŋ","pos":"прилагательное"},{"i":2,"ipa":"bɔɪ","pos":"существительное"},{"i":3,"ipa":"huː","pos":"местоимение"},{"i":4,"ipa":"lɪvd","pos":"глагол"},{"i":5,"ipa":"ɪn","pos":"предлог"},{"i":6,"ipa":"ə","pos":"артикль"},{"i":7,"ipa":"smɔːl","pos":"прилагательное"},{"i":8,"ipa":"ˈvɪlɪdʒ","pos":"существительное"},{"i":9,"ipa":"ˈwɒntɪd","pos":"глагол"},{"i":10,"ipa":"tuː","pos":"частица"},{"i":11,"ipa":"liːv","pos":"глагол"}],"b":[{"w":[0,1,2],"t":"Именная группа","e":"Noun phrase","ru":["молодой мальчик","юный мальчик"]},{"w":[3,4],"t":"Определительное придаточное","e":"Relative clause","ru":["который жил","который проживал"]},{"w":[5,6,7,8],"t":"Предложная группа","e":"Prepositional phrase","ru":["в небольшой деревне","в маленькой деревне"]},{"w":[9,10,11],"t":"Глагольная группа","e":"Verb phrase","ru":["хотел уехать","хотел покинуть"]}],"m":[{"w":[0,1,2,3,4,5,6,7,8],"t":"Подлежащее","e":"Subject","ru":"молодой мальчик, который жил в небольшой деревне"},{"w":[9,10,11],"t":"Сказуемое","e":"Predicate","ru":"хотел уехать"}],"idi":[]}`;
+Rules for "b" (short grammatical blocks):
+1. Blocks split the WHOLE sentence in order, every word in exactly one block.
+2. Think like a teacher asking questions about the sentence: each block is the short answer to ONE question. Example: "The young boy who lived in a small village wanted to discover the mysterious world that existed beyond the mountains." = [The young boy] Кто? | [who lived] Который что делал? | [in a small village] Где? | [wanted to discover] Что хотел? | [the mysterious world] Что? | [that existed] Который что делал? | [beyond the mountains] Где?
+3. A block has 1 to 4 words, never more than 5.
+4. Start a NEW block at: every preposition (of, in, beyond, from, with...), every relative pronoun or conjunction (who, which, that, and, when, because...), the "to" of an infinitive, a finite verb that follows a noun phrase, and every new noun phrase.
+5. A verb is NEVER in one block with its object: the object is a block of its own. A verb block is only the verb with its auxiliaries and "to" (wanted to discover, was smoking, to be apportioned).
+6. A noun-phrase block is only determiners or possessives, adjectives and the noun (her divine duties); an "of ..." phrase is a separate block.
+7. An idiom forms a block of its own with t "Идиома".
+Example 2: "The next of Kronos's children to be apportioned her divine duties was Demeter." = [The next] Кто по счёту? | [of Kronos's children] Из чьих детей? | [to be apportioned] Которому что предстояло? | [her divine duties] Что? | [was Demeter] Кто был?
+Block translations are literal and faithful to the author's wording, correct Russian. "w" has an entry for every word number. "idi" lists idioms (empty array if none); do not mark ordinary phrasal verbs or collocations as idioms. Keep every string short.
+Example JSON for "The young boy who lived in a small village wanted to leave." (The0 young1 boy2 who3 lived4 in5 a6 small7 village8 wanted9 to10 leave11):
+{"tr":"Молодой мальчик, который жил в небольшой деревне, хотел уехать.","w":[{"i":0,"ipa":"ðə","pos":"артикль"},{"i":1,"ipa":"jʌŋ","pos":"прилагательное"},{"i":2,"ipa":"bɔɪ","pos":"существительное"},{"i":3,"ipa":"huː","pos":"местоимение"},{"i":4,"ipa":"lɪvd","pos":"глагол"},{"i":5,"ipa":"ɪn","pos":"предлог"},{"i":6,"ipa":"ə","pos":"артикль"},{"i":7,"ipa":"smɔːl","pos":"прилагательное"},{"i":8,"ipa":"ˈvɪlɪdʒ","pos":"существительное"},{"i":9,"ipa":"ˈwɒntɪd","pos":"глагол"},{"i":10,"ipa":"tuː","pos":"частица"},{"i":11,"ipa":"liːv","pos":"глагол"}],"b":[{"q":"Кто?","w":[0,1,2],"t":"Именная группа","e":"Noun phrase","ru":["молодой мальчик","юный мальчик"]},{"q":"Который что делал?","w":[3,4],"t":"Определительное придаточное","e":"Relative clause","ru":["который жил","который проживал"]},{"q":"Где?","w":[5,6,7,8],"t":"Предложная группа","e":"Prepositional phrase","ru":["в небольшой деревне","в маленькой деревне"]},{"q":"Что хотел?","w":[9,10,11],"t":"Глагольная группа","e":"Verb phrase","ru":["хотел уехать","хотел покинуть"]}],"idi":[]}`;
+var SYS8=`You are a grammar engine in a reading app for a Russian-speaking learner of English. Input: ONE sentence as numbered words, its text, and context. Split the sentence into its full members (члены предложения). Reply with ONLY JSON: {"m":[{"w":[word numbers],"t":"member in Russian, e.g. Подлежащее","e":"same in English, e.g. Subject","ru":"literal grammatical Russian translation of the member"}]}. Members in order: Подлежащее, Сказуемое, Прямое дополнение, Косвенное дополнение, Обстоятельство (with its kind: места, времени, образа действия, меры и степени, причины, цели), Определение, Придаточное предложение (with its type). Each word is in exactly one member, no nesting, and the member translations read in order as the whole sentence. Example for "The young boy who lived in a small village wanted to leave.": {"m":[{"w":[0,1,2,3,4,5,6,7,8],"t":"Подлежащее","e":"Subject","ru":"молодой мальчик, который жил в небольшой деревне"},{"w":[9,10,11],"t":"Сказуемое","e":"Predicate","ru":"хотел уехать"}]}`;
+var SYS9=`You split a group of words of an English sentence into short grammatical blocks for a Russian-speaking learner. Input: the sentence, its numbered words, and the numbers of the group to split. Reply with ONLY JSON: {"b":[{"w":[word numbers],"t":"grammatical name in Russian","e":"same in English","ru":["literal grammatical translation that fits the sentence","1-2 alternatives"]}]}. Rules: blocks cover exactly the given numbers, in order, each once; every block has 1 to 4 words (never more than 5) and answers one question (Кто? Какой? Что? Где?). Start a new block at every preposition, relative pronoun or conjunction, the "to" of an infinitive, and every new noun phrase. A verb (with its auxiliaries and "to") is NEVER in one block with its object. Example: group "to be apportioned her divine duties" gives [to be apportioned] and [her divine duties].`;
 var SYS7=`You are a bilingual English-Russian dictionary. Reply with ONLY JSON: {"pos":[{"n":"Part of speech in Russian, only the first letter uppercase","t":["Russian translations, most common first"]}]}. List EVERY part of speech the word can be (max 5). For each part of speech give 5 to 10 distinct translations (fewer only if the word really has fewer), covering different senses.`;
 
 function resolve(base,href){var o=[];(base+href).split("/").forEach(function(p){if(p==="..")o.pop();else if(p&&p!==".")o.push(p)});return decodeURIComponent(o.join("/"))}
@@ -283,7 +306,7 @@ function sentOf(w){
 }
 function has(list,id){return (list||[]).filter(function(x){return x.w.indexOf(id)>-1})[0]||null}
 function wtxt(a,w){return w.map(function(i){return a.ws[i].textContent}).join(" ")}
-function roleOf(m){return [m.t,m.e].filter(Boolean).join(" · ")}
+function roleOf(m){return m.t||""}
 function paintAct(){
   book.querySelectorAll(".w.mg,.w.du,.w.su,.w.ig").forEach(function(e){e.classList.remove("mg","du","su","ig")});
   if(!act)return;
@@ -298,7 +321,7 @@ function closeSheet(){
   $("sheet").classList.add("hide");book.classList.remove("cardopen");paintAct();upd();
 }
 function lis(arr,n){
-  var h="<ul>";(arr||[]).forEach(function(x,j){h+="<li"+(j>=n?' class="more hide"':"")+">"+esc(x)+"</li>"});
+  var h="<ul>";(arr||[]).forEach(function(x,j){h+="<li lang=\"ru\""+(j>=n?' class="more hide"':"")+">"+esc(x)+"</li>"});
   h+="</ul>";if((arr||[]).length>n)h+='<a class="mo">Еще '+(arr.length-n)+"</a>";return h;
 }
 function fixM(d,n){
@@ -309,31 +332,72 @@ function fixM(d,n){
   var b=part(d.b,function(x,w){return{w:w,t:String(x.t||""),e:String(x.e||""),ru:arr(x.ru)}}),u={};
   b.forEach(function(x){x.w.forEach(function(i){u[i]=(u[i]||0)+1})});
   for(var i=0;i<n;i++)if(u[i]!==1)return null;
-  var m=part(d.m,function(x,w){return{w:w,t:String(x.t||""),e:String(x.e||""),ru:String(x.ru||"")}});
   var idi=part(d.idi,function(x,w){return{w:w,text:String(x.text||""),m:arr(x.m),lit:String(x.lit||"")}});
   var wi=[];(Array.isArray(d.w)?d.w:[]).forEach(function(x){if(x&&+x.i>=0&&+x.i<n)wi[+x.i]={ipa:String(x.ipa||"").replace(/[\[\]\/]/g,"").trim(),pos:String(x.pos||"")}});
-  return{b:b,m:m,idi:idi,w:wi,long:b.some(function(x){return x.w.length>5})};
+  return{b:b,idi:idi,w:wi,long:b.some(function(x){return x.w.length>5})};
+}
+function fixMem(d,n){
+  var out=[];(d&&Array.isArray(d.m)?d.m:[]).forEach(function(x){
+    var w=(Array.isArray(x&&x.w)?x.w:[]).map(Number).filter(function(i){return i>=0&&i<n}).sort(function(a,b){return a-b});
+    if(w.length)out.push({w:w,t:String(x.t||""),e:String(x.e||""),ru:String(x.ru||"")});
+  });
+  out.sort(function(a,b){return a.w[0]-b.w[0]});return out.length?out:null;
+}
+function autoSplit(blk,wi){
+  var out=[],cur=[];
+  blk.w.forEach(function(i,j){
+    var p=((wi[i]&&wi[i].pos)||"").toLowerCase(),pp=j?((wi[blk.w[j-1]]&&wi[blk.w[j-1]].pos)||"").toLowerCase():"";
+    var brk=j>0&&(/^(предлог|союз|артикль|частица)/.test(p)||(/^(местоим|прилаг|числит)/.test(p)&&/^(глагол|причаст)/.test(pp))||(/^глагол/.test(p)&&/^сущ/.test(pp))||cur.length>=4);
+    if(brk&&cur.length){out.push(cur);cur=[]}
+    cur.push(i);
+  });
+  if(cur.length)out.push(cur);
+  return out.map(function(w){return{w:w,t:"",e:"",ru:[]}});
+}
+function fixSub(d,ws){
+  if(!d||!Array.isArray(d.b))return null;
+  var seen={},out=[];
+  for(var k=0;k<d.b.length;k++){
+    var x=d.b[k],w=(Array.isArray(x&&x.w)?x.w:[]).map(Number).sort(function(a,b){return a-b});
+    if(!w.length||w.length>5)return null;
+    for(var j=0;j<w.length;j++){if(ws.indexOf(w[j])<0||seen[w[j]])return null;seen[w[j]]=1}
+    out.push({w:w,t:String(x.t||""),e:String(x.e||""),ru:(Array.isArray(x.ru)?x.ru:[x.ru]).filter(Boolean).map(String)});
+  }
+  return Object.keys(seen).length===ws.length?out.sort(function(a,b){return a.w[0]-b.w[0]}):null;
+}
+async function splitLong(d,user){
+  await Promise.all(d.b.filter(function(x){return x.w.length>5}).map(async function(blk){
+    var res=null;
+    try{var out=await callApi(user+"\n\nGroup to split: "+blk.w.join(","),SYS9);res=fixSub(JSON.parse(out.match(/\{[\s\S]*\}/)[0]),blk.w)}catch(e){res=null}
+    blk.sub=res||autoSplit(blk,d.w);
+  }));
+  var nb=[];d.b.forEach(function(x){if(x.sub)x.sub.forEach(function(q){nb.push(q)});else nb.push(x)});
+  nb.sort(function(a,b){return a.w[0]-b.w[0]});d.b=nb;d.long=false;return d;
+}
+function ctxUser(a){
+  var o=a.el,ws=o._ws,sn=a.sn,rg=document.createRange();rg.setStartBefore(ws[sn[0]]);
+  if(ws[sn[1]+1])rg.setEndBefore(ws[sn[1]+1]);else rg.setEnd(o,o.childNodes.length);
+  return "Words:\n"+a.ws.map(function(w,i){return i+":"+w.textContent}).join(" ")+"\n\nSentence:\n"+rg.toString().replace(/\s+/g," ").trim()+"\n\nParagraph (context only):\n"+o.textContent.replace(/\s+/g," ").trim().slice(0,1200);
 }
 async function getA(a){
   if(a.A)return a.A;
   var o=a.el;o._A=o._A||{};
   if(o._A[a.k]){a.A=o._A[a.k];return a.A}
-  var ws=o._ws,sn=a.sn,rg=document.createRange();rg.setStartBefore(ws[sn[0]]);
-  if(ws[sn[1]+1])rg.setEndBefore(ws[sn[1]+1]);else rg.setEnd(o,o.childNodes.length);
-  var n=a.ws.length,user="Words:\n"+a.ws.map(function(w,i){return i+":"+w.textContent}).join(" ")+"\n\nSentence:\n"+rg.toString().replace(/\s+/g," ").trim()+"\n\nParagraph (context only):\n"+o.textContent.replace(/\s+/g," ").trim().slice(0,1200);
-  var key="m3|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw?fixM(raw,n):null;
-  if(d&&d.long)d=null;
+  var n=a.ws.length,user=ctxUser(a),key="m4|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw&&raw.v===2?raw.d:null;
   if(!d){
-    var best=null,bestRaw=null;
-    for(var t=0;t<3&&!(best&&!best.long);t++){
-      var u2=t?user+"\n\nIMPORTANT: your previous answer had a block longer than 5 words. Split every block to at most 5 words by its inner questions (Какой? Чей? Что делать? Какие?).":user,out=await callApi(u2,SYS6),pr=null,c=null;
-      try{pr=JSON.parse(out.match(/\{[\s\S]*\}/)[0]);c=fixM(pr,n)}catch(e){c=null}
-      if(c&&(!best||best.long)){best=c;bestRaw=pr}
-    }
-    if(!best)throw new Error("Модель вернула неверный формат");
-    d=best;kv("t","readwrite",function(st){return st.put(bestRaw,key)});
+    for(var t=0;t<2&&!d;t++){var out=await callApi(user,SYS6);try{d=fixM(JSON.parse(out.match(/\{[\s\S]*\}/)[0]),n)}catch(e){d=null}}
+    if(!d)throw new Error("Модель вернула неверный формат");
+    if(d.long)d=await splitLong(d,user);
+    kv("t","readwrite",function(st){return st.put({v:2,d:d},key)});
   }
   o._A[a.k]=d;a.A=d;return d;
+}
+async function getM(a){
+  var n=a.ws.length,user=ctxUser(a),key="mm1|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw?fixMem(raw,n):null;
+  if(d)return d;
+  for(var t=0;t<2&&!d;t++){var out=await callApi(user,SYS8),pr=null;try{pr=JSON.parse(out.match(/\{[\s\S]*\}/)[0]);d=fixMem(pr,n)}catch(e){d=null}if(d)kv("t","readwrite",function(st){return st.put(pr,key)})}
+  if(!d)throw new Error("Модель вернула неверный формат");
+  return d;
 }
 async function getB(word){
   var k="d2|"+word.toLowerCase(),d=await kv("t","readonly",function(st){return st.get(k)});
@@ -353,22 +417,28 @@ function buildSheet(a){
   pg.scrollLeft=pageIdx*pg.clientWidth;dots();
 }
 function pHead(a,label,w,type){
-  var h='<div class="sec" style="margin:0 0 6px">'+label+'</div><div class="wsr">';
-  w.forEach(function(i){var wi=a.A.w[i]||{};h+='<span class="wd"><span>'+esc(a.ws[i].textContent)+"</span><small>"+esc(wi.ipa||"")+"</small></span>"});
-  h+="</div>";if(type)h+='<div class="mut" style="margin-top:6px">'+esc(type)+"</div>";return h;
+  var h='<div class="sec" style="margin:0 0 4px">'+label+'</div><div class="ct pt" lang="en">';
+  w.forEach(function(i,j){h+=(j?" ":"")+'<span class="'+(i===a.id?"on":"")+'">'+esc(a.ws[i].textContent)+"</span>"});
+  h+='</div><div class="mut pi">[';
+  w.forEach(function(i,j){h+=(j?" ":"")+'<span class="'+(i===a.id?"on":"")+'">'+esc((a.A.w[i]||{}).ipa||"")+"</span>"});
+  h+="]</div>";
+  if(type)h+='<div class="mut" style="margin-top:6px">'+esc(type)+"</div>";
+  return h;
+}
+function fillMem(a,list){
+  var h="";
+  list.forEach(function(m){h+='<div class="mb'+(m.w.indexOf(a.id)>-1?" hot":"")+'"><div class="mut mrole">'+esc(roleOf(m))+'</div><div class="mtx" lang="en">'+esc(wtxt(a,m.w))+'</div><div class="mrr" lang="ru"><i>'+esc(m.ru)+"</i></div></div>"});
+  var e=$("mem");if(e){e.classList.remove("ld");e.innerHTML=h}
 }
 function fillCards(a){
   var A=a.A,src=a.idi?{w:a.idi.w,t:"Идиома",e:"Idiom",ru:a.idi.m}:a.blk;
-  $("h1").innerHTML=pHead(a,"ФРАЗА",src.w,roleOf(src));
-  var b='<div class="sec" style="margin-top:6px">ПЕРЕВОД</div>'+lis(src.ru,4)+'<div class="dv"></div><div class="sec" style="margin-top:0">ЧЛЕНЫ ПРЕДЛОЖЕНИЯ</div>';
-  if(A.m.length)A.m.forEach(function(m){b+='<div class="mb'+(m.w.indexOf(a.id)>-1?" hot":"")+'"><div class="mtx">'+esc(wtxt(a,m.w))+'</div><div class="mut">'+esc(roleOf(m))+'</div><div class="mrr"><i>'+esc(m.ru)+"</i></div></div>"});
-  else b+='<div class="alone">Нет данных.</div>';
-  $("b1").innerHTML=b;
+  $("h1").classList.toggle("idp",!!a.idi);$("h1").innerHTML=pHead(a,"ФРАЗА",src.w,roleOf(src));
+  $("b1").innerHTML='<div class="sec" style="margin-top:6px">ПЕРЕВОД</div>'+(src.ru&&src.ru.length?lis(src.ru,4):'<div class="mut">Перевод недоступен</div>')+'<div class="dv"></div><div class="sec" style="margin-top:0">ЧЛЕНЫ ПРЕДЛОЖЕНИЯ</div><div id="mem" class="mut ld">Анализирую… 0.0 с</div>';
   var wi=A.w[a.id]||{};
   $("h2").innerHTML='<div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div><div class="mut">'+[wi.ipa?"["+wi.ipa+"]":"",cap(wi.pos)].filter(Boolean).map(esc).join(" · ")+"</div>";
   var idi=a.idi||A.idi[0];
   if(idi){
-    $("pager").insertAdjacentHTML("beforeend",'<div class="pg"><div class="chd">'+pHead(a,"ИДИОМА",idi.w,"Идиома · Idiom")+'</div><div class="cbody"><div class="sec" style="margin-top:6px">ЗНАЧЕНИЯ</div>'+lis(idi.m,4)+(idi.lit?'<div class="dv"></div><div class="sec" style="margin-top:0">БУКВАЛЬНО</div><div class="mrr"><i>'+esc(idi.lit)+"</i></div>":"")+"</div></div>");
+    $("pager").insertAdjacentHTML("beforeend",'<div class="pg"><div class="chd idp">'+pHead(a,"ИДИОМА",idi.w,"Идиома")+'</div><div class="cbody"><div class="sec" style="margin-top:6px">ЗНАЧЕНИЯ</div>'+lis(idi.m,4)+(idi.lit?'<div class="dv"></div><div class="sec" style="margin-top:0">БУКВАЛЬНО</div><div class="mrr"><i>'+esc(idi.lit)+"</i></div>":"")+"</div></div>");
     $("sheet").querySelector(".dots").insertAdjacentHTML("beforeend","<i></i>");dots();
   }
 }
@@ -386,18 +456,27 @@ async function openFor(a){
   var my=++cardTok,ar=a.w.getBoundingClientRect();
   buildSheet(a);paintAct();
   if(ar.bottom>innerHeight*0.5)window.scrollBy(0,ar.bottom-innerHeight*0.35);
-  var t0=Date.now();clearInterval(ldIv);
+  var t0=Date.now(),pend=2;clearInterval(ldIv);
   ldIv=setInterval(function(){document.querySelectorAll("#sheet .ld").forEach(function(e){e.textContent="Анализирую… "+((Date.now()-t0)/1000).toFixed(1)+" с"})},100);
+  function fin(){if(--pend<=0)clearInterval(ldIv)}
   var pB=getB(a.w.textContent).then(function(d){return{d:d}},function(e){return{e:e}});
+  var pM=getM(a).then(function(d){return{d:d}},function(e){return{e:e}});
   try{await getA(a)}catch(e){if(my!==cardTok)return;showErr(e);return}
   if(my!==cardTok)return;
   a.blk=has(a.A.b,a.id);a.idi=has(a.A.idi,a.id);
   if(!a.blk&&!a.idi)a.blk={w:[a.id],t:"",e:"",ru:[]};
   paintAct();fillCards(a);
-  var r=await pB;if(my!==cardTok)return;
-  clearInterval(ldIv);
-  var tr=$("tr2");tr.classList.remove("ld");
-  if(r.e)tr.innerHTML="<div>"+esc("Не удалось: "+r.e.message)+'</div><a class="mo rt">Повторить</a>';else tr.innerHTML=trHtml(a,r.d);
+  pB.then(function(r){
+    if(my!==cardTok)return;
+    var tr=$("tr2");tr.classList.remove("ld");
+    if(r.e)tr.innerHTML="<div>"+esc("Не удалось: "+r.e.message)+'</div><a class="mo rt">Повторить</a>';else tr.innerHTML=trHtml(a,r.d);
+    fin();
+  });
+  pM.then(function(r){
+    if(my!==cardTok)return;
+    if(r.e){var e=$("mem");if(e){e.classList.remove("ld");e.textContent="Не удалось: "+r.e.message}}else fillMem(a,r.d);
+    fin();
+  });
 }
 function tapWord(w){
   var o=sentOf(w),id=o.el._ws.indexOf(w)-o.sn[0];
@@ -413,7 +492,7 @@ $("sheet").addEventListener("click",function(e){
 });
 function applyS(){
   var de=document.documentElement,st=de.style;
-  de.setAttribute("data-theme",S.theme);
+  de.setAttribute("data-theme",S.theme);st.setProperty("--cf",S.cf||1);
   S.cSel?st.setProperty("--sel",S.cSel):st.removeProperty("--sel");
   book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";
   var cs=getComputedStyle(de);
@@ -425,6 +504,8 @@ $("set").addEventListener("click",function(e){
   var b=e.target.closest("[data-a]");if(!b)return;var a=b.getAttribute("data-a");
   if(a==="f-")S.fs=Math.max(14,S.fs-1);
   if(a==="f+")S.fs=Math.min(40,S.fs+1);
+  if(a==="c-")S.cf=Math.max(0.8,+(S.cf-0.08).toFixed(2));
+  if(a==="c+")S.cf=Math.min(1.6,+(S.cf+0.08).toFixed(2));
   if(a==="p-")S.pad=Math.max(4,S.pad-4);
   if(a==="p+")S.pad=Math.min(90,S.pad+4);
   if(a.indexOf("t:")===0)S.theme=a.slice(2);
