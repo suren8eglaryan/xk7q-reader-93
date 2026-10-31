@@ -203,8 +203,8 @@ var SEL="p,h1,h2,h3,h4,h5,h6,li";
 var SYS6=`You are a grammar engine in a reading app for a Russian-speaking learner of English. Input: ONE sentence as numbered words, its text, and the paragraph for context. Reply with ONLY JSON:
 {"tr":"complete Russian translation, literal but grammatical (for your own reasoning, not shown)",
 "w":[{"i":0,"ipa":"American IPA without brackets","pos":"ONE Russian word: существительное, глагол, прилагательное, наречие, местоимение, предлог, союз, артикль, числительное, частица, междометие"}],
-"b":[{"q":"the question this block answers, in Russian: Кто? Какой? Что делал? Чей? Где? Когда? Что?","w":[word numbers],"t":"grammatical name of the block in Russian, e.g. Именная группа","e":"same in English, e.g. Noun phrase","ru":["translation of the block that fits this sentence","1-3 alternative translations"]}],
-"idi":[{"w":[word numbers],"text":"idiom as written","m":["meanings in Russian, best first, max 4"],"lit":"literal word-for-word translation"}]}
+"b":[{"q":"the question this block answers, in Russian: Кто? Какой? Что делал? Чей? Где? Когда? Что?","w":[word numbers],"t":"grammatical name of the block in Russian, e.g. Именная группа","e":"same in English, e.g. Noun phrase","ru":["the single most faithful translation of the block"]}],
+"idi":[{"w":[word numbers],"text":"idiom as written","m":["the single best meaning in Russian"],"lit":"literal word-for-word translation"}]}
 Rules for "b" (short grammatical blocks):
 1. Blocks split the WHOLE sentence in order, every word in exactly one block.
 2. Think like a teacher asking questions about the sentence: each block is the short answer to ONE question. Example: "The young boy who lived in a small village wanted to discover the mysterious world that existed beyond the mountains." = [The young boy] Кто? | [who lived] Который что делал? | [in a small village] Где? | [wanted to discover] Что хотел? | [the mysterious world] Что? | [that existed] Который что делал? | [beyond the mountains] Где?
@@ -214,13 +214,15 @@ Rules for "b" (short grammatical blocks):
 6. A noun-phrase block is only determiners or possessives, adjectives and the noun (her divine duties); an "of ..." phrase is a separate block.
 7. An idiom forms a block of its own with t "Идиома".
 Example 2: "The next of Kronos's children to be apportioned her divine duties was Demeter." = [The next] Кто по счёту? | [of Kronos's children] Из чьих детей? | [to be apportioned] Которому что предстояло? | [her divine duties] Что? | [was Demeter] Кто был?
-Block translations are literal and faithful to the author's wording, correct Russian. "w" has an entry for every word number. "idi" lists idioms (empty array if none); do not mark ordinary phrasal verbs or collocations as idioms. Keep every string short.
+Block translations follow the author's words strictly (see TRANSLATION RULE). "w" has an entry for every word number. "idi" lists idioms (empty array if none); do not mark ordinary phrasal verbs or collocations as idioms. Keep every string short.
 Example JSON for "The young boy who lived in a small village wanted to leave." (The0 young1 boy2 who3 lived4 in5 a6 small7 village8 wanted9 to10 leave11):
-{"tr":"Молодой мальчик, который жил в небольшой деревне, хотел уехать.","w":[{"i":0,"ipa":"ðə","pos":"артикль"},{"i":1,"ipa":"jʌŋ","pos":"прилагательное"},{"i":2,"ipa":"bɔɪ","pos":"существительное"},{"i":3,"ipa":"huː","pos":"местоимение"},{"i":4,"ipa":"lɪvd","pos":"глагол"},{"i":5,"ipa":"ɪn","pos":"предлог"},{"i":6,"ipa":"ə","pos":"артикль"},{"i":7,"ipa":"smɔːl","pos":"прилагательное"},{"i":8,"ipa":"ˈvɪlɪdʒ","pos":"существительное"},{"i":9,"ipa":"ˈwɒntɪd","pos":"глагол"},{"i":10,"ipa":"tuː","pos":"частица"},{"i":11,"ipa":"liːv","pos":"глагол"}],"b":[{"q":"Кто?","w":[0,1,2],"t":"Именная группа","e":"Noun phrase","ru":["молодой мальчик","юный мальчик"]},{"q":"Который что делал?","w":[3,4],"t":"Определительное придаточное","e":"Relative clause","ru":["который жил","который проживал"]},{"q":"Где?","w":[5,6,7,8],"t":"Предложная группа","e":"Prepositional phrase","ru":["в небольшой деревне","в маленькой деревне"]},{"q":"Что хотел?","w":[9,10,11],"t":"Глагольная группа","e":"Verb phrase","ru":["хотел уехать","хотел покинуть"]}],"idi":[]}`;
+{"tr":"Молодой мальчик, который жил в небольшой деревне, хотел уехать.","w":[{"i":0,"ipa":"ðə","pos":"артикль"},{"i":1,"ipa":"jʌŋ","pos":"прилагательное"},{"i":2,"ipa":"bɔɪ","pos":"существительное"},{"i":3,"ipa":"huː","pos":"местоимение"},{"i":4,"ipa":"lɪvd","pos":"глагол"},{"i":5,"ipa":"ɪn","pos":"предлог"},{"i":6,"ipa":"ə","pos":"артикль"},{"i":7,"ipa":"smɔːl","pos":"прилагательное"},{"i":8,"ipa":"ˈvɪlɪdʒ","pos":"существительное"},{"i":9,"ipa":"ˈwɒntɪd","pos":"глагол"},{"i":10,"ipa":"tuː","pos":"частица"},{"i":11,"ipa":"liːv","pos":"глагол"}],"b":[{"q":"Кто?","w":[0,1,2],"t":"Именная группа","e":"Noun phrase","ru":["молодой мальчик"]},{"q":"Который что делал?","w":[3,4],"t":"Определительное придаточное","e":"Relative clause","ru":["который жил"]},{"q":"Где?","w":[5,6,7,8],"t":"Предложная группа","e":"Prepositional phrase","ru":["в небольшой деревне"]},{"q":"Что хотел?","w":[9,10,11],"t":"Глагольная группа","e":"Verb phrase","ru":["хотел уехать"]}],"idi":[]}`;
 var SYS8=`You are a grammar engine in a reading app for a Russian-speaking learner of English. Input: ONE sentence as numbered words, its text, and context. Split the sentence into its full members (члены предложения). Reply with ONLY JSON: {"m":[{"w":[word numbers],"t":"member in Russian, e.g. Подлежащее","e":"same in English, e.g. Subject","ru":"literal grammatical Russian translation of the member"}]}. Members in order: Подлежащее, Сказуемое, Прямое дополнение, Косвенное дополнение, Обстоятельство (with its kind: места, времени, образа действия, меры и степени, причины, цели), Определение, Придаточное предложение (with its type). Each word is in exactly one member, no nesting, and the member translations read in order as the whole sentence. Example for "The young boy who lived in a small village wanted to leave.": {"m":[{"w":[0,1,2,3,4,5,6,7,8],"t":"Подлежащее","e":"Subject","ru":"молодой мальчик, который жил в небольшой деревне"},{"w":[9,10,11],"t":"Сказуемое","e":"Predicate","ru":"хотел уехать"}]}`;
-var SYS9=`You split a group of words of an English sentence into short grammatical blocks for a Russian-speaking learner. Input: the sentence, its numbered words, and the numbers of the group to split. Reply with ONLY JSON: {"b":[{"w":[word numbers],"t":"grammatical name in Russian","e":"same in English","ru":["literal grammatical translation that fits the sentence","1-2 alternatives"]}]}. Rules: blocks cover exactly the given numbers, in order, each once; every block has 1 to 4 words (never more than 5) and answers one question (Кто? Какой? Что? Где?). Start a new block at every preposition, relative pronoun or conjunction, the "to" of an infinitive, and every new noun phrase. A verb (with its auxiliaries and "to") is NEVER in one block with its object. Example: group "to be apportioned her divine duties" gives [to be apportioned] and [her divine duties].`;
+var SYS9=`You split a group of words of an English sentence into short grammatical blocks for a Russian-speaking learner. Input: the sentence, its numbered words, and the numbers of the group to split. Reply with ONLY JSON: {"b":[{"w":[word numbers],"t":"grammatical name in Russian","e":"same in English","ru":["the single most faithful translation"]}]}. Rules: blocks cover exactly the given numbers, in order, each once; every block has 1 to 4 words (never more than 5) and answers one question (Кто? Какой? Что? Где?). Start a new block at every preposition, relative pronoun or conjunction, the "to" of an infinitive, and every new noun phrase. A verb (with its auxiliaries and "to") is NEVER in one block with its object. Example: group "to be apportioned her divine duties" gives [to be apportioned] and [her divine duties].`;
+var STRICT="TRANSLATION RULE: follow the author's own words strictly. Translate every noun, verb, adjective and adverb by its direct, literal Russian equivalent. Do not paraphrase, do not replace words with more natural or more common ones, do not add or drop words (for example 'reference' = 'упоминание' or 'отсылка', never 'речь'; 'common' = 'общий' or 'обычный', not a free guess). Keep the author's word order wherever Russian grammar allows; change it only when Russian grammar requires. Give ONE translation only: the most faithful one. Use correct Russian grammar and punctuation, nothing more.";
 var SYS7=`You are a bilingual English-Russian dictionary. Reply with ONLY JSON: {"pos":[{"n":"Part of speech in Russian, only the first letter uppercase","t":["Russian translations, most common first"]}]}. List EVERY part of speech the word can be (max 5). For each part of speech give 5 to 10 distinct translations (fewer only if the word really has fewer), covering different senses.`;
 
+SYS6+="\n"+STRICT;SYS8+="\n"+STRICT;SYS9+="\n"+STRICT;
 function resolve(base,href){var o=[];(base+href).split("/").forEach(function(p){if(p==="..")o.pop();else if(p&&p!==".")o.push(p)});return decodeURIComponent(o.join("/"))}
 function wrapWords(root){
   var wk=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),nodes=[],n,cnt=0,re=/[\p{L}\p{N}][\p{L}\p{N}'’\-]*/gu;
@@ -254,16 +256,22 @@ async function callApi(user,sys){
   try{return await callApi2(user,sys)}catch(e){if(e instanceof TypeError)throw new Error("Нет связи с сервером ("+e.message+"). Проверьте интернет и VPN: сервис мог быть недоступен из вашей сети. Если сайт сервиса открывается, причина в запрете браузерных запросов (CORS)");throw e}
 }
 var GBASE="https://generativelanguage.googleapis.com/v1beta";
+async function ft(url,o){
+  var c=new AbortController(),t=setTimeout(function(){c.abort()},75000);
+  try{return await fetch(url,Object.assign({signal:c.signal},o))}
+  catch(e){if(e&&e.name==="AbortError")throw new Error("Нет ответа от сервера за 75 с. Проверьте VPN и сеть: в приложении на экране «Домой» трафик может идти мимо VPN.");throw e}
+  finally{clearTimeout(t)}
+}
 async function callApi2(user,sys){
   if(!S.api.key||!S.api.model)throw new Error("Укажите ключ и модель: Aa → Перевод");
   var c=S.api,base=c.url.replace(/\/+$/,""),r,j,anth=c.fmt==="anthropic",gem=c.fmt==="gemini";
-  if(anth)r=await fetch(base.replace(/\/v1$/,"")+"/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:c.model,max_tokens:8000,system:sys,messages:[{role:"user",content:user}]})});
+  if(anth)r=await ft(base.replace(/\/v1$/,"")+"/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:c.model,max_tokens:8000,system:sys,messages:[{role:"user",content:user}]})});
   else if(gem){
     var gm=c.model.replace(/^models\//,""),gc={temperature:0.2,responseMimeType:"application/json"};
     if(/2\.5-flash/.test(gm))gc.thinkingConfig={thinkingBudget:0};
-    r=await fetch((base||GBASE)+"/models/"+encodeURIComponent(gm)+":generateContent?key="+encodeURIComponent(c.key),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:"user",parts:[{text:user}]}],generationConfig:gc})});
+    r=await ft((base||GBASE)+"/models/"+encodeURIComponent(gm)+":generateContent?key="+encodeURIComponent(c.key),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:"user",parts:[{text:user}]}],generationConfig:gc})});
   }
-  else r=await fetch(base+"/chat/completions",{method:"POST",headers:{"content-type":"application/json","Authorization":"Bearer "+c.key},body:JSON.stringify({model:c.model,temperature:0.2,messages:[{role:"system",content:sys},{role:"user",content:user}]})});
+  else r=await ft(base+"/chat/completions",{method:"POST",headers:{"content-type":"application/json","Authorization":"Bearer "+c.key},body:JSON.stringify({model:c.model,temperature:0.2,messages:[{role:"system",content:sys},{role:"user",content:user}]})});
   if(!r.ok)throw new Error("API "+r.status+": "+(await r.text()).slice(0,120));
   j=await r.json();
   if(anth)return j.content.map(function(x){return x.text||""}).join("");
@@ -407,7 +415,7 @@ async function getA(a){
   if(a.A)return a.A;
   var o=a.el;o._A=o._A||{};
   if(o._A[a.k]){a.A=o._A[a.k];return a.A}
-  var n=a.ws.length,user=ctxUser(a),key="m4|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw&&raw.v===2?raw.d:null;
+  var n=a.ws.length,user=ctxUser(a),key="m5|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw&&raw.v===2?raw.d:null;
   a.keyA=key;
   if(!d){
     var best=null;
@@ -420,7 +428,7 @@ async function getA(a){
   o._A[a.k]=d;a.A=d;return d;
 }
 async function getM(a){
-  var n=a.ws.length,user=ctxUser(a),key="mm1|"+hash(user),raw=(a.keyM=key,await kv("t","readonly",function(st){return st.get(key)})),d=raw?fixMem(raw,n):null;
+  var n=a.ws.length,user=ctxUser(a),key="mm2|"+hash(user),raw=(a.keyM=key,await kv("t","readonly",function(st){return st.get(key)})),d=raw?fixMem(raw,n):null;
   if(d)return d;
   for(var t=0;t<2&&!d;t++){var out=await callApi(user,SYS8),pr=null;try{pr=JSON.parse(out.match(/\{[\s\S]*\}/)[0]);d=fixMem(pr,n)}catch(e){d=null}if(d)kv("t","readwrite",function(st){return st.put(pr,key)})}
   if(!d)throw new Error("Модель вернула неверный формат");
@@ -455,11 +463,20 @@ function pHead(a,label,w,type){
 function normR(t){return String(t).toLowerCase().replace(/ё/g,"е")}
 function hiRu(text,needles){
   var hay=normR(text);
+  function toks(t){var r=[],m,re=/[a-zа-я0-9]+/g;while((m=re.exec(t)))r.push({w:m[0],i:m.index,e:m.index+m[0].length});return r}
+  var ht=toks(hay);
   for(var k=0;k<needles.length;k++){
     var nd=normR(needles[k]).replace(/[\s.,;:!?«»"'…—-]+$/,"").replace(/^[\s.,;:!?«»"'…—-]+/,"");
     if(nd.length<2)continue;
     var at=hay.indexOf(nd);
     if(at>-1)return esc(text.slice(0,at))+'<span class="hl">'+esc(text.slice(at,at+nd.length))+"</span>"+esc(text.slice(at+nd.length));
+    var nt=toks(nd),n=nt.length;
+    if(n<1)continue;
+    for(var st=0;st+n<=ht.length;st++){
+      var ok=0;
+      for(var j=0;j<n;j++){var x=ht[st+j].w,y=nt[j].w,l=Math.min(4,x.length,y.length);if(x.slice(0,l)===y.slice(0,l))ok++}
+      if(ok>=n-(n>=4?1:0)&&(n===1?ok===1:true)){var from=ht[st].i,to=ht[st+n-1].e;return esc(text.slice(0,from))+'<span class="hl">'+esc(text.slice(from,to))+"</span>"+esc(text.slice(to))}
+    }
   }
   return esc(text);
 }
