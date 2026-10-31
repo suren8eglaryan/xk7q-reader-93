@@ -144,6 +144,16 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #sheet li,#sheet .ph{color:var(--fk)}
 #pager .pg:first-child{padding:0 14px}
 .sh #rd{position:absolute;left:-6px;top:-4px}
+.ld{opacity:.55;font-size:.94em}
+#sheet .mb.hot .mtx{color:var(--fk)}
+#sheet .mb .hl{color:var(--sel)}
+#sheet .idp .mb .hl{color:var(--idi)}
+.sh #rd{background:transparent;box-shadow:none;color:#8a8a8a;width:34px}
+.sh #rd:active{opacity:.5}
+#pager{margin:0 -12px}
+#pager .pg{padding:0 12px}
+#pager .pg:first-child{padding:0 24px}
+#sheet .cbody{margin-right:-12px;padding-right:12px}
 </style>
 </head>
 <body>
@@ -420,7 +430,7 @@ async function getB(word){
 function dots(){var sh=$("sheet");sh.querySelectorAll(".dots i").forEach(function(d,i){d.classList.toggle("on",i===pageIdx)})}
 function buildSheet(a){
   var sh=$("sheet");
-  sh.innerHTML='<div class="sh"><button class="ib" id="rd" title="Повторить анализ">↻</button><div class="dots"><i></i><i></i></div><button class="ib" id="cx">✕</button></div><div id="pager"><div class="pg"><div class="chd" id="h1"><div class="sec" style="margin:0 0 4px">ФРАЗА</div></div><div class="cbody" id="b1"><div class="mut ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd" id="h2"><div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div></div><div class="cbody" id="b2"><div class="sec" style="margin-top:6px">ПЕРЕВОДЫ</div><div id="tr2" class="mut ld">Анализирую… 0.0 с</div></div></div></div>';
+  sh.innerHTML='<div class="sh"><button class="ib" id="rd" title="Повторить анализ">↻</button><div class="dots"><i></i><i></i></div><button class="ib" id="cx">✕</button></div><div id="pager"><div class="pg"><div class="chd" id="h1"><div class="sec" style="margin:0 0 4px">ФРАЗА</div></div><div class="cbody" id="b1"><div class="ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd" id="h2"><div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div></div><div class="cbody" id="b2"><div class="sec" style="margin-top:6px">ПЕРЕВОДЫ</div><div id="tr2" class="ld">Анализирую… 0.0 с</div></div></div></div>';
   sh.classList.remove("hide");book.classList.add("cardopen");
   $("cx").onclick=closeSheet;$("rd").onclick=redo;
   var pg=$("pager");
@@ -436,15 +446,31 @@ function pHead(a,label,w,type){
   if(type)h+='<div class="mut" style="margin-top:6px">'+esc(type)+"</div>";
   return h;
 }
+function normR(t){return String(t).toLowerCase().replace(/ё/g,"е")}
+function hiRu(text,needles){
+  var hay=normR(text);
+  for(var k=0;k<needles.length;k++){
+    var nd=normR(needles[k]).replace(/[\s.,;:!?«»"'…—-]+$/,"").replace(/^[\s.,;:!?«»"'…—-]+/,"");
+    if(nd.length<2)continue;
+    var at=hay.indexOf(nd);
+    if(at>-1)return esc(text.slice(0,at))+'<span class="hl">'+esc(text.slice(at,at+nd.length))+"</span>"+esc(text.slice(at+nd.length));
+  }
+  return esc(text);
+}
 function fillMem(a,list){
-  var h="";
-  list.forEach(function(m){h+='<div class="mb'+(m.w.indexOf(a.id)>-1?" hot":"")+'"><div class="mut mrole">'+esc(roleOf(m))+'</div><div class="mtx" lang="en">'+esc(wtxt(a,m.w))+'</div><div class="mrr" lang="ru"><i>'+esc(m.ru)+"</i></div></div>"});
+  var h="",src=a.idi?{w:a.idi.w,ru:a.idi.m}:a.blk,pw=(src&&src.w)||[],nd=(src&&src.ru)||[];
+  $("b1").classList.toggle("idp",!!a.idi);
+  list.forEach(function(m){
+    var inside=m.w.some(function(i){return pw.indexOf(i)>-1});
+    var en=m.w.map(function(i){var t=esc(a.ws[i].textContent);return pw.indexOf(i)>-1?'<span class="hl">'+t+"</span>":t}).join(" ");
+    h+='<div class="mb"><div class="mut mrole">'+esc(roleOf(m))+'</div><div class="mtx" lang="en">'+en+'</div><div class="mrr" lang="ru"><i>'+(inside?hiRu(m.ru,nd):esc(m.ru))+"</i></div></div>";
+  });
   var e=$("mem");if(e){e.classList.remove("ld");e.innerHTML=h}
 }
 function fillCards(a){
   var A=a.A,src=a.idi?{w:a.idi.w,t:"Идиома",e:"Idiom",ru:a.idi.m}:a.blk;
   $("h1").classList.toggle("idp",!!a.idi);$("h1").innerHTML=pHead(a,"ФРАЗА",src.w,roleOf(src));
-  $("b1").innerHTML='<div class="sec" style="margin-top:6px">ПЕРЕВОД</div>'+(src.ru&&src.ru.length?lis(src.ru,4):'<div class="mut">Перевод недоступен</div><a class="mo rt">Повторить анализ</a>')+'<div class="dv"></div><div class="sec" style="margin-top:0">ЧЛЕНЫ ПРЕДЛОЖЕНИЯ</div><div id="mem" class="mut ld">Анализирую… 0.0 с</div>';
+  $("b1").innerHTML='<div class="sec" style="margin-top:6px">ПЕРЕВОД</div>'+(src.ru&&src.ru.length?lis(src.ru,4):'<div class="mut">Перевод недоступен</div><a class="mo rt">Повторить анализ</a>')+'<div class="dv"></div><div class="sec" style="margin-top:0">ЧЛЕНЫ ПРЕДЛОЖЕНИЯ</div><div id="mem" class="ld">Анализирую… 0.0 с</div>';
   var wi=A.w[a.id]||{};
   $("h2").innerHTML='<div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div><div class="mut">'+[wi.ipa?"["+wi.ipa+"]":"",cap(wi.pos)].filter(Boolean).map(esc).join(" · ")+"</div>";
   var idi=a.idi||A.idi[0];
