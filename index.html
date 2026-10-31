@@ -103,6 +103,19 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 .mb.hot .mtx{color:var(--sel)}
 .mrr{font-size:18px}
 #sheet .chd .ct{margin-right:0}
+:root{--idi:#e0a321}
+:root[data-theme="dark"]{--idi:#f0b83e}
+.w.mg{color:var(--sel)}
+.w.ig{color:var(--idi)}
+.w.du{text-decoration-line:underline;text-decoration-style:dashed;text-decoration-color:currentColor;text-decoration-thickness:2px;text-underline-offset:5px}
+.w.su{text-decoration-line:underline;text-decoration-style:solid;text-decoration-color:currentColor;text-decoration-thickness:2px;text-underline-offset:5px}
+.mb{margin:12px 0;padding-left:0;border-left:0}
+.mrr i{font-style:italic;font-weight:400}
+.dv{border-top:1px dashed color-mix(in srgb,var(--fg) 28%,transparent);margin:16px 0}
+#sheet .wsr{display:flex;flex-wrap:wrap;gap:6px 16px}
+#sheet .wd{display:inline-flex;flex-direction:column;align-items:center;text-align:center;line-height:1.2}
+#sheet .wd>span{font-size:24px}
+#sheet .wd small{font-size:13px;color:#999;margin-top:2px}
 </style>
 </head>
 <body>
@@ -142,20 +155,21 @@ if(!Array.isArray(S.profs)||!S.profs.length){S.profs=[Object.assign({n:"Осно
 if(!(S.pi>=0&&S.pi<S.profs.length))S.pi=0;
 S.api=S.profs[S.pi];
 var SEL="p,h1,h2,h3,h4,h5,h6,li";
-var SYS6=`You are a grammar engine in a reading app for a Russian-speaking learner of English. Input: ONE sentence as numbered words, its text, and the paragraph for context. Parse the sentence into its members (члены предложения) and give each word's part of speech. Reply with ONLY JSON:
+var SYS6=`You are a grammar engine in a reading app for a Russian-speaking learner of English. Input: ONE sentence as numbered words, its text, and the paragraph for context. Reply with ONLY JSON:
 {"tr":"complete Russian translation, literal but grammatical (for your own reasoning, not shown)",
 "w":[{"i":0,"ipa":"American IPA without brackets","pos":"ONE Russian word: существительное, глагол, прилагательное, наречие, местоимение, предлог, союз, артикль, числительное, частица, междометие"}],
-"m":[{"w":[word numbers],"t":"role in Russian, e.g. Подлежащее","e":"role in English, e.g. Subject","ru":"literal grammatical Russian translation of the member","c":[child members]}],
-"phr":[{"w":[word numbers],"text":"phrase as written","type":"фразовый глагол | коллокация | словосочетание | идиома","m":["meanings, the one fitting this sentence first, max 4"]}]}
+"b":[{"w":[word numbers],"t":"grammatical name of the block in Russian, e.g. Именная группа","e":"same in English, e.g. Noun phrase","ru":["translation of the block that fits this sentence","1-3 alternative translations"]}],
+"m":[{"w":[word numbers],"t":"member of the sentence in Russian, e.g. Подлежащее","e":"same in English, e.g. Subject","ru":"literal grammatical Russian translation of the member"}],
+"idi":[{"w":[word numbers],"text":"idiom as written","m":["meanings in Russian, best first, max 4"],"lit":"literal word-for-word translation"}]}
 Rules:
 - "w" has an entry for every word number.
-- Top-level members split the whole sentence into its main members in order (Подлежащее, Сказуемое or Сказуемая группа, Прямое дополнение, Косвенное дополнение, Обстоятельство (места, времени, образа действия, меры и степени, причины, цели), Определение, Придаточное предложение with its type, etc.). Together they contain every word number exactly once.
-- "c" splits a member into its inner members; they must contain exactly the words of the parent, each once. Use roles such as Глагол-связка (Linking verb), Именная часть сказуемого (Subject complement), Инфинитивное дополнение (Infinitive complement), Подчинительный союз (Subordinating conjunction), Определение (Participle phrase). Leave "c" empty for a member that is a single word or a tight unit that must not be split: article + noun (a book), infinitive or phrasal verb with its particles (to pick up), auxiliary + verb (was smoking). Depth at most 3.
-- Translations in "ru" are literal and faithful to the author's wording but correct Russian, so the member translations read in order as the full sentence.
-- "phr" lists phrasal verbs, collocations, fixed phrases and idioms present in the sentence (max 6, empty array if none); words need not be adjacent.
+- "b" splits the WHOLE sentence into SHORT grammatical blocks, in order, each word in exactly one block. Think of questions about the sentence: each block answers one (Кто? Какой? Который что делал? Что делал? Где? Когда? Куда? Почему?). Typical blocks of 2-4 words: noun phrase (article/determiner + adjectives + noun stay together), relative-clause verb (who lived), prepositional phrase (preposition + its noun phrase), verb group (auxiliary / "to" / particle stay with the verb). An idiom must form a block of its own, with t "Идиома".
+- Block translations are literal and faithful to the author's wording, correct Russian.
+- "m" lists the full members of the sentence (Подлежащее, Сказуемое, Прямое дополнение, Косвенное дополнение, Обстоятельство with its kind, Определение, Придаточное предложение with its type...), in order, each word in exactly one member, no nesting; member translations read in order as the whole sentence.
+- "idi" lists idioms in the sentence (empty array if none). Do not mark ordinary phrasal verbs or collocations as idioms.
 - Keep every string short.
-Example for "I was lucky enough to pick up a book." (I0 was1 lucky2 enough3 to4 pick5 up6 a7 book8):
-{"tr":"Мне посчастливилось раздобыть книгу.","w":[{"i":0,"ipa":"aɪ","pos":"местоимение"},{"i":1,"ipa":"wʌz","pos":"глагол"},{"i":2,"ipa":"ˈlʌki","pos":"прилагательное"},{"i":3,"ipa":"ɪˈnʌf","pos":"наречие"},{"i":4,"ipa":"tuː","pos":"частица"},{"i":5,"ipa":"pɪk","pos":"глагол"},{"i":6,"ipa":"ʌp","pos":"наречие"},{"i":7,"ipa":"ə","pos":"артикль"},{"i":8,"ipa":"bʊk","pos":"существительное"}],"m":[{"w":[0],"t":"Подлежащее","e":"Subject","ru":"я","c":[]},{"w":[1,2,3,4,5,6],"t":"Сказуемая группа","e":"Predicate","ru":"был достаточно удачлив, чтобы раздобыть","c":[{"w":[1],"t":"Глагол-связка","e":"Linking verb","ru":"был","c":[]},{"w":[2],"t":"Именная часть сказуемого","e":"Subject complement","ru":"удачлив","c":[]},{"w":[3],"t":"Обстоятельство меры и степени","e":"Adverb of degree","ru":"достаточно","c":[]},{"w":[4,5,6],"t":"Инфинитивное дополнение","e":"Infinitive complement","ru":"чтобы раздобыть","c":[]}]},{"w":[7,8],"t":"Прямое дополнение","e":"Direct object","ru":"книгу","c":[]}],"phr":[{"w":[5,6],"text":"pick up","type":"фразовый глагол","m":["раздобыть","подобрать","забрать"]}]}`;
+Example for "The young boy who lived in a small village wanted to leave." (The0 young1 boy2 who3 lived4 in5 a6 small7 village8 wanted9 to10 leave11):
+{"tr":"Молодой мальчик, который жил в небольшой деревне, хотел уехать.","w":[{"i":0,"ipa":"ðə","pos":"артикль"},{"i":1,"ipa":"jʌŋ","pos":"прилагательное"},{"i":2,"ipa":"bɔɪ","pos":"существительное"},{"i":3,"ipa":"huː","pos":"местоимение"},{"i":4,"ipa":"lɪvd","pos":"глагол"},{"i":5,"ipa":"ɪn","pos":"предлог"},{"i":6,"ipa":"ə","pos":"артикль"},{"i":7,"ipa":"smɔːl","pos":"прилагательное"},{"i":8,"ipa":"ˈvɪlɪdʒ","pos":"существительное"},{"i":9,"ipa":"ˈwɒntɪd","pos":"глагол"},{"i":10,"ipa":"tuː","pos":"частица"},{"i":11,"ipa":"liːv","pos":"глагол"}],"b":[{"w":[0,1,2],"t":"Именная группа","e":"Noun phrase","ru":["молодой мальчик","юный мальчик"]},{"w":[3,4],"t":"Определительное придаточное","e":"Relative clause","ru":["который жил","который проживал"]},{"w":[5,6,7,8],"t":"Предложная группа","e":"Prepositional phrase","ru":["в небольшой деревне","в маленькой деревне"]},{"w":[9,10,11],"t":"Глагольная группа","e":"Verb phrase","ru":["хотел уехать","хотел покинуть"]}],"m":[{"w":[0,1,2,3,4,5,6,7,8],"t":"Подлежащее","e":"Subject","ru":"молодой мальчик, который жил в небольшой деревне"},{"w":[9,10,11],"t":"Сказуемое","e":"Predicate","ru":"хотел уехать"}],"idi":[]}`;
 var SYS7=`You are a bilingual English-Russian dictionary. Reply with ONLY JSON: {"pos":[{"n":"Part of speech in Russian, only the first letter uppercase","t":["Russian translations, most common first"]}]}. List EVERY part of speech the word can be (max 5). For each part of speech give 5 to 10 distinct translations (fewer only if the word really has fewer), covering different senses.`;
 
 function resolve(base,href){var o=[];(base+href).split("/").forEach(function(p){if(p==="..")o.pop();else if(p&&p!==".")o.push(p)});return decodeURIComponent(o.join("/"))}
@@ -265,54 +279,38 @@ function sentOf(w){
   var ss=sents(el),i=el._ws.indexOf(w),k=0;while(k<ss.length-1&&i>ss[k][1])k++;
   return{el:el,k:k,sn:ss[k]};
 }
-function pathOf(ms,id){var p=[];(function f(list){for(var k=0;k<list.length;k++){if(list[k].w.indexOf(id)>-1){p.push(list[k]);f(list[k].c||[]);return}}})(ms);return p}
-function memText(a,m){return m.w.map(function(i){return a.ws[i].textContent}).join(" ")}
+function has(list,id){return (list||[]).filter(function(x){return x.w.indexOf(id)>-1})[0]||null}
+function wtxt(a,w){return w.map(function(i){return a.ws[i].textContent}).join(" ")}
 function roleOf(m){return [m.t,m.e].filter(Boolean).join(" · ")}
 function paintAct(){
-  book.querySelectorAll(".w.mg,.w.du,.w.su,.w.col").forEach(function(e){e.classList.remove("mg","du","su","col")});
+  book.querySelectorAll(".w.mg,.w.du,.w.su,.w.ig").forEach(function(e){e.classList.remove("mg","du","su","ig")});
   if(!act)return;
-  var ws=act.ws,id=act.id;
-  if(act.path&&act.path.length){
-    var top=act.path[0],sm=null;
-    top.w.forEach(function(i){ws[i].classList.add("mg")});
-    for(var j=act.path.length-1;j>=0;j--)if(act.path[j].w.length>1){sm=act.path[j];break}
-    if(sm&&sm!==top)sm.w.forEach(function(i){if(i!==id)ws[i].classList.add("du")});
-  }
+  var ws=act.ws,id=act.id,A=act.A;
+  if(A)A.idi.forEach(function(p){p.w.forEach(function(i){ws[i].classList.add("ig")})});
+  if(act.idi){ws[id].classList.add("su");return}
+  if(act.blk)act.blk.w.forEach(function(i){ws[i].classList.add("mg");if(i!==id)ws[i].classList.add("du")});
   ws[id].classList.add("mg","su");
 }
 function closeSheet(){
   cardTok++;act=null;selW=[];clearInterval(ldIv);
   $("sheet").classList.add("hide");book.classList.remove("cardopen");paintAct();upd();
 }
-function showCol(ids){
-  book.querySelectorAll(".w.col").forEach(function(e){e.classList.remove("col")});
-  if(act&&ids)ids.forEach(function(i){var w=act.ws[i];if(w)w.classList.add("col")});
-}
 function lis(arr,n){
   var h="<ul>";(arr||[]).forEach(function(x,j){h+="<li"+(j>=n?' class="more hide"':"")+">"+esc(x)+"</li>"});
   h+="</ul>";if((arr||[]).length>n)h+='<a class="mo">Еще '+(arr.length-n)+"</a>";return h;
 }
 function fixM(d,n){
-  if(!d||!Array.isArray(d.m)||!d.m.length)return null;
-  function nm(m){
-    if(!m||!Array.isArray(m.w))return null;
-    var ids=m.w.map(Number).filter(function(i){return i>=0&&i<n}).sort(function(a,b){return a-b});
-    if(!ids.length)return null;
-    var o={w:ids,t:String(m.t||""),e:String(m.e||""),ru:String(m.ru||""),c:[]};
-    if(Array.isArray(m.c)&&m.c.length){
-      var kids=m.c.map(nm).filter(Boolean),u={},cnt=0;
-      kids.forEach(function(k){k.w.forEach(function(i){u[i]=(u[i]||0)+1;cnt++})});
-      if(kids.length&&cnt===ids.length&&ids.every(function(i){return u[i]===1}))o.c=kids;
-    }
-    return o;
-  }
-  var ms=d.m.map(nm).filter(Boolean),u={};
-  ms.forEach(function(m){m.w.forEach(function(i){u[i]=(u[i]||0)+1})});
+  if(!d||!Array.isArray(d.b)||!d.b.length)return null;
+  function ids(w){return (Array.isArray(w)?w:[]).map(Number).filter(function(i){return i>=0&&i<n}).sort(function(a,b){return a-b})}
+  function part(list,mk){var out=[];(Array.isArray(list)?list:[]).forEach(function(x){var w=ids(x&&x.w);if(w.length)out.push(mk(x,w))});return out.sort(function(a,b){return a.w[0]-b.w[0]})}
+  function arr(v){return (Array.isArray(v)?v:[v]).filter(Boolean).map(String)}
+  var b=part(d.b,function(x,w){return{w:w,t:String(x.t||""),e:String(x.e||""),ru:arr(x.ru)}}),u={};
+  b.forEach(function(x){x.w.forEach(function(i){u[i]=(u[i]||0)+1})});
   for(var i=0;i<n;i++)if(u[i]!==1)return null;
-  ms.sort(function(a,b){return a.w[0]-b.w[0]});
+  var m=part(d.m,function(x,w){return{w:w,t:String(x.t||""),e:String(x.e||""),ru:String(x.ru||"")}});
+  var idi=part(d.idi,function(x,w){return{w:w,text:String(x.text||""),m:arr(x.m),lit:String(x.lit||"")}});
   var wi=[];(Array.isArray(d.w)?d.w:[]).forEach(function(x){if(x&&+x.i>=0&&+x.i<n)wi[+x.i]={ipa:String(x.ipa||"").replace(/[\[\]\/]/g,"").trim(),pos:String(x.pos||"")}});
-  var phr=(Array.isArray(d.phr)?d.phr:[]).filter(function(p){return p&&Array.isArray(p.w)}).map(function(p){return{w:p.w.map(Number),text:String(p.text||""),type:String(p.type||""),m:Array.isArray(p.m)?p.m.map(String):[]}});
-  return{m:ms,w:wi,phr:phr};
+  return{b:b,m:m,idi:idi,w:wi};
 }
 async function getA(a){
   if(a.A)return a.A;
@@ -321,7 +319,7 @@ async function getA(a){
   var ws=o._ws,sn=a.sn,rg=document.createRange();rg.setStartBefore(ws[sn[0]]);
   if(ws[sn[1]+1])rg.setEndBefore(ws[sn[1]+1]);else rg.setEnd(o,o.childNodes.length);
   var n=a.ws.length,user="Words:\n"+a.ws.map(function(w,i){return i+":"+w.textContent}).join(" ")+"\n\nSentence:\n"+rg.toString().replace(/\s+/g," ").trim()+"\n\nParagraph (context only):\n"+o.textContent.replace(/\s+/g," ").trim().slice(0,1200);
-  var key="m1|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw?fixM(raw,n):null;
+  var key="m2|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw?fixM(raw,n):null;
   if(!d){
     for(var t=0;t<2&&!d;t++){var out=await callApi(user,SYS6),pr=null;try{pr=JSON.parse(out.match(/\{[\s\S]*\}/)[0]);d=fixM(pr,n)}catch(e){d=null}if(d)kv("t","readwrite",function(st){return st.put(pr,key)})}
     if(!d)throw new Error("Модель вернула неверный формат");
@@ -335,36 +333,35 @@ async function getB(word){
   if(!Array.isArray(d.pos))throw new Error("неверный формат ответа");
   kv("t","readwrite",function(st){return st.put(d,k)});return d;
 }
+function dots(){var sh=$("sheet");sh.querySelectorAll(".dots i").forEach(function(d,i){d.classList.toggle("on",i===pageIdx)})}
 function buildSheet(a){
   var sh=$("sheet");
-  sh.innerHTML='<div class="sh"><div class="dots"><i></i><i></i></div><button class="ib" id="cx">✕</button></div><div id="pager"><div class="pg"><div class="chd" id="h1"><div class="sec" style="margin:0 0 4px">ЧЛЕНЫ ПРЕДЛОЖЕНИЯ</div></div><div class="cbody" id="b1"><div class="mut ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd" id="h2"><div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div></div><div class="cbody" id="b2"><div id="ph2"></div><div class="sec">ПЕРЕВОДЫ</div><div id="tr2" class="mut ld">Анализирую… 0.0 с</div></div></div></div>';
+  sh.innerHTML='<div class="sh"><div class="dots"><i></i><i></i></div><button class="ib" id="cx">✕</button></div><div id="pager"><div class="pg"><div class="chd" id="h1"><div class="sec" style="margin:0 0 4px">ФРАЗА</div></div><div class="cbody" id="b1"><div class="mut ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd" id="h2"><div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div></div><div class="cbody" id="b2"><div class="sec" style="margin-top:6px">ПЕРЕВОДЫ</div><div id="tr2" class="mut ld">Анализирую… 0.0 с</div></div></div></div>';
   sh.classList.remove("hide");book.classList.add("cardopen");
   $("cx").onclick=closeSheet;
   var pg=$("pager");
-  function dots(){sh.querySelectorAll(".dots i").forEach(function(d,i){d.classList.toggle("on",i===pageIdx)})}
   pg.onscroll=function(){var i=Math.round(pg.scrollLeft/pg.clientWidth);if(i!==pageIdx){pageIdx=i;dots()}};
   pg.scrollLeft=pageIdx*pg.clientWidth;dots();
 }
-function memHtml(a,m,d,flat){
-  var h='<div class="mb'+(m===a.path[a.path.length-1]?" hot":"")+'" style="margin-left:'+d*16+'px"><div class="mtx">'+esc(memText(a,m))+'</div><div class="mut">'+esc(roleOf(m))+"</div>"+(m.ru?'<div class="mrr">'+esc(m.ru)+"</div>":"")+"</div>";
-  if(!flat)(m.c||[]).forEach(function(c){h+=memHtml(a,c,d+1)});
-  return h;
+function pHead(a,label,w,type){
+  var h='<div class="sec" style="margin:0 0 6px">'+label+'</div><div class="wsr">';
+  w.forEach(function(i){var wi=a.A.w[i]||{};h+='<span class="wd"><span>'+esc(a.ws[i].textContent)+"</span><small>"+esc(wi.ipa||"")+"</small></span>"});
+  h+="</div>";if(type)h+='<div class="mut" style="margin-top:6px">'+esc(type)+"</div>";return h;
 }
 function fillCards(a){
-  var top=a.path[0],h1='<div class="sec" style="margin:0 0 4px">ЧЛЕНЫ ПРЕДЛОЖЕНИЯ</div><div class="ct">'+esc(memText(a,top))+'</div><div class="mut">'+esc(roleOf(top))+"</div>"+(top.ru?'<div class="mrr" style="margin-top:3px">'+esc(top.ru)+"</div>":""),b="";
-  if(top.c&&top.c.length){b+='<div class="sec" style="margin-top:6px">СОСТАВ</div>';top.c.forEach(function(m){b+=memHtml(a,m,0)})}
-  else b+='<div class="alone" style="margin-top:8px">Этот член предложения не делится на части.</div>';
-  b+='<div class="sec">ВСЕ ЧЛЕНЫ ПРЕДЛОЖЕНИЯ</div>';
-  a.A.m.forEach(function(m){var o=memHtml(a,m,0,true);b+=m===top?o.replace('class="mb','class="mb hot'):o});
-  $("h1").innerHTML=h1;$("b1").innerHTML=b;
-  var wi=a.A.w[a.id]||{},word=a.w.textContent;
-  $("h2").innerHTML='<div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(word)+'</div><div class="mut">'+[wi.ipa?"["+wi.ipa+"]":"",cap(wi.pos)].filter(Boolean).map(esc).join(" · ")+"</div>";
-  var ph=(a.A.phr||[]).filter(function(p){return p.w.indexOf(a.id)>-1}),idi=ph.filter(function(p){return /идиом/i.test(p.type)}),oth=ph.filter(function(p){return !/идиом/i.test(p.type)});
-  function it(p){return '<div class="cl" data-i="'+esc(JSON.stringify(p.w))+'"><b>'+esc(p.text)+'</b><span class="tag">'+esc(p.type)+"</span></div>"+lis(p.m,4)}
-  var h='<div class="sec" style="margin-top:6px">В ПРЕДЛОЖЕНИИ</div>';
-  if(oth.length)oth.forEach(function(p){h+=it(p)});else h+='<div class="alone">Самостоятельное слово: в этом предложении оно не входит ни в какое сочетание.</div>';
-  if(idi.length){h+='<div class="sec">ИДИОМЫ</div>';idi.forEach(function(p){h+=it(p)})}
-  $("ph2").innerHTML=h;
+  var A=a.A,src=a.idi?{w:a.idi.w,t:"Идиома",e:"Idiom",ru:a.idi.m}:a.blk;
+  $("h1").innerHTML=pHead(a,"ФРАЗА",src.w,roleOf(src));
+  var b='<div class="sec" style="margin-top:6px">ПЕРЕВОД</div>'+lis(src.ru,4)+'<div class="dv"></div><div class="sec" style="margin-top:0">ЧЛЕНЫ ПРЕДЛОЖЕНИЯ</div>';
+  if(A.m.length)A.m.forEach(function(m){b+='<div class="mb'+(m.w.indexOf(a.id)>-1?" hot":"")+'"><div class="mtx">'+esc(wtxt(a,m.w))+'</div><div class="mut">'+esc(roleOf(m))+'</div><div class="mrr"><i>'+esc(m.ru)+"</i></div></div>"});
+  else b+='<div class="alone">Нет данных.</div>';
+  $("b1").innerHTML=b;
+  var wi=A.w[a.id]||{};
+  $("h2").innerHTML='<div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div><div class="mut">'+[wi.ipa?"["+wi.ipa+"]":"",cap(wi.pos)].filter(Boolean).map(esc).join(" · ")+"</div>";
+  var idi=a.idi||A.idi[0];
+  if(idi){
+    $("pager").insertAdjacentHTML("beforeend",'<div class="pg"><div class="chd">'+pHead(a,"ИДИОМА",idi.w,"Идиома · Idiom")+'</div><div class="cbody"><div class="sec" style="margin-top:6px">ЗНАЧЕНИЯ</div>'+lis(idi.m,4)+(idi.lit?'<div class="dv"></div><div class="sec" style="margin-top:0">БУКВАЛЬНО</div><div class="mrr"><i>'+esc(idi.lit)+"</i></div>":"")+"</div></div>");
+    $("sheet").querySelector(".dots").insertAdjacentHTML("beforeend","<i></i>");dots();
+  }
 }
 function trHtml(a,d){
   var ps=((a.A&&a.A.w[a.id]&&a.A.w[a.id].pos)||"").toLowerCase().slice(0,4),gs=d.pos.slice(0,5);
@@ -385,7 +382,9 @@ async function openFor(a){
   var pB=getB(a.w.textContent).then(function(d){return{d:d}},function(e){return{e:e}});
   try{await getA(a)}catch(e){if(my!==cardTok)return;showErr(e);return}
   if(my!==cardTok)return;
-  a.path=pathOf(a.A.m,a.id);paintAct();fillCards(a);
+  a.blk=has(a.A.b,a.id);a.idi=has(a.A.idi,a.id);
+  if(!a.blk&&!a.idi)a.blk={w:[a.id],t:"",e:"",ru:[]};
+  paintAct();fillCards(a);
   var r=await pB;if(my!==cardTok)return;
   clearInterval(ldIv);
   var tr=$("tr2");tr.classList.remove("ld");
@@ -394,14 +393,14 @@ async function openFor(a){
 function tapWord(w){
   var o=sentOf(w),id=o.el._ws.indexOf(w)-o.sn[0];
   if(act&&act.w===w&&!$("sheet").classList.contains("hide")){closeSheet();return}
-  act={w:w,el:o.el,k:o.k,sn:o.sn,ws:o.el._ws.slice(o.sn[0],o.sn[1]+1),id:id,A:null,path:null};
+  act={w:w,el:o.el,k:o.k,sn:o.sn,ws:o.el._ws.slice(o.sn[0],o.sn[1]+1),id:id,A:null,blk:null,idi:null};
   selW=[w];upd();openFor(act);
 }
 $("sheet").addEventListener("click",function(e){
-  var m=e.target.closest(".mo"),c=e.target.closest(".cl");
-  if(m&&m.classList.contains("rt")){if(act)openFor(act);return}
-  if(m&&m.previousElementSibling){m.previousElementSibling.querySelectorAll(".more").forEach(function(x){x.classList.remove("hide")});m.remove()}
-  if(c){try{showCol(JSON.parse(c.getAttribute("data-i")))}catch(x){}}
+  var m=e.target.closest(".mo");
+  if(!m)return;
+  if(m.classList.contains("rt")){if(act)openFor(act);return}
+  if(m.previousElementSibling){m.previousElementSibling.querySelectorAll(".more").forEach(function(x){x.classList.remove("hide")});m.remove()}
 });
 function applyS(){
   var de=document.documentElement,st=de.style;
