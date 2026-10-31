@@ -164,6 +164,8 @@ var SYS6=`You are a grammar engine in a reading app for a Russian-speaking learn
 Rules:
 - "w" has an entry for every word number.
 - "b" splits the WHOLE sentence into SHORT grammatical blocks, in order, each word in exactly one block. Think of questions about the sentence: each block answers one (Кто? Какой? Который что делал? Что делал? Где? Когда? Куда? Почему?). Typical blocks of 2-4 words: noun phrase (article/determiner + adjectives + noun stay together), relative-clause verb (who lived), prepositional phrase (preposition + its noun phrase), verb group (auxiliary / "to" / particle stay with the verb). An idiom must form a block of its own, with t "Идиома".
+- HARD LIMIT: a block has at most 5 words (usually 2-4). Never put a whole clause or a long phrase into one block: split it by its inner questions. A noun phrase is only determiner + adjectives + noun; an "of ..." phrase, an infinitive phrase (to be apportioned), a participle phrase and a relative clause are separate blocks.
+- Splitting example (blocks only): "The next of Kronos's children to be apportioned her divine duties was Demeter." -> [The next] [of Kronos's children] [to be apportioned] [her divine duties] [was Demeter] = следующий | из детей Кроноса | которому предстояло получить | свои божественные обязанности | была Деметра.
 - Block translations are literal and faithful to the author's wording, correct Russian.
 - "m" lists the full members of the sentence (Подлежащее, Сказуемое, Прямое дополнение, Косвенное дополнение, Обстоятельство with its kind, Определение, Придаточное предложение with its type...), in order, each word in exactly one member, no nesting; member translations read in order as the whole sentence.
 - "idi" lists idioms in the sentence (empty array if none). Do not mark ordinary phrasal verbs or collocations as idioms.
@@ -310,7 +312,7 @@ function fixM(d,n){
   var m=part(d.m,function(x,w){return{w:w,t:String(x.t||""),e:String(x.e||""),ru:String(x.ru||"")}});
   var idi=part(d.idi,function(x,w){return{w:w,text:String(x.text||""),m:arr(x.m),lit:String(x.lit||"")}});
   var wi=[];(Array.isArray(d.w)?d.w:[]).forEach(function(x){if(x&&+x.i>=0&&+x.i<n)wi[+x.i]={ipa:String(x.ipa||"").replace(/[\[\]\/]/g,"").trim(),pos:String(x.pos||"")}});
-  return{b:b,m:m,idi:idi,w:wi};
+  return{b:b,m:m,idi:idi,w:wi,long:b.some(function(x){return x.w.length>5})};
 }
 async function getA(a){
   if(a.A)return a.A;
@@ -319,10 +321,17 @@ async function getA(a){
   var ws=o._ws,sn=a.sn,rg=document.createRange();rg.setStartBefore(ws[sn[0]]);
   if(ws[sn[1]+1])rg.setEndBefore(ws[sn[1]+1]);else rg.setEnd(o,o.childNodes.length);
   var n=a.ws.length,user="Words:\n"+a.ws.map(function(w,i){return i+":"+w.textContent}).join(" ")+"\n\nSentence:\n"+rg.toString().replace(/\s+/g," ").trim()+"\n\nParagraph (context only):\n"+o.textContent.replace(/\s+/g," ").trim().slice(0,1200);
-  var key="m2|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw?fixM(raw,n):null;
+  var key="m3|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw?fixM(raw,n):null;
+  if(d&&d.long)d=null;
   if(!d){
-    for(var t=0;t<2&&!d;t++){var out=await callApi(user,SYS6),pr=null;try{pr=JSON.parse(out.match(/\{[\s\S]*\}/)[0]);d=fixM(pr,n)}catch(e){d=null}if(d)kv("t","readwrite",function(st){return st.put(pr,key)})}
-    if(!d)throw new Error("Модель вернула неверный формат");
+    var best=null,bestRaw=null;
+    for(var t=0;t<3&&!(best&&!best.long);t++){
+      var u2=t?user+"\n\nIMPORTANT: your previous answer had a block longer than 5 words. Split every block to at most 5 words by its inner questions (Какой? Чей? Что делать? Какие?).":user,out=await callApi(u2,SYS6),pr=null,c=null;
+      try{pr=JSON.parse(out.match(/\{[\s\S]*\}/)[0]);c=fixM(pr,n)}catch(e){c=null}
+      if(c&&(!best||best.long)){best=c;bestRaw=pr}
+    }
+    if(!best)throw new Error("Модель вернула неверный формат");
+    d=best;kv("t","readwrite",function(st){return st.put(bestRaw,key)});
   }
   o._A[a.k]=d;a.A=d;return d;
 }
