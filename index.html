@@ -178,6 +178,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <div><span>Поля</span><button data-a="p-">Меньше</button><button data-a="p+">Больше</button></div>
   <div><span>Выделение</span><input type="color" id="cSel"><button data-a="cs0">Сброс</button></div>
   <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Бежевый</button><button data-a="t:dark">Тёмный</button></div>
+  <div><span>Слова</span><button data-a="dg" id="dg">Google</button><button data-a="da" id="da">ИИ</button></div>
   <div><span>Сервис</span><select id="aProf"></select><button id="aNew">+</button></div>
   <div><span>API</span><input id="aUrl" placeholder="API URL" autocapitalize="off" autocorrect="off"></div>
   <div><span>Формат</span><select id="aFmt"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="gemini">Gemini</option></select></div>
@@ -194,7 +195,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 <script>
 var chapters=[],idx=0,bookId="book",gen=0,blocks=[],queue=[],active=0,paused=false,io=null;
 var $=function(i){return document.getElementById(i)},book=$("book");
-var S={fs:26,pad:36,theme:"white",ru:true,cSel:null,cRu:null,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
+var S={fs:26,pad:36,theme:"white",ru:true,cSel:null,cRu:null,cf:1,dict:"google",ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
 if(!Array.isArray(S.profs)||!S.profs.length){S.profs=[Object.assign({n:"Основной"},S.api),{n:"Gemini",fmt:"gemini",url:"https://generativelanguage.googleapis.com/v1beta",key:"",model:"gemini-2.5-flash"}];S.pi=0}
 if(!(S.pi>=0&&S.pi<S.profs.length))S.pi=0;
@@ -434,7 +435,19 @@ async function getM(a){
   if(!d)throw new Error("Модель вернула неверный формат");
   return d;
 }
+async function getG(word){
+  var k="g1|"+word.toLowerCase(),d=await kv("t","readonly",function(st){return st.get(k)});
+  if(d&&Array.isArray(d.pos))return d;
+  var r=await ft("https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&dt=bd&dj=1&q="+encodeURIComponent(word.toLowerCase()),{});
+  if(!r.ok)throw new Error("Google "+r.status);
+  var j=await r.json(),pos=[];
+  (j.dict||[]).forEach(function(g){var t=(g.entry||[]).map(function(e){return e.word}).filter(Boolean);if(!t.length)t=g.terms||[];if(t.length)pos.push({n:g.pos||"Перевод",t:t.slice(0,12)})});
+  if(!pos.length){var tr=(j.sentences||[]).map(function(x){return x.trans||""}).join("").trim();if(tr)pos.push({n:"Перевод",t:[tr]})}
+  if(!pos.length)throw new Error("Google не вернул перевод");
+  d={pos:pos};kv("t","readwrite",function(st){return st.put(d,k)});return d;
+}
 async function getB(word){
+  if(S.dict!=="ai")return getG(word);
   var k="d2|"+word.toLowerCase(),d=await kv("t","readonly",function(st){return st.get(k)});
   if(d&&Array.isArray(d.pos))return d;
   var o=await callApi("Word: "+word,SYS7);d=JSON.parse(o.match(/\{[\s\S]*\}/)[0]);
@@ -561,7 +574,7 @@ $("sheet").addEventListener("click",function(e){
 });
 function applyS(){
   var de=document.documentElement,st=de.style;
-  de.setAttribute("data-theme",S.theme);st.setProperty("--cf",S.cf||1);
+  de.setAttribute("data-theme",S.theme);$("dg").classList.toggle("on",S.dict!=="ai");$("da").classList.toggle("on",S.dict==="ai");st.setProperty("--cf",S.cf||1);
   S.cSel?st.setProperty("--sel",S.cSel):st.removeProperty("--sel");
   book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";
   var cs=getComputedStyle(de);
@@ -578,6 +591,8 @@ $("set").addEventListener("click",function(e){
   if(a==="p-")S.pad=Math.max(4,S.pad-4);
   if(a==="p+")S.pad=Math.min(90,S.pad+4);
   if(a.indexOf("t:")===0)S.theme=a.slice(2);
+  if(a==="dg")S.dict="google";
+  if(a==="da")S.dict="ai";
   if(a==="cs0")S.cSel=null;
   applyS();
 });
