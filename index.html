@@ -160,12 +160,6 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #sheet .chd .ct{font-size:25px}
 #sheet .chd .mut{font-size:16px}
 #sheet .chd .sec{font-size:14px}
-.w.sel{color:var(--sel);text-decoration-line:underline;text-decoration-style:solid;text-decoration-color:currentColor;text-decoration-thickness:2px;text-underline-offset:5px}
-#rv{opacity:.35;color:#1a6fd1;text-decoration:none}#rv.act{opacity:1}
-.df{margin:10px 0}
-.dtx{font-size:1.06em;color:var(--fk);text-align:justify;hyphens:auto;-webkit-hyphens:auto}
-.dex{color:color-mix(in srgb,var(--fg) 50%,var(--bg));margin-top:3px;text-align:justify}
-.syn{margin:8px 0 4px;color:color-mix(in srgb,var(--fg) 50%,var(--bg));font-size:.94em}
 </style>
 </head>
 <body>
@@ -176,7 +170,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <button id="aa">Aa</button>
   <button id="prev">‹</button><button id="next">›</button>
 </div>
-<div id="empty">Откройте EPUB-файл.<br>Коснитесь слова, чтобы выделить его, затем нажмите 文A: откроется карточка с переводами и определениями. Кнопка R открывает Reverso.<br>Сначала введите ключ API: Aa → Перевод.</div>
+<div id="empty">Откройте EPUB-файл.<br>Коснитесь слова: в тексте подсветится член предложения, внизу откроются карточки «Члены предложения» и «Части речи» (переключаются свайпом).<br>Сначала введите ключ API: Aa → Перевод.</div>
 <div id="sp" class="hide"><div class="top"><input id="sq" type="search" placeholder="Поиск по книге"><button id="sgo">Найти</button><button id="sx">✕</button></div><div id="scount"></div><div id="sres"></div></div>
 <div id="set" class="hide">
   <div><span>Размер</span><button data-a="f-">A−</button><button data-a="f+">A+</button></div>
@@ -184,19 +178,52 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <div><span>Поля</span><button data-a="p-">Меньше</button><button data-a="p+">Больше</button></div>
   <div><span>Выделение</span><input type="color" id="cSel"><button data-a="cs0">Сброс</button></div>
   <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Бежевый</button><button data-a="t:dark">Тёмный</button></div>
-  <div><button id="aClr">Очистить кэш</button></div>
+  <div><span>Слова</span><button data-a="dg" id="dg">Google</button><button data-a="da" id="da">ИИ</button></div>
+  <div><span>Сервис</span><select id="aProf"></select><button id="aNew">+</button></div>
+  <div><span>API</span><input id="aUrl" placeholder="API URL" autocapitalize="off" autocorrect="off"></div>
+  <div><span>Формат</span><select id="aFmt"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="gemini">Gemini</option></select></div>
+  <div><span>Ключ</span><input id="aKey" type="password" placeholder="API key"></div>
+  <div><span>Модель</span><select id="aPre"><option value="">Выбрать…</option><option>claude-haiku-5-5</option><option>claude-sonnet-5-5</option><option>claude-opus-5-5</option><option>gemini-2.5-flash</option><option>gemini-2.5-pro</option><option>gemini-2.5-flash-lite</option></select><button id="aLs">Список</button></div>
+  <div><span></span><input id="aMod" placeholder="model" autocapitalize="off" autocorrect="off"></div>
+  <div><button id="aOk">Сохранить</button><button id="aClr">Очистить кэш</button></div>
 </div>
 <div id="book" class="hide" lang="en"></div>
 <div id="toast" class="hide"></div>
-<div id="fab"><a id="rv" class="fc" target="_blank" rel="noopener">R</a><button id="fb" class="fc">文A</button></div>
+<div id="fab"><a id="rv" class="fc hide" target="_blank" rel="noopener" style="color:#1a6fd1">R</a><a id="gg" class="fc hide" style="color:#d93025">G</a><button id="fb" class="fc">文A</button></div>
 <div id="dim" class="hide"></div>
 <div id="sheet" class="sheet hide"></div>
 <script>
 var chapters=[],idx=0,bookId="book",gen=0,blocks=[],queue=[],active=0,paused=false,io=null;
 var $=function(i){return document.getElementById(i)},book=$("book");
-var S={fs:26,pad:36,theme:"white",ru:true,cSel:null,cf:1};
+var S={fs:26,pad:36,theme:"white",ru:true,cSel:null,cRu:null,cf:1,dict:"google",ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
+if(!Array.isArray(S.profs)||!S.profs.length){S.profs=[Object.assign({n:"Основной"},S.api),{n:"Gemini",fmt:"gemini",url:"https://generativelanguage.googleapis.com/v1beta",key:"",model:"gemini-2.5-flash"}];S.pi=0}
+if(!(S.pi>=0&&S.pi<S.profs.length))S.pi=0;
+S.api=S.profs[S.pi];
 var SEL="p,h1,h2,h3,h4,h5,h6,li";
+var SYS6=`You are a grammar engine in a reading app for a Russian-speaking learner of English. Input: ONE sentence as numbered words, its text, and the paragraph for context. Reply with ONLY JSON:
+{"tr":"complete Russian translation, literal but grammatical (for your own reasoning, not shown)",
+"w":[{"i":0,"ipa":"American IPA without brackets","pos":"ONE Russian word: существительное, глагол, прилагательное, наречие, местоимение, предлог, союз, артикль, числительное, частица, междометие"}],
+"b":[{"q":"the question this block answers, in Russian: Кто? Какой? Что делал? Чей? Где? Когда? Что?","w":[word numbers],"t":"grammatical name of the block in Russian, e.g. Именная группа","e":"same in English, e.g. Noun phrase","ru":["the single most faithful translation of the block"]}],
+"idi":[{"w":[word numbers],"text":"idiom as written","m":["the single best meaning in Russian"],"lit":"literal word-for-word translation"}]}
+Rules for "b" (short grammatical blocks):
+1. Blocks split the WHOLE sentence in order, every word in exactly one block.
+2. Think like a teacher asking questions about the sentence: each block is the short answer to ONE question. Example: "The young boy who lived in a small village wanted to discover the mysterious world that existed beyond the mountains." = [The young boy] Кто? | [who lived] Который что делал? | [in a small village] Где? | [wanted to discover] Что хотел? | [the mysterious world] Что? | [that existed] Который что делал? | [beyond the mountains] Где?
+3. A block has 1 to 4 words, never more than 5.
+4. Start a NEW block at: every preposition (of, in, beyond, from, with...), every relative pronoun or conjunction (who, which, that, and, when, because...), the "to" of an infinitive, a finite verb that follows a noun phrase, and every new noun phrase.
+5. A verb is NEVER in one block with its object: the object is a block of its own. A verb block is only the verb with its auxiliaries and "to" (wanted to discover, was smoking, to be apportioned).
+6. A noun-phrase block is only determiners or possessives, adjectives and the noun (her divine duties); an "of ..." phrase is a separate block.
+7. An idiom forms a block of its own with t "Идиома".
+Example 2: "The next of Kronos's children to be apportioned her divine duties was Demeter." = [The next] Кто по счёту? | [of Kronos's children] Из чьих детей? | [to be apportioned] Которому что предстояло? | [her divine duties] Что? | [was Demeter] Кто был?
+Block translations follow the author's words strictly (see TRANSLATION RULE). "w" has an entry for every word number. "idi" lists idioms (empty array if none); do not mark ordinary phrasal verbs or collocations as idioms. Keep every string short.
+Example JSON for "The young boy who lived in a small village wanted to leave." (The0 young1 boy2 who3 lived4 in5 a6 small7 village8 wanted9 to10 leave11):
+{"tr":"Молодой мальчик, который жил в небольшой деревне, хотел уехать.","w":[{"i":0,"ipa":"ðə","pos":"артикль"},{"i":1,"ipa":"jʌŋ","pos":"прилагательное"},{"i":2,"ipa":"bɔɪ","pos":"существительное"},{"i":3,"ipa":"huː","pos":"местоимение"},{"i":4,"ipa":"lɪvd","pos":"глагол"},{"i":5,"ipa":"ɪn","pos":"предлог"},{"i":6,"ipa":"ə","pos":"артикль"},{"i":7,"ipa":"smɔːl","pos":"прилагательное"},{"i":8,"ipa":"ˈvɪlɪdʒ","pos":"существительное"},{"i":9,"ipa":"ˈwɒntɪd","pos":"глагол"},{"i":10,"ipa":"tuː","pos":"частица"},{"i":11,"ipa":"liːv","pos":"глагол"}],"b":[{"q":"Кто?","w":[0,1,2],"t":"Именная группа","e":"Noun phrase","ru":["молодой мальчик"]},{"q":"Который что делал?","w":[3,4],"t":"Определительное придаточное","e":"Relative clause","ru":["который жил"]},{"q":"Где?","w":[5,6,7,8],"t":"Предложная группа","e":"Prepositional phrase","ru":["в небольшой деревне"]},{"q":"Что хотел?","w":[9,10,11],"t":"Глагольная группа","e":"Verb phrase","ru":["хотел уехать"]}],"idi":[]}`;
+var SYS8=`You are a grammar engine in a reading app for a Russian-speaking learner of English. Input: ONE sentence as numbered words, its text, and context. Split the sentence into its full members (члены предложения). Reply with ONLY JSON: {"m":[{"w":[word numbers],"t":"member in Russian, e.g. Подлежащее","e":"same in English, e.g. Subject","ru":"literal grammatical Russian translation of the member"}]}. Members in order: Подлежащее, Сказуемое, Прямое дополнение, Косвенное дополнение, Обстоятельство (with its kind: места, времени, образа действия, меры и степени, причины, цели), Определение, Придаточное предложение (with its type). Each word is in exactly one member, no nesting, and the member translations read in order as the whole sentence. Example for "The young boy who lived in a small village wanted to leave.": {"m":[{"w":[0,1,2,3,4,5,6,7,8],"t":"Подлежащее","e":"Subject","ru":"молодой мальчик, который жил в небольшой деревне"},{"w":[9,10,11],"t":"Сказуемое","e":"Predicate","ru":"хотел уехать"}]}`;
+var SYS9=`You split a group of words of an English sentence into short grammatical blocks for a Russian-speaking learner. Input: the sentence, its numbered words, and the numbers of the group to split. Reply with ONLY JSON: {"b":[{"w":[word numbers],"t":"grammatical name in Russian","e":"same in English","ru":["the single most faithful translation"]}]}. Rules: blocks cover exactly the given numbers, in order, each once; every block has 1 to 4 words (never more than 5) and answers one question (Кто? Какой? Что? Где?). Start a new block at every preposition, relative pronoun or conjunction, the "to" of an infinitive, and every new noun phrase. A verb (with its auxiliaries and "to") is NEVER in one block with its object. Example: group "to be apportioned her divine duties" gives [to be apportioned] and [her divine duties].`;
+var STRICT="TRANSLATION RULE: follow the author's own words strictly. Translate every noun, verb, adjective and adverb by its direct, literal Russian equivalent. Do not paraphrase, do not replace words with more natural or more common ones, do not add or drop words (for example 'reference' = 'упоминание' or 'отсылка', never 'речь'; 'common' = 'общий' or 'обычный', not a free guess). Keep the author's word order wherever Russian grammar allows; change it only when Russian grammar requires. Give ONE translation only: the most faithful one. Use correct Russian grammar and punctuation, nothing more.";
+var SYS7=`You are a bilingual English-Russian dictionary. Reply with ONLY JSON: {"pos":[{"n":"Part of speech in Russian, only the first letter uppercase","t":["Russian translations, most common first"]}]}. List EVERY part of speech the word can be (max 5). For each part of speech give 5 to 10 distinct translations (fewer only if the word really has fewer), covering different senses.`;
+
+SYS6+="\n"+STRICT;SYS8+="\n"+STRICT;SYS9+="\n"+STRICT;
 function resolve(base,href){var o=[];(base+href).split("/").forEach(function(p){if(p==="..")o.pop();else if(p&&p!==".")o.push(p)});return decodeURIComponent(o.join("/"))}
 function wrapWords(root){
   var wk=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),nodes=[],n,cnt=0,re=/[\p{L}\p{N}][\p{L}\p{N}'’\-]*/gu;
@@ -217,149 +244,337 @@ function wrapWords(root){
 var dbp=null;
 function db(){return dbp||(dbp=new Promise(function(res,rej){var r=indexedDB.open("reader2",1);r.onupgradeneeded=function(){r.result.createObjectStore("b");r.result.createObjectStore("t")};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}}))}
 function kv(st,mode,fn){return db().then(function(d){return new Promise(function(res){var q=fn(d.transaction(st,mode).objectStore(st));q.onsuccess=function(){res(q.result)};q.onerror=function(){res(null)}})}).catch(function(){return null})}
-/* helpers */
-var bt=null;
-function toast(m,p){var t=$("toast");t.classList.remove("hide");t.classList.toggle("err",!p);t.textContent=m;clearTimeout(bt);bt=setTimeout(function(){t.classList.add("hide")},p?2000:6000)}
-$("toast").onclick=function(){$("toast").classList.add("hide")};
-async function ft(url,o,ms){
-  var t,lim=ms||20000,to=new Promise(function(_,rej){t=setTimeout(function(){rej(new Error("Нет ответа за "+Math.round(lim/1000)+" с. Проверьте интернет и VPN"))},lim)});
-  try{return await Promise.race([fetch(url,o||undefined),to])}
-  catch(e){
-    if(e instanceof TypeError)throw new Error("Нет связи ("+e.message+"). Проверьте интернет и VPN");
-    throw e;
-  }finally{clearTimeout(t)}
+/* translation */
+var bt=null,busyOwner=0,tapN=0,curRu=null,curS=null,retry=null;
+function toast(m,p){var t=$("toast");clearInterval(bt);busyOwner=0;t.classList.remove("hide");t.classList.toggle("err",!p);t.textContent=m+(p||!retry?"":" (тап — повторить)");if(p)setTimeout(function(){t.classList.add("hide")},2000)}
+function busy(on,msg,own){
+  var t=$("toast");
+  if(!on){if(busyOwner===own){clearInterval(bt);busyOwner=0;t.classList.add("hide")}return}
+  clearInterval(bt);busyOwner=own;t.classList.remove("hide","err");var t0=Date.now();
+  function f(){t.textContent=msg+" "+((Date.now()-t0)/1000).toFixed(1)+" с"}f();bt=setInterval(f,100);
 }
-function put(k,v){try{var c=JSON.parse(JSON.stringify(v));kv("t","readwrite",function(st){return st.put(c,k)})}catch(e){}}
+async function callApi(user,sys){
+  try{return await callApi2(user,sys)}catch(e){if(e instanceof TypeError)throw new Error("Нет связи с сервером ("+e.message+"). Проверьте интернет и VPN: сервис мог быть недоступен из вашей сети. Если сайт сервиса открывается, причина в запрете браузерных запросов (CORS)");throw e}
+}
+var GBASE="https://generativelanguage.googleapis.com/v1beta";
+async function ft(url,o){
+  var c=new AbortController(),t=setTimeout(function(){c.abort()},75000);
+  try{return await fetch(url,Object.assign({signal:c.signal},o))}
+  catch(e){if(e&&e.name==="AbortError")throw new Error("Нет ответа от сервера за 75 с. Проверьте VPN и сеть: в приложении на экране «Домой» трафик может идти мимо VPN.");throw e}
+  finally{clearTimeout(t)}
+}
+async function callApi2(user,sys){
+  if(!S.api.key||!S.api.model)throw new Error("Укажите ключ и модель: Aa → Перевод");
+  var c=S.api,base=c.url.replace(/\/+$/,""),r,j,anth=c.fmt==="anthropic",gem=c.fmt==="gemini";
+  if(anth)r=await ft(base.replace(/\/v1$/,"")+"/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:c.model,max_tokens:8000,system:sys,messages:[{role:"user",content:user}]})});
+  else if(gem){
+    var gm=c.model.replace(/^models\//,""),gc={temperature:0.2,responseMimeType:"application/json"};
+    if(/2\.5-flash/.test(gm))gc.thinkingConfig={thinkingBudget:0};
+    r=await ft((base||GBASE)+"/models/"+encodeURIComponent(gm)+":generateContent?key="+encodeURIComponent(c.key),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:"user",parts:[{text:user}]}],generationConfig:gc})});
+  }
+  else r=await ft(base+"/chat/completions",{method:"POST",headers:{"content-type":"application/json","Authorization":"Bearer "+c.key},body:JSON.stringify({model:c.model,temperature:0.2,messages:[{role:"system",content:sys},{role:"user",content:user}]})});
+  if(!r.ok)throw new Error("API "+r.status+": "+(await r.text()).slice(0,120));
+  j=await r.json();
+  if(anth)return j.content.map(function(x){return x.text||""}).join("");
+  if(gem){
+    var cd=j.candidates&&j.candidates[0],t=((cd&&cd.content&&cd.content.parts)||[]).map(function(x){return x.text||""}).join("");
+    if(!t)throw new Error("Gemini вернул пустой ответ"+(cd&&cd.finishReason?" ("+cd.finishReason+")":""));
+    return t;
+  }
+  return j.choices[0].message.content;
+}
+function fix(d,n){
+  var u=d&&d.u,seen={},cnt=0,out=[];if(!Array.isArray(u))return null;
+  for(var k=0;k<u.length;k++){var x=u[k];
+    if(!Array.isArray(x)||!Array.isArray(x[0])||!x[0].length||typeof x[1]!=="string")return null;
+    var ids=x[0].map(Number).sort(function(p,q){return p-q});
+    for(var j=0;j<ids.length;j++){var id=ids[j];if(!(id>=0&&id<n)||seen[id])return null;seen[id]=1;cnt++}
+    out.push([ids,x[1]]);
+  }
+  return cnt===n?out:null;
+}
+function sents(el){
+  if(el._ss)return el._ss;
+  var ws=el._ws,ss=[],a=0,AB=/^(mr|mrs|ms|dr|st|mt|prof|sr|jr|vs|no|etc)$/i;
+  for(var i=0;i<ws.length-1;i++){
+    var rg=document.createRange();rg.setStartAfter(ws[i]);rg.setEndBefore(ws[i+1]);var b=rg.toString(),pw=ws[i].textContent;
+    if(/[.!?…]['"”’»)\]]*\s+['"“‘«(\[—–-]*$/.test(b)&&/^[A-Z0-9À-ÖØ-Þ]/.test(ws[i+1].textContent)&&!(b.charAt(0)==="."&&(AB.test(pw)||/^[A-Z]$/.test(pw)))){ss.push([a,i]);a=i+1}
+  }
+  ss.push([a,ws.length-1]);return (el._ss=ss);
+}
+function kick(){$("toast").classList.add("hide")}
+$("toast").onclick=function(){if(retry){var f=retry;retry=null;$("toast").classList.add("hide");f()}};
 /* reader */
 function show(i){
   if(i<0||i>=chapters.length)return;
-  idx=i;$("toast").classList.add("hide");
-  book.innerHTML=chapters[i];wrapWords(book);clearSel();window.scrollTo(0,0);
+  idx=i;gen++;queue=[];paused=false;$("toast").classList.add("hide");
+  book.innerHTML=chapters[i];wrapWords(book);clearSel();window.scrollTo(0,0);book.querySelectorAll(SEL).forEach(function(e,k){e._k=k});
 }
-function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
-function cap(t){t=String(t||"").toLowerCase();return t.charAt(0).toUpperCase()+t.slice(1)}
-var sel=null,cardTok=0,pageIdx=0,ldIv=null;
-function select(w){
-  book.querySelectorAll(".w.sel").forEach(function(e){e.classList.remove("sel")});
-  sel=w;
-  if(w){w.classList.add("sel");$("rv").href="https://context.reverso.net/translation/english-russian/"+encodeURIComponent(w.textContent.toLowerCase()).replace(/%20/g,"+")}
-  $("fb").classList.toggle("act",!!w);$("rv").classList.toggle("act",!!w);
+var selW=[];
+function clearSel(){closeSheet()}
+function upd(){
+  var p=selW.map(function(w){return w.textContent}).join(" ");
+  $("rv").href="https://context.reverso.net/translation/english-russian/"+encodeURIComponent(p).replace(/%20/g,"+");
+  $("gg").href="googletranslate://?sl=en&tl=ru&text="+encodeURIComponent(p);
 }
-function clearSel(){closeSheet();select(null)}
-function closeSheet(){cardTok++;clearInterval(ldIv);$("sheet").classList.add("hide");book.classList.remove("cardopen")}
 book.addEventListener("click",function(e){
   var w=e.target.closest(".w");
-  if(!w){clearSel();return}
-  if(sel===w){clearSel();return}
-  select(w);
-  if(!$("sheet").classList.contains("hide"))openCard(w);
+  if(!w){closeSheet();return}
+  tapWord(w);
 });
-$("fb").onclick=function(){if(!sel){toast("Сначала коснитесь слова",1);return}openCard(sel)};
-$("rv").addEventListener("click",function(e){if(!sel){e.preventDefault();toast("Сначала коснитесь слова",1)}});
-/* sources */
+/* fab */
+function fab(o){$("fb").classList.toggle("hide",o);$("rv").classList.toggle("hide",!o);$("gg").classList.toggle("hide",!o)}
+$("fb").onclick=function(){fab(true)};
+document.addEventListener("click",function(e){if(!e.target.closest("#fab"))fab(false)});
+["rv","gg"].forEach(function(i){$(i).addEventListener("click",function(e){if(!selW.length){e.preventDefault();toast("Сначала выделите слово",1)}else setTimeout(function(){fab(false)},300)})});
+/* sheets */
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function hash(t){var h=5381;for(var i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return (h>>>0).toString(36)+t.length}
+function cap(t){t=String(t||"").toLowerCase();return t.charAt(0).toUpperCase()+t.slice(1)}
+var act=null,cardTok=0,pageIdx=0,ldIv=null;
+function sentOf(w){
+  var el=w.closest(SEL)||book;if(!el._ws)el._ws=[].slice.call(el.querySelectorAll(".w"));
+  var ss=sents(el),i=el._ws.indexOf(w),k=0;while(k<ss.length-1&&i>ss[k][1])k++;
+  return{el:el,k:k,sn:ss[k]};
+}
+function has(list,id){return (list||[]).filter(function(x){return x.w.indexOf(id)>-1})[0]||null}
+function wtxt(a,w){return w.map(function(i){return a.ws[i].textContent}).join(" ")}
+function roleOf(m){return m.t||""}
+function paintAct(){
+  book.querySelectorAll(".w.mg,.w.du,.w.su,.w.ig").forEach(function(e){e.classList.remove("mg","du","su","ig")});
+  if(!act)return;
+  var ws=act.ws,id=act.id,A=act.A;
+  if(A)A.idi.forEach(function(p){p.w.forEach(function(i){ws[i].classList.add("ig")})});
+  if(act.idi){ws[id].classList.add("su");return}
+  if(act.blk)act.blk.w.forEach(function(i){ws[i].classList.add("mg");if(i!==id)ws[i].classList.add("du")});
+  ws[id].classList.add("mg","su");
+}
+function closeSheet(){
+  cardTok++;act=null;selW=[];clearInterval(ldIv);
+  $("sheet").classList.add("hide");book.classList.remove("cardopen");paintAct();upd();
+}
 function lis(arr,n){
   var h="<ul>";(arr||[]).forEach(function(x,j){h+="<li lang=\"ru\""+(j>=n?' class="more hide"':"")+">"+esc(x)+"</li>"});
   h+="</ul>";if((arr||[]).length>n)h+='<a class="mo">Еще '+(arr.length-n)+"</a>";return h;
 }
-function norm(w){return String(w).toLowerCase().replace(/[’‘]/g,"'").replace(/^'+|'+$/g,"")}
-async function getG(word){
-  try{return await getG0(word)}catch(e){throw new Error("Google: "+(e&&e.name&&e.name!=="Error"?e.name+" — ":"")+(e&&e.message||e))}
+function fixM(d,n){
+  if(!d||!Array.isArray(d.b)||!d.b.length)return null;
+  function ids(w){return (Array.isArray(w)?w:[]).map(Number).filter(function(i){return i>=0&&i<n}).sort(function(a,b){return a-b})}
+  function part(list,mk){var out=[];(Array.isArray(list)?list:[]).forEach(function(x){var w=ids(x&&x.w);if(w.length)out.push(mk(x,w))});return out.sort(function(a,b){return a.w[0]-b.w[0]})}
+  function arr(v){return (Array.isArray(v)?v:[v]).filter(Boolean).map(String)}
+  var b=part(d.b,function(x,w){return{w:w,t:String(x.t||""),e:String(x.e||""),ru:arr(x.ru)}}),u={};
+  b.forEach(function(x){x.w.forEach(function(i){u[i]=(u[i]||0)+1})});
+  for(var i=0;i<n;i++)if(u[i]!==1)return null;
+  var idi=part(d.idi,function(x,w){return{w:w,text:String(x.text||""),m:arr(x.m),lit:String(x.lit||"")}});
+  var wi=[];(Array.isArray(d.w)?d.w:[]).forEach(function(x){if(x&&+x.i>=0&&+x.i<n)wi[+x.i]={ipa:String(x.ipa||"").replace(/[\[\]\/]/g,"").trim(),pos:String(x.pos||"")}});
+  return{b:b,idi:idi,w:wi,long:b.some(function(x){return x.w.length>5}),missing:b.some(function(x){return !x.ru.length})};
 }
-async function getG0(word){
-  var k="g1|"+word,d=await kv("t","readonly",function(st){return st.get(k)});
+function fixMem(d,n){
+  var out=[];(d&&Array.isArray(d.m)?d.m:[]).forEach(function(x){
+    var w=(Array.isArray(x&&x.w)?x.w:[]).map(Number).filter(function(i){return i>=0&&i<n}).sort(function(a,b){return a-b});
+    if(w.length)out.push({w:w,t:String(x.t||""),e:String(x.e||""),ru:String(x.ru||"")});
+  });
+  out.sort(function(a,b){return a.w[0]-b.w[0]});return out.length?out:null;
+}
+function autoSplit(blk,wi){
+  var out=[],cur=[];
+  blk.w.forEach(function(i,j){
+    var p=((wi[i]&&wi[i].pos)||"").toLowerCase(),pp=j?((wi[blk.w[j-1]]&&wi[blk.w[j-1]].pos)||"").toLowerCase():"";
+    var brk=j>0&&(/^(предлог|союз|артикль|частица)/.test(p)||(/^(местоим|прилаг|числит)/.test(p)&&/^(глагол|причаст)/.test(pp))||(/^глагол/.test(p)&&/^сущ/.test(pp))||cur.length>=4);
+    if(brk&&cur.length){out.push(cur);cur=[]}
+    cur.push(i);
+  });
+  if(cur.length)out.push(cur);
+  return out.map(function(w){return{w:w,t:"",e:"",ru:[]}});
+}
+function fixSub(d,ws){
+  if(!d||!Array.isArray(d.b))return null;
+  var seen={},out=[];
+  for(var k=0;k<d.b.length;k++){
+    var x=d.b[k],w=(Array.isArray(x&&x.w)?x.w:[]).map(Number).sort(function(a,b){return a-b});
+    if(!w.length||w.length>5)return null;
+    for(var j=0;j<w.length;j++){if(ws.indexOf(w[j])<0||seen[w[j]])return null;seen[w[j]]=1}
+    out.push({w:w,t:String(x.t||""),e:String(x.e||""),ru:(Array.isArray(x.ru)?x.ru:[x.ru]).filter(Boolean).map(String)});
+  }
+  return Object.keys(seen).length===ws.length?out.sort(function(a,b){return a.w[0]-b.w[0]}):null;
+}
+async function splitLong(d,user){
+  await Promise.all(d.b.filter(function(x){return x.w.length>5}).map(async function(blk){
+    var res=null;
+    try{var out=await callApi(user+"\n\nGroup to split: "+blk.w.join(","),SYS9);res=fixSub(JSON.parse(out.match(/\{[\s\S]*\}/)[0]),blk.w)}catch(e){res=null}
+    blk.sub=res||autoSplit(blk,d.w);
+  }));
+  var nb=[];d.b.forEach(function(x){if(x.sub)x.sub.forEach(function(q){nb.push(q)});else nb.push(x)});
+  nb.sort(function(a,b){return a.w[0]-b.w[0]});d.b=nb;d.long=false;return d;
+}
+function ctxUser(a){
+  var o=a.el,ws=o._ws,sn=a.sn,rg=document.createRange();rg.setStartBefore(ws[sn[0]]);
+  if(ws[sn[1]+1])rg.setEndBefore(ws[sn[1]+1]);else rg.setEnd(o,o.childNodes.length);
+  return "Words:\n"+a.ws.map(function(w,i){return i+":"+w.textContent}).join(" ")+"\n\nSentence:\n"+rg.toString().replace(/\s+/g," ").trim()+"\n\nParagraph (context only):\n"+o.textContent.replace(/\s+/g," ").trim().slice(0,1200);
+}
+async function getA(a){
+  if(a.A)return a.A;
+  var o=a.el;o._A=o._A||{};
+  if(o._A[a.k]){a.A=o._A[a.k];return a.A}
+  var n=a.ws.length,user=ctxUser(a),key="m5|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw&&raw.v===2?raw.d:null;
+  a.keyA=key;
+  if(!d){
+    var best=null;
+    for(var t=0;t<2;t++){var out=await callApi(user,SYS6),c=null;try{c=fixM(JSON.parse(out.match(/\{[\s\S]*\}/)[0]),n)}catch(e){c=null}if(c&&(!best||(best.missing&&!c.missing)))best=c;if(best&&!best.missing)break}
+    d=best;
+    if(!d)throw new Error("Модель вернула неверный формат");
+    if(d.long)d=await splitLong(d,user);
+    kv("t","readwrite",function(st){return st.put({v:2,d:d},key)});
+  }
+  o._A[a.k]=d;a.A=d;return d;
+}
+async function getM(a){
+  var n=a.ws.length,user=ctxUser(a),key="mm2|"+hash(user),raw=(a.keyM=key,await kv("t","readonly",function(st){return st.get(key)})),d=raw?fixMem(raw,n):null;
+  if(d)return d;
+  for(var t=0;t<2&&!d;t++){var out=await callApi(user,SYS8),pr=null;try{pr=JSON.parse(out.match(/\{[\s\S]*\}/)[0]);d=fixMem(pr,n)}catch(e){d=null}if(d)kv("t","readwrite",function(st){return st.put(pr,key)})}
+  if(!d)throw new Error("Модель вернула неверный формат");
+  return d;
+}
+async function getG(word){
+  var k="g1|"+word.toLowerCase(),d=await kv("t","readonly",function(st){return st.get(k)});
   if(d&&Array.isArray(d.pos))return d;
-  var r=await ft("https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&dt=bd&dj=1&q="+encodeURIComponent(word));
+  var r=await ft("https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&dt=bd&dj=1&q="+encodeURIComponent(word.toLowerCase()),{});
   if(!r.ok)throw new Error("Google "+r.status);
   var j=await r.json(),pos=[];
   (j.dict||[]).forEach(function(g){var t=(g.entry||[]).map(function(e){return e.word}).filter(Boolean);if(!t.length)t=g.terms||[];if(t.length)pos.push({n:g.pos||"Перевод",t:t.slice(0,12)})});
   if(!pos.length){var tr=(j.sentences||[]).map(function(x){return x.trans||""}).join("").trim();if(tr)pos.push({n:"Перевод",t:[tr]})}
   if(!pos.length)throw new Error("Google не вернул перевод");
-  d={pos:pos};put(k,d);return d;
+  d={pos:pos};kv("t","readwrite",function(st){return st.put(d,k)});return d;
 }
-var POSRU={noun:"существительное",verb:"глагол",adjective:"прилагательное",adverb:"наречие",pronoun:"местоимение",preposition:"предлог",conjunction:"союз",interjection:"междометие",exclamation:"междометие",article:"артикль",determiner:"определитель",numeral:"числительное",abbreviation:"сокращение",contraction:"сокращение","phrasal verb":"фразовый глагол",prefix:"приставка",suffix:"суффикс"};
-async function getD(word){
-  try{return await getD0(word)}catch(e){throw new Error("Словарь: "+(e&&e.name&&e.name!=="Error"?e.name+" — ":"")+(e&&e.message||e))}
+async function getB(word){
+  if(S.dict!=="ai")return getG(word);
+  var k="d2|"+word.toLowerCase(),d=await kv("t","readonly",function(st){return st.get(k)});
+  if(d&&Array.isArray(d.pos))return d;
+  var o=await callApi("Word: "+word,SYS7);d=JSON.parse(o.match(/\{[\s\S]*\}/)[0]);
+  if(!Array.isArray(d.pos))throw new Error("неверный формат ответа");
+  kv("t","readwrite",function(st){return st.put(d,k)});return d;
 }
-async function getD0(word){
-  var k="dd1|"+word,c=await kv("t","readonly",function(st){return st.get(k)});
-  if(c)return c.none?null:c;
-  var r=await ft("https://api.dictionaryapi.dev/api/v2/entries/en/"+encodeURIComponent(word));
-  if(r.status===404){put(k,{none:1});return null}
-  if(!r.ok)throw new Error("Словарь "+r.status);
-  var j=await r.json(),ipa="",ipa2="",by={},order=[];
-  (Array.isArray(j)?j:[]).forEach(function(en){
-    (en.phonetics||[]).forEach(function(p){if(p.text){if(!ipa2)ipa2=p.text;if(!ipa&&/-us|us\./i.test(p.audio||""))ipa=p.text}});
-    if(!ipa2&&en.phonetic)ipa2=en.phonetic;
-    (en.meanings||[]).forEach(function(m){
-      var n=m.partOfSpeech||"";if(!by[n]){by[n]={n:n,defs:[],syn:[]};order.push(n)}
-      (m.definitions||[]).forEach(function(d){by[n].defs.push({d:d.definition||"",e:d.example||""});(d.synonyms||[]).forEach(function(x){if(by[n].syn.indexOf(x)<0)by[n].syn.push(x)})});
-      (m.synonyms||[]).forEach(function(x){if(by[n].syn.indexOf(x)<0)by[n].syn.push(x)});
-    });
-  });
-  var d={ipa:String(ipa||ipa2||"").replace(/^\/|\/$/g,"").trim(),pos:order.map(function(n){var g=by[n];g.defs=g.defs.slice(0,6);g.syn=g.syn.slice(0,8);return g})};
-  put(k,d);return d;
-}
-/* card */
-function buildSheet(word){
+function dots(){var sh=$("sheet");sh.querySelectorAll(".dots i").forEach(function(d,i){d.classList.toggle("on",i===pageIdx)})}
+function buildSheet(a){
   var sh=$("sheet");
-  function pg(lbl,ip,body){return '<div class="pg"><div class="chd"><div class="sec" style="margin:0 0 4px">'+lbl+'</div><div class="ct">'+esc(word)+'</div><div class="mut pi" id="'+ip+'"></div></div><div class="cbody" id="'+body+'"><div class="ld">Загрузка… 0.0 с</div></div></div>'}
-  sh.innerHTML='<div class="sh"><button class="ib" id="rd" title="Обновить">↻</button><div class="dots"><i></i><i></i></div><button class="ib" id="cx">✕</button></div><div id="pager">'+pg("ЧАСТИ РЕЧИ","ip1","b1")+pg("ОПРЕДЕЛЕНИЯ","ip2","b2")+"</div>";
+  sh.innerHTML='<div class="sh"><button class="ib" id="rd" title="Повторить анализ">↻</button><div class="dots"><i></i><i></i></div><button class="ib" id="cx">✕</button></div><div id="pager"><div class="pg"><div class="chd" id="h1"><div class="sec" style="margin:0 0 4px">ФРАЗА</div></div><div class="cbody" id="b1"><div class="ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd" id="h2"><div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div></div><div class="cbody" id="b2"><div class="sec" style="margin-top:6px">ПЕРЕВОДЫ</div><div id="tr2" class="ld">Анализирую… 0.0 с</div></div></div></div>';
   sh.classList.remove("hide");book.classList.add("cardopen");
   $("cx").onclick=closeSheet;$("rd").onclick=redo;
-  var pgr=$("pager");
-  function dots(){sh.querySelectorAll(".dots i").forEach(function(d,i){d.classList.toggle("on",i===pageIdx)})}
-  pgr.onscroll=function(){var i=Math.round(pgr.scrollLeft/pgr.clientWidth);if(i!==pageIdx){pageIdx=i;dots()}};
-  pgr.scrollLeft=pageIdx*pgr.clientWidth;dots();
+  var pg=$("pager");
+  pg.onscroll=function(){var i=Math.round(pg.scrollLeft/pg.clientWidth);if(i!==pageIdx){pageIdx=i;dots()}};
+  pg.scrollLeft=pageIdx*pg.clientWidth;dots();
 }
-function errBox(id,e){var b=$(id);if(b)b.innerHTML="<div>"+esc("Не удалось: "+e.message)+'</div><a class="mo rt">Повторить</a>'}
-function openCard(w){
-  var my=++cardTok,word=norm(w.textContent),ar=w.getBoundingClientRect();
-  buildSheet(word);
+function pHead(a,label,w,type){
+  var h='<div class="sec" style="margin:0 0 4px">'+label+'</div><div class="ct pt" lang="en">';
+  w.forEach(function(i,j){h+=(j?" ":"")+'<span class="'+(i===a.id?"on":"")+'">'+esc(a.ws[i].textContent)+"</span>"});
+  h+='</div><div class="mut pi">[';
+  w.forEach(function(i,j){h+=(j?" ":"")+'<span class="'+(i===a.id?"on":"")+'">'+esc((a.A.w[i]||{}).ipa||"")+"</span>"});
+  h+="]</div>";
+  if(type)h+='<div class="mut" style="margin-top:6px">'+esc(type)+"</div>";
+  return h;
+}
+function normR(t){return String(t).toLowerCase().replace(/ё/g,"е")}
+function hiRu(text,needles){
+  var hay=normR(text);
+  function toks(t){var r=[],m,re=/[a-zа-я0-9]+/g;while((m=re.exec(t)))r.push({w:m[0],i:m.index,e:m.index+m[0].length});return r}
+  var ht=toks(hay);
+  for(var k=0;k<needles.length;k++){
+    var nd=normR(needles[k]).replace(/[\s.,;:!?«»"'…—-]+$/,"").replace(/^[\s.,;:!?«»"'…—-]+/,"");
+    if(nd.length<2)continue;
+    var at=hay.indexOf(nd);
+    if(at>-1)return esc(text.slice(0,at))+'<span class="hl">'+esc(text.slice(at,at+nd.length))+"</span>"+esc(text.slice(at+nd.length));
+    var nt=toks(nd),n=nt.length;
+    if(n<1)continue;
+    for(var st=0;st+n<=ht.length;st++){
+      var ok=0;
+      for(var j=0;j<n;j++){var x=ht[st+j].w,y=nt[j].w,l=Math.min(4,x.length,y.length);if(x.slice(0,l)===y.slice(0,l))ok++}
+      if(ok>=n-(n>=4?1:0)&&(n===1?ok===1:true)){var from=ht[st].i,to=ht[st+n-1].e;return esc(text.slice(0,from))+'<span class="hl">'+esc(text.slice(from,to))+"</span>"+esc(text.slice(to))}
+    }
+  }
+  return esc(text);
+}
+function fillMem(a,list){
+  var h="",src=a.idi?{w:a.idi.w,ru:a.idi.m}:a.blk,pw=(src&&src.w)||[],nd=(src&&src.ru)||[];
+  $("b1").classList.toggle("idp",!!a.idi);
+  list.forEach(function(m){
+    var inside=m.w.some(function(i){return pw.indexOf(i)>-1});
+    var en=m.w.map(function(i){var t=esc(a.ws[i].textContent);return pw.indexOf(i)>-1?'<span class="hl">'+t+"</span>":t}).join(" ");
+    h+='<div class="mb"><div class="mut mrole">'+esc(roleOf(m))+'</div><div class="mtx" lang="en">'+en+'</div><div class="mrr" lang="ru"><i>'+(inside?hiRu(m.ru,nd):esc(m.ru))+"</i></div></div>";
+  });
+  var e=$("mem");if(e){e.classList.remove("ld");e.innerHTML=h}
+}
+function fillCards(a){
+  var A=a.A,src=a.idi?{w:a.idi.w,t:"Идиома",e:"Idiom",ru:a.idi.m}:a.blk;
+  $("h1").classList.toggle("idp",!!a.idi);$("h1").innerHTML=pHead(a,"ФРАЗА",src.w,roleOf(src));
+  $("b1").innerHTML='<div class="sec" style="margin-top:6px">ПЕРЕВОД</div>'+(src.ru&&src.ru.length?lis(src.ru,4):'<div class="mut">Перевод недоступен</div><a class="mo rt">Повторить анализ</a>')+'<div class="dv"></div><div class="sec" style="margin-top:0">ЧЛЕНЫ ПРЕДЛОЖЕНИЯ</div><div id="mem" class="ld">Анализирую… 0.0 с</div>';
+  var wi=A.w[a.id]||{};
+  $("h2").innerHTML='<div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div><div class="mut">'+[wi.ipa?"["+wi.ipa+"]":"",cap(wi.pos)].filter(Boolean).map(esc).join(" · ")+"</div>";
+  var idi=a.idi||A.idi[0];
+  if(idi){
+    $("pager").insertAdjacentHTML("beforeend",'<div class="pg"><div class="chd idp">'+pHead(a,"ИДИОМА",idi.w,"Идиома")+'</div><div class="cbody"><div class="sec" style="margin-top:6px">ЗНАЧЕНИЯ</div>'+lis(idi.m,4)+(idi.lit?'<div class="dv"></div><div class="sec" style="margin-top:0">БУКВАЛЬНО</div><div class="mrr"><i>'+esc(idi.lit)+"</i></div>":"")+"</div></div>");
+    $("sheet").querySelector(".dots").insertAdjacentHTML("beforeend","<i></i>");dots();
+  }
+}
+function trHtml(a,d){
+  var ps=((a.A&&a.A.w[a.id]&&a.A.w[a.id].pos)||"").toLowerCase().slice(0,4),gs=d.pos.slice(0,5);
+  var first=gs.filter(function(g){return ps&&String(g.n||"").toLowerCase().slice(0,4)===ps}),rest=gs.filter(function(g){return first.indexOf(g)<0}),h="";
+  first.concat(rest).forEach(function(g){h+='<div class="ph">'+esc(cap(g.n))+"</div>"+lis(g.t,4)});
+  return h;
+}
+function showErr(e){
+  clearInterval(ldIv);
+  ["b1","tr2"].forEach(function(id){var b=$(id);if(b){b.classList.remove("ld");b.innerHTML="<div>"+esc("Не удалось: "+e.message)+'</div><a class="mo rt">Повторить</a>'}});
+}
+async function openFor(a){
+  var my=++cardTok,ar=a.w.getBoundingClientRect();
+  buildSheet(a);paintAct();
   var tp=$("top").getBoundingClientRect().bottom-10,sp=$("sheet").getBoundingClientRect().top,cy=(tp+sp)/2;
   window.scrollBy({top:(ar.top+ar.height/2)-cy,behavior:"smooth"});
-  var t0=Date.now();clearInterval(ldIv);
-  ldIv=setInterval(function(){document.querySelectorAll("#sheet .ld").forEach(function(e){e.textContent="Загрузка… "+((Date.now()-t0)/1000).toFixed(1)+" с"})},100);
-  var pend=2;function fin(){if(--pend<=0)clearInterval(ldIv)}
-  getG(word).then(function(d){
+  var t0=Date.now(),pend=2;clearInterval(ldIv);
+  ldIv=setInterval(function(){document.querySelectorAll("#sheet .ld").forEach(function(e){e.textContent="Анализирую… "+((Date.now()-t0)/1000).toFixed(1)+" с"})},100);
+  function fin(){if(--pend<=0)clearInterval(ldIv)}
+  var pB=getB(a.w.textContent).then(function(d){return{d:d}},function(e){return{e:e}});
+  var pM=getM(a).then(function(d){return{d:d}},function(e){return{e:e}});
+  try{await getA(a)}catch(e){if(my!==cardTok)return;showErr(e);return}
+  if(my!==cardTok)return;
+  a.blk=has(a.A.b,a.id);a.idi=has(a.A.idi,a.id);
+  if(!a.blk&&!a.idi)a.blk={w:[a.id],t:"",e:"",ru:[]};
+  paintAct();fillCards(a);
+  pB.then(function(r){
     if(my!==cardTok)return;
-    var h="";d.pos.slice(0,5).forEach(function(g){h+='<div class="ph">'+esc(cap(g.n))+"</div>"+lis(g.t,4)});
-    $("b1").innerHTML=h;fin();
-  },function(e){if(my!==cardTok)return;errBox("b1",e);fin()});
-  getD(word).then(function(d){
+    var tr=$("tr2");tr.classList.remove("ld");
+    if(r.e)tr.innerHTML="<div>"+esc("Не удалось: "+r.e.message)+'</div><a class="mo rt">Повторить</a>';else tr.innerHTML=trHtml(a,r.d);
+    fin();
+  });
+  pM.then(function(r){
     if(my!==cardTok)return;
-    var ip=d&&d.ipa?"["+d.ipa+"]":"";$("ip1").textContent=ip;$("ip2").textContent=ip;
-    if(!d||!d.pos.length){$("b2").innerHTML='<div class="alone">Определения для этого слова не найдены.</div>';fin();return}
-    var h="";
-    d.pos.forEach(function(g){
-      h+='<div class="ph">'+esc(cap(POSRU[g.n]||g.n))+"</div>";
-      g.defs.forEach(function(x,j){h+='<div class="df'+(j>=3?" more hide":"")+'"><div class="dtx" lang="en">'+esc(x.d)+"</div>"+(x.e?'<div class="dex" lang="en"><i>'+esc(x.e)+"</i></div>":"")+"</div>"});
-      if(g.defs.length>3)h+='<a class="mo">Еще '+(g.defs.length-3)+"</a>";
-      if(g.syn.length)h+='<div class="syn" lang="en">Синонимы: '+esc(g.syn.join(", "))+"</div>";
-    });
-    $("b2").innerHTML=h;fin();
-  },function(e){if(my!==cardTok)return;errBox("b2",e);fin()});
+    if(r.e){var e=$("mem");if(e){e.classList.remove("ld");e.textContent="Не удалось: "+r.e.message}}else fillMem(a,r.d);
+    fin();
+  });
 }
 function redo(){
-  if(!sel)return;
-  var word=norm(sel.textContent);
-  ["g1|","dd1|"].forEach(function(p){kv("t","readwrite",function(st){return st.delete(p+word)})});
-  openCard(sel);
+  if(!act)return;
+  var a=act;
+  [a.keyA,a.keyM].forEach(function(k){if(k)kv("t","readwrite",function(st){return st.delete(k)})});
+  if(a.el._A)delete a.el._A[a.k];
+  a.A=null;a.blk=null;a.idi=null;
+  openFor(a);
+}
+function tapWord(w){
+  var o=sentOf(w),id=o.el._ws.indexOf(w)-o.sn[0];
+  if(act&&act.w===w&&!$("sheet").classList.contains("hide")){closeSheet();return}
+  act={w:w,el:o.el,k:o.k,sn:o.sn,ws:o.el._ws.slice(o.sn[0],o.sn[1]+1),id:id,A:null,blk:null,idi:null};
+  selW=[w];upd();openFor(act);
 }
 $("sheet").addEventListener("click",function(e){
   var m=e.target.closest(".mo");
   if(!m)return;
   if(m.classList.contains("rt")){redo();return}
-  var n=m.previousElementSibling;
-  while(n&&!n.classList.contains("ph")){
-    if(n.classList.contains("more"))n.classList.remove("hide");
-    if(n.tagName==="UL")n.querySelectorAll(".more").forEach(function(x){x.classList.remove("hide")});
-    n=n.previousElementSibling;
-  }
-  m.remove();
+  if(m.previousElementSibling){m.previousElementSibling.querySelectorAll(".more").forEach(function(x){x.classList.remove("hide")});m.remove()}
 });
 function applyS(){
   var de=document.documentElement,st=de.style;
-  de.setAttribute("data-theme",S.theme);st.setProperty("--cf",S.cf||1);
+  de.setAttribute("data-theme",S.theme);$("dg").classList.toggle("on",S.dict!=="ai");$("da").classList.toggle("on",S.dict==="ai");st.setProperty("--cf",S.cf||1);
   S.cSel?st.setProperty("--sel",S.cSel):st.removeProperty("--sel");
   book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";
   var cs=getComputedStyle(de);
@@ -376,10 +591,39 @@ $("set").addEventListener("click",function(e){
   if(a==="p-")S.pad=Math.max(4,S.pad-4);
   if(a==="p+")S.pad=Math.min(90,S.pad+4);
   if(a.indexOf("t:")===0)S.theme=a.slice(2);
+  if(a==="dg")S.dict="google";
+  if(a==="da")S.dict="ai";
   if(a==="cs0")S.cSel=null;
   applyS();
 });
+function fillProf(){
+  var p=S.api;
+  $("aProf").innerHTML=S.profs.map(function(x,i){return '<option value="'+i+'">'+esc(x.n)+"</option>"}).join("");
+  $("aProf").value=S.pi;$("aFmt").value=p.fmt||"openai";$("aUrl").value=p.url||"";$("aKey").value=p.key||"";$("aMod").value=p.model||"";
+}
+function readProf(){
+  var p=S.profs[S.pi];p.fmt=$("aFmt").value;p.url=$("aUrl").value.trim();p.key=$("aKey").value.trim();p.model=$("aMod").value.trim();S.api=p;
+}
+$("aProf").onchange=function(){readProf();S.pi=+this.value;S.api=S.profs[S.pi];fillProf();applyS()};
+$("aNew").onclick=function(){var n=prompt("Название сервиса");if(!n)return;readProf();S.profs.push({n:n,fmt:"openai",url:"",key:"",model:""});S.pi=S.profs.length-1;S.api=S.profs[S.pi];fillProf();applyS()};
+fillProf();
 $("cSel").oninput=function(){S.cSel=this.value;applyS()};
+$("aPre").onchange=function(){if(this.value)$("aMod").value=this.value};
+$("aLs").onclick=async function(){
+  var c={url:$("aUrl").value.trim().replace(/\/+$/,""),key:$("aKey").value.trim(),fmt:$("aFmt").value};
+  try{
+    var an=c.fmt==="anthropic",gm=c.fmt==="gemini",r=await fetch(gm?(c.url||GBASE)+"/models?pageSize=100&key="+encodeURIComponent(c.key):an?c.url.replace(/\/v1$/,"")+"/v1/models":c.url+"/models",gm?{}:{headers:an?{"x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"}:{"Authorization":"Bearer "+c.key}});
+    if(!r.ok)throw new Error("API "+r.status);
+    var j=await r.json(),ids=gm?(j.models||[]).filter(function(m){return !m.supportedGenerationMethods||m.supportedGenerationMethods.indexOf("generateContent")>-1}).map(function(m){return String(m.name).replace(/^models\//,"")}):(j.data||[]).map(function(m){return m.id}).filter(Boolean);
+    if(!ids.length)throw new Error("список пуст");
+    $("aPre").innerHTML='<option value="">Выбрать…</option>'+ids.map(function(i){return "<option>"+esc(i)+"</option>"}).join("");
+  }catch(e){toast("Список моделей: "+e.message,1)}
+};
+$("aFmt").onchange=function(){if(this.value==="gemini"&&!/generativelanguage/.test($("aUrl").value))$("aUrl").value=GBASE};
+$("aOk").onclick=function(){
+  readProf();
+  applyS();$("set").classList.add("hide");kick();
+};
 $("aClr").onclick=function(){kv("t","readwrite",function(s){return s.clear()});if(chapters.length)show(idx)};
 /* position */
 function loadPos(){try{return JSON.parse(localStorage.getItem("pos:"+bookId))}catch(x){return null}}
