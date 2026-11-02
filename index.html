@@ -160,6 +160,10 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #sheet .chd .ct{font-size:25px}
 #sheet .chd .mut{font-size:16px}
 #sheet .chd .sec{font-size:14px}
+#book{position:relative}
+.note{position:absolute;transform:translateY(-100%);margin-top:-1px;font-size:.56em;font-style:italic;font-weight:400;line-height:1.25;text-align:left;text-indent:0;hyphens:none;color:color-mix(in srgb,var(--fg) 48%,var(--bg));background:color-mix(in srgb,var(--bg) 92%,transparent);padding:0 .4em;border-radius:6px;pointer-events:none;z-index:3;width:max-content}
+#rv{opacity:.35;color:#1a6fd1;text-decoration:none;transition:opacity .2s;box-shadow:none}#rv.act{opacity:1;box-shadow:0 3px 12px rgba(0,0,0,.25)}
+#mst{font:13px -apple-system,Helvetica,sans-serif;opacity:.8;line-height:1.35}
 </style>
 </head>
 <body>
@@ -178,24 +182,24 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <div><span>Поля</span><button data-a="p-">Меньше</button><button data-a="p+">Больше</button></div>
   <div><span>Выделение</span><input type="color" id="cSel"><button data-a="cs0">Сброс</button></div>
   <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Бежевый</button><button data-a="t:dark">Тёмный</button></div>
-  <div><span>Слова</span><button data-a="dg" id="dg">Google</button><button data-a="da" id="da">ИИ</button></div>
   <div><span>Сервис</span><select id="aProf"></select><button id="aNew">+</button></div>
   <div><span>API</span><input id="aUrl" placeholder="API URL" autocapitalize="off" autocorrect="off"></div>
   <div><span>Формат</span><select id="aFmt"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="gemini">Gemini</option></select></div>
   <div><span>Ключ</span><input id="aKey" type="password" placeholder="API key"></div>
   <div><span>Модель</span><select id="aPre"><option value="">Выбрать…</option><option>claude-haiku-5-5</option><option>claude-sonnet-5-5</option><option>claude-opus-5-5</option><option>gemini-2.5-flash</option><option>gemini-2.5-pro</option><option>gemini-2.5-flash-lite</option></select><button id="aLs">Список</button></div>
   <div><span></span><input id="aMod" placeholder="model" autocapitalize="off" autocorrect="off"></div>
+  <div id="mst" class="hide"></div>
   <div><button id="aOk">Сохранить</button><button id="aClr">Очистить кэш</button></div>
 </div>
 <div id="book" class="hide" lang="en"></div>
 <div id="toast" class="hide"></div>
-<div id="fab"><a id="rv" class="fc hide" target="_blank" rel="noopener" style="color:#1a6fd1">R</a><a id="gg" class="fc hide" style="color:#d93025">G</a><button id="fb" class="fc">文A</button></div>
+<div id="fab"><a id="rv" class="fc" target="_blank" rel="noopener">R</a><button id="fb" class="fc">文A</button></div>
 <div id="dim" class="hide"></div>
 <div id="sheet" class="sheet hide"></div>
 <script>
 var chapters=[],idx=0,bookId="book",gen=0,blocks=[],queue=[],active=0,paused=false,io=null;
 var $=function(i){return document.getElementById(i)},book=$("book");
-var S={fs:26,pad:36,theme:"white",ru:true,cSel:null,cRu:null,cf:1,dict:"google",ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
+var S={fs:26,pad:36,theme:"white",ru:true,cSel:null,cRu:null,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
 if(!Array.isArray(S.profs)||!S.profs.length){S.profs=[Object.assign({n:"Основной"},S.api),{n:"Gemini",fmt:"gemini",url:"https://generativelanguage.googleapis.com/v1beta",key:"",model:"gemini-2.5-flash"}];S.pi=0}
 if(!(S.pi>=0&&S.pi<S.profs.length))S.pi=0;
@@ -257,10 +261,9 @@ async function callApi(user,sys){
   try{return await callApi2(user,sys)}catch(e){if(e instanceof TypeError)throw new Error("Нет связи с сервером ("+e.message+"). Проверьте интернет и VPN: сервис мог быть недоступен из вашей сети. Если сайт сервиса открывается, причина в запрете браузерных запросов (CORS)");throw e}
 }
 var GBASE="https://generativelanguage.googleapis.com/v1beta";
-async function ft(url,o){
-  var c=new AbortController(),t=setTimeout(function(){c.abort()},75000);
-  try{return await fetch(url,Object.assign({signal:c.signal},o))}
-  catch(e){if(e&&e.name==="AbortError")throw new Error("Нет ответа от сервера за 75 с. Проверьте VPN и сеть: в приложении на экране «Домой» трафик может идти мимо VPN.");throw e}
+async function ft(url,o,ms){
+  var t,lim=ms||75000,to=new Promise(function(_,rej){t=setTimeout(function(){rej(new Error("Нет ответа от сервера за "+Math.round(lim/1000)+" с. Проверьте VPN и сеть: в приложении на экране «Домой» трафик может идти мимо VPN."))},lim)});
+  try{return await Promise.race([fetch(url,o||undefined),to])}
   finally{clearTimeout(t)}
 }
 async function callApi2(user,sys){
@@ -311,22 +314,25 @@ function show(i){
   book.innerHTML=chapters[i];wrapWords(book);clearSel();window.scrollTo(0,0);book.querySelectorAll(SEL).forEach(function(e,k){e._k=k});
 }
 var selW=[];
-function clearSel(){closeSheet()}
+var note=null,tapTok=0;
+function clearNote(){if(note&&note.parentNode)note.parentNode.removeChild(note);note=null}
+function clearSel(){
+  closeSheet();tapTok++;busy(false,"",busyOwner);clearNote();
+  act=null;selW=[];paintAct();upd();
+  $("fb").classList.remove("act");$("rv").classList.remove("act");
+}
 function upd(){
   var p=selW.map(function(w){return w.textContent}).join(" ");
   $("rv").href="https://context.reverso.net/translation/english-russian/"+encodeURIComponent(p).replace(/%20/g,"+");
-  $("gg").href="googletranslate://?sl=en&tl=ru&text="+encodeURIComponent(p);
 }
 book.addEventListener("click",function(e){
   var w=e.target.closest(".w");
-  if(!w){closeSheet();return}
+  if(!w){clearSel();return}
   tapWord(w);
 });
 /* fab */
-function fab(o){$("fb").classList.toggle("hide",o);$("rv").classList.toggle("hide",!o);$("gg").classList.toggle("hide",!o)}
-$("fb").onclick=function(){fab(true)};
-document.addEventListener("click",function(e){if(!e.target.closest("#fab"))fab(false)});
-["rv","gg"].forEach(function(i){$(i).addEventListener("click",function(e){if(!selW.length){e.preventDefault();toast("Сначала выделите слово",1)}else setTimeout(function(){fab(false)},300)})});
+$("fb").onclick=function(){if(!act){toast("Сначала коснитесь слова",1);return}openFor(act)};
+$("rv").addEventListener("click",function(e){if(!selW.length){e.preventDefault();toast("Сначала коснитесь слова",1)}});
 /* sheets */
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function hash(t){var h=5381;for(var i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return (h>>>0).toString(36)+t.length}
@@ -350,8 +356,8 @@ function paintAct(){
   ws[id].classList.add("mg","su");
 }
 function closeSheet(){
-  cardTok++;act=null;selW=[];clearInterval(ldIv);
-  $("sheet").classList.add("hide");book.classList.remove("cardopen");paintAct();upd();
+  cardTok++;clearInterval(ldIv);
+  $("sheet").classList.add("hide");book.classList.remove("cardopen");
 }
 function lis(arr,n){
   var h="<ul>";(arr||[]).forEach(function(x,j){h+="<li lang=\"ru\""+(j>=n?' class="more hide"':"")+">"+esc(x)+"</li>"});
@@ -412,7 +418,12 @@ function ctxUser(a){
   if(ws[sn[1]+1])rg.setEndBefore(ws[sn[1]+1]);else rg.setEnd(o,o.childNodes.length);
   return "Words:\n"+a.ws.map(function(w,i){return i+":"+w.textContent}).join(" ")+"\n\nSentence:\n"+rg.toString().replace(/\s+/g," ").trim()+"\n\nParagraph (context only):\n"+o.textContent.replace(/\s+/g," ").trim().slice(0,1200);
 }
-async function getA(a){
+function getA(a){
+  if(a.pA)return a.pA;
+  a.pA=getA0(a).catch(function(e){a.pA=null;throw e});
+  return a.pA;
+}
+async function getA0(a){
   if(a.A)return a.A;
   var o=a.el;o._A=o._A||{};
   if(o._A[a.k]){a.A=o._A[a.k];return a.A}
@@ -435,19 +446,7 @@ async function getM(a){
   if(!d)throw new Error("Модель вернула неверный формат");
   return d;
 }
-async function getG(word){
-  var k="g1|"+word.toLowerCase(),d=await kv("t","readonly",function(st){return st.get(k)});
-  if(d&&Array.isArray(d.pos))return d;
-  var r=await ft("https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ru&dt=t&dt=bd&dj=1&q="+encodeURIComponent(word.toLowerCase()),{});
-  if(!r.ok)throw new Error("Google "+r.status);
-  var j=await r.json(),pos=[];
-  (j.dict||[]).forEach(function(g){var t=(g.entry||[]).map(function(e){return e.word}).filter(Boolean);if(!t.length)t=g.terms||[];if(t.length)pos.push({n:g.pos||"Перевод",t:t.slice(0,12)})});
-  if(!pos.length){var tr=(j.sentences||[]).map(function(x){return x.trans||""}).join("").trim();if(tr)pos.push({n:"Перевод",t:[tr]})}
-  if(!pos.length)throw new Error("Google не вернул перевод");
-  d={pos:pos};kv("t","readwrite",function(st){return st.put(d,k)});return d;
-}
 async function getB(word){
-  if(S.dict!=="ai")return getG(word);
   var k="d2|"+word.toLowerCase(),d=await kv("t","readonly",function(st){return st.get(k)});
   if(d&&Array.isArray(d.pos))return d;
   var o=await callApi("Word: "+word,SYS7);d=JSON.parse(o.match(/\{[\s\S]*\}/)[0]);
@@ -557,14 +556,43 @@ function redo(){
   var a=act;
   [a.keyA,a.keyM].forEach(function(k){if(k)kv("t","readwrite",function(st){return st.delete(k)})});
   if(a.el._A)delete a.el._A[a.k];
-  a.A=null;a.blk=null;a.idi=null;
-  openFor(a);
+  a.A=null;a.pA=null;a.blk=null;a.idi=null;clearNote();paintAct();
+  analyze(a,true);
+}
+function showNote(a){
+  clearNote();
+  var src=a.idi?{w:a.idi.w,ru:a.idi.m}:a.blk,txt=src&&src.ru&&src.ru[0];
+  if(!txt||!src.w||!src.w.length)return;
+  var first=a.ws[src.w[0]],r=first.getBoundingClientRect(),br=book.getBoundingClientRect();
+  note=document.createElement("div");note.className="note";note.lang="ru";note.textContent=txt;
+  book.appendChild(note);
+  var maxW=book.clientWidth-24,left=r.left-br.left;
+  note.style.maxWidth=maxW+"px";
+  var w=note.offsetWidth;
+  if(left+w>book.clientWidth-12)left=Math.max(12,book.clientWidth-12-w);
+  note.style.left=left+"px";note.style.top=(r.top-br.top)+"px";
+}
+async function analyze(a,reopen){
+  var my=++tapTok;
+  busy(true,"Анализирую…",my);
+  try{await getA(a)}
+  catch(e){busy(false,"",my);if(act===a){retry=function(){analyze(a,reopen)};toast(e.message)}return}
+  busy(false,"",my);
+  if(act!==a)return;
+  a.blk=has(a.A.b,a.id);a.idi=has(a.A.idi,a.id);
+  if(!a.blk&&!a.idi)a.blk={w:[a.id],t:"",e:"",ru:[]};
+  paintAct();showNote(a);
+  if(reopen)openFor(a);
 }
 function tapWord(w){
   var o=sentOf(w),id=o.el._ws.indexOf(w)-o.sn[0];
-  if(act&&act.w===w&&!$("sheet").classList.contains("hide")){closeSheet();return}
-  act={w:w,el:o.el,k:o.k,sn:o.sn,ws:o.el._ws.slice(o.sn[0],o.sn[1]+1),id:id,A:null,blk:null,idi:null};
-  selW=[w];upd();openFor(act);
+  if(act&&act.w===w){clearSel();return}
+  var wasOpen=!$("sheet").classList.contains("hide");
+  clearNote();retry=null;
+  act={w:w,el:o.el,k:o.k,sn:o.sn,ws:o.el._ws.slice(o.sn[0],o.sn[1]+1),id:id,A:null,pA:null,blk:null,idi:null};
+  selW=[w];upd();paintAct();
+  $("fb").classList.add("act");$("rv").classList.add("act");
+  analyze(act,wasOpen);
 }
 $("sheet").addEventListener("click",function(e){
   var m=e.target.closest(".mo");
@@ -574,7 +602,7 @@ $("sheet").addEventListener("click",function(e){
 });
 function applyS(){
   var de=document.documentElement,st=de.style;
-  de.setAttribute("data-theme",S.theme);$("dg").classList.toggle("on",S.dict!=="ai");$("da").classList.toggle("on",S.dict==="ai");st.setProperty("--cf",S.cf||1);
+  de.setAttribute("data-theme",S.theme);st.setProperty("--cf",S.cf||1);
   S.cSel?st.setProperty("--sel",S.cSel):st.removeProperty("--sel");
   book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";
   var cs=getComputedStyle(de);
@@ -591,8 +619,6 @@ $("set").addEventListener("click",function(e){
   if(a==="p-")S.pad=Math.max(4,S.pad-4);
   if(a==="p+")S.pad=Math.min(90,S.pad+4);
   if(a.indexOf("t:")===0)S.theme=a.slice(2);
-  if(a==="dg")S.dict="google";
-  if(a==="da")S.dict="ai";
   if(a==="cs0")S.cSel=null;
   applyS();
 });
@@ -609,15 +635,20 @@ $("aNew").onclick=function(){var n=prompt("Название сервиса");if(
 fillProf();
 $("cSel").oninput=function(){S.cSel=this.value;applyS()};
 $("aPre").onchange=function(){if(this.value)$("aMod").value=this.value};
+function mstat(t,err){var e=$("mst");e.textContent=t;e.classList.remove("hide");e.style.color=err?"#d33":""}
 $("aLs").onclick=async function(){
   var c={url:$("aUrl").value.trim().replace(/\/+$/,""),key:$("aKey").value.trim(),fmt:$("aFmt").value};
+  mstat("Загружаю список моделей…");
   try{
-    var an=c.fmt==="anthropic",gm=c.fmt==="gemini",r=await fetch(gm?(c.url||GBASE)+"/models?pageSize=100&key="+encodeURIComponent(c.key):an?c.url.replace(/\/v1$/,"")+"/v1/models":c.url+"/models",gm?{}:{headers:an?{"x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"}:{"Authorization":"Bearer "+c.key}});
-    if(!r.ok)throw new Error("API "+r.status);
+    if(!c.key)throw new Error("сначала введите ключ");
+    var an=c.fmt==="anthropic",gm=c.fmt==="gemini",r=await ft(gm?(c.url||GBASE)+"/models?pageSize=100&key="+encodeURIComponent(c.key):an?c.url.replace(/\/v1$/,"")+"/v1/models":c.url+"/models",gm?{}:{headers:an?{"x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"}:{"Authorization":"Bearer "+c.key}},20000);
+    if(!r.ok)throw new Error("сервис ответил "+r.status+" (возможно, он не отдаёт список моделей)");
     var j=await r.json(),ids=gm?(j.models||[]).filter(function(m){return !m.supportedGenerationMethods||m.supportedGenerationMethods.indexOf("generateContent")>-1}).map(function(m){return String(m.name).replace(/^models\//,"")}):(j.data||[]).map(function(m){return m.id}).filter(Boolean);
     if(!ids.length)throw new Error("список пуст");
-    $("aPre").innerHTML='<option value="">Выбрать…</option>'+ids.map(function(i){return "<option>"+esc(i)+"</option>"}).join("");
-  }catch(e){toast("Список моделей: "+e.message,1)}
+    var cur=$("aMod").value.trim();
+    $("aPre").innerHTML='<option value="">Выбрать…</option>'+ids.map(function(i){return "<option"+(i===cur?" selected":"")+">"+esc(i)+"</option>"}).join("");
+    mstat("Моделей в списке: "+ids.length+". Выберите нужную выше.");
+  }catch(e){mstat("Список не загрузился: "+(e&&e.message||e)+". Название модели можно ввести вручную в поле ниже.",1)}
 };
 $("aFmt").onchange=function(){if(this.value==="gemini"&&!/generativelanguage/.test($("aUrl").value))$("aUrl").value=GBASE};
 $("aOk").onclick=function(){
