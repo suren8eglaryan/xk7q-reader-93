@@ -164,6 +164,15 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 .note{position:absolute;transform:translateY(-100%);margin-top:-1px;font-size:.56em;font-style:italic;font-weight:400;line-height:1.25;text-align:left;text-indent:0;hyphens:none;color:color-mix(in srgb,var(--fg) 48%,var(--bg));background:color-mix(in srgb,var(--bg) 92%,transparent);padding:0 .4em;border-radius:6px;pointer-events:none;z-index:3;width:max-content}
 #rv{opacity:.35;color:#1a6fd1;text-decoration:none;transition:opacity .2s;box-shadow:none}#rv.act{opacity:1;box-shadow:0 3px 12px rgba(0,0,0,.25)}
 #mst{font:13px -apple-system,Helvetica,sans-serif;opacity:.8;line-height:1.35}
+:root{--ruc:#8a52d8}
+:root[data-theme="dark"]{--ruc:#b58cf5}
+.w.ann{display:inline-block;position:relative;text-align:center;white-space:nowrap;hyphens:none;-webkit-hyphens:none;padding:.4em 0 .62em}
+.w.ann::before{content:attr(data-ipa);position:absolute;left:50%;transform:translateX(-50%);top:.2em;font-size:.4em;line-height:1.2;font-style:normal;font-weight:400;color:color-mix(in srgb,var(--fg) 50%,var(--bg));white-space:nowrap}
+.w.ann::after{content:attr(data-ru);position:absolute;left:50%;transform:translateX(-50%);top:3.64em;box-sizing:border-box;min-width:100%;font-size:.5em;line-height:1.2;font-style:normal;font-weight:400;color:var(--ruc);white-space:nowrap;text-align:center;border-top:2px solid var(--ruc);padding-top:.18em}
+.w.ann.du::after{border-top-style:dashed}
+.w.ann:not(.su):not(.du)::after{border-top-width:0}
+.w.ann[data-ru=""]::after,.w.ann:not([data-ru])::after{display:none}
+.w.ann[data-ipa=""]::before,.w.ann:not([data-ipa])::before{display:none}
 </style>
 </head>
 <body>
@@ -181,6 +190,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <div><span>Карточки</span><button data-a="c-">A−</button><button data-a="c+">A+</button></div>
   <div><span>Поля</span><button data-a="p-">Меньше</button><button data-a="p+">Больше</button></div>
   <div><span>Выделение</span><input type="color" id="cSel"><button data-a="cs0">Сброс</button></div>
+  <div><span>Перевод</span><input type="color" id="cRu"><button data-a="cr0">Сброс</button></div>
   <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Бежевый</button><button data-a="t:dark">Тёмный</button></div>
   <div><span>Сервис</span><select id="aProf"></select><button id="aNew">+</button></div>
   <div><span>API</span><input id="aUrl" placeholder="API URL" autocapitalize="off" autocorrect="off"></div>
@@ -207,7 +217,7 @@ S.api=S.profs[S.pi];
 var SEL="p,h1,h2,h3,h4,h5,h6,li";
 var SYS6=`You are a grammar engine in a reading app for a Russian-speaking learner of English. Input: ONE sentence as numbered words, its text, and the paragraph for context. Reply with ONLY JSON:
 {"tr":"complete Russian translation, literal but grammatical (for your own reasoning, not shown)",
-"w":[{"i":0,"ipa":"American IPA without brackets","pos":"ONE Russian word: существительное, глагол, прилагательное, наречие, местоимение, предлог, союз, артикль, числительное, частица, междометие"}],
+"w":[{"i":0,"ipa":"American IPA without brackets","pos":"ONE Russian word: существительное, глагол, прилагательное, наречие, местоимение, предлог, союз, артикль, числительное, частица, междометие","ru":"literal translation of THIS word as used in this sentence: one Russian word or a very short phrase; empty string for an article or any word without a separate Russian equivalent"}],
 "b":[{"q":"the question this block answers, in Russian: Кто? Какой? Что делал? Чей? Где? Когда? Что?","w":[word numbers],"t":"grammatical name of the block in Russian, e.g. Именная группа","e":"same in English, e.g. Noun phrase","ru":["the single most faithful translation of the block"]}],
 "idi":[{"w":[word numbers],"text":"idiom as written","m":["the single best meaning in Russian"],"lit":"literal word-for-word translation"}]}
 Rules for "b" (short grammatical blocks):
@@ -221,7 +231,7 @@ Rules for "b" (short grammatical blocks):
 Example 2: "The next of Kronos's children to be apportioned her divine duties was Demeter." = [The next] Кто по счёту? | [of Kronos's children] Из чьих детей? | [to be apportioned] Которому что предстояло? | [her divine duties] Что? | [was Demeter] Кто был?
 Block translations follow the author's words strictly (see TRANSLATION RULE). "w" has an entry for every word number. "idi" lists idioms (empty array if none); do not mark ordinary phrasal verbs or collocations as idioms. Keep every string short.
 Example JSON for "The young boy who lived in a small village wanted to leave." (The0 young1 boy2 who3 lived4 in5 a6 small7 village8 wanted9 to10 leave11):
-{"tr":"Молодой мальчик, который жил в небольшой деревне, хотел уехать.","w":[{"i":0,"ipa":"ðə","pos":"артикль"},{"i":1,"ipa":"jʌŋ","pos":"прилагательное"},{"i":2,"ipa":"bɔɪ","pos":"существительное"},{"i":3,"ipa":"huː","pos":"местоимение"},{"i":4,"ipa":"lɪvd","pos":"глагол"},{"i":5,"ipa":"ɪn","pos":"предлог"},{"i":6,"ipa":"ə","pos":"артикль"},{"i":7,"ipa":"smɔːl","pos":"прилагательное"},{"i":8,"ipa":"ˈvɪlɪdʒ","pos":"существительное"},{"i":9,"ipa":"ˈwɒntɪd","pos":"глагол"},{"i":10,"ipa":"tuː","pos":"частица"},{"i":11,"ipa":"liːv","pos":"глагол"}],"b":[{"q":"Кто?","w":[0,1,2],"t":"Именная группа","e":"Noun phrase","ru":["молодой мальчик"]},{"q":"Который что делал?","w":[3,4],"t":"Определительное придаточное","e":"Relative clause","ru":["который жил"]},{"q":"Где?","w":[5,6,7,8],"t":"Предложная группа","e":"Prepositional phrase","ru":["в небольшой деревне"]},{"q":"Что хотел?","w":[9,10,11],"t":"Глагольная группа","e":"Verb phrase","ru":["хотел уехать"]}],"idi":[]}`;
+{"tr":"Молодой мальчик, который жил в небольшой деревне, хотел уехать.","w":[{"i":0,"ipa":"ðə","pos":"артикль","ru":""},{"i":1,"ipa":"jʌŋ","pos":"прилагательное","ru":"молодой"},{"i":2,"ipa":"bɔɪ","pos":"существительное","ru":"мальчик"},{"i":3,"ipa":"huː","pos":"местоимение","ru":"который"},{"i":4,"ipa":"lɪvd","pos":"глагол","ru":"жил"},{"i":5,"ipa":"ɪn","pos":"предлог","ru":"в"},{"i":6,"ipa":"ə","pos":"артикль","ru":""},{"i":7,"ipa":"smɔːl","pos":"прилагательное","ru":"небольшой"},{"i":8,"ipa":"ˈvɪlɪdʒ","pos":"существительное","ru":"деревне"},{"i":9,"ipa":"ˈwɒntɪd","pos":"глагол","ru":"хотел"},{"i":10,"ipa":"tuː","pos":"частица","ru":""},{"i":11,"ipa":"liːv","pos":"глагол","ru":"уехать"}],"b":[{"q":"Кто?","w":[0,1,2],"t":"Именная группа","e":"Noun phrase","ru":["молодой мальчик"]},{"q":"Который что делал?","w":[3,4],"t":"Определительное придаточное","e":"Relative clause","ru":["который жил"]},{"q":"Где?","w":[5,6,7,8],"t":"Предложная группа","e":"Prepositional phrase","ru":["в небольшой деревне"]},{"q":"Что хотел?","w":[9,10,11],"t":"Глагольная группа","e":"Verb phrase","ru":["хотел уехать"]}],"idi":[]}`;
 var SYS8=`You are a grammar engine in a reading app for a Russian-speaking learner of English. Input: ONE sentence as numbered words, its text, and context. Split the sentence into its full members (члены предложения). Reply with ONLY JSON: {"m":[{"w":[word numbers],"t":"member in Russian, e.g. Подлежащее","e":"same in English, e.g. Subject","ru":"literal grammatical Russian translation of the member"}]}. Members in order: Подлежащее, Сказуемое, Прямое дополнение, Косвенное дополнение, Обстоятельство (with its kind: места, времени, образа действия, меры и степени, причины, цели), Определение, Придаточное предложение (with its type). Each word is in exactly one member, no nesting, and the member translations read in order as the whole sentence. Example for "The young boy who lived in a small village wanted to leave.": {"m":[{"w":[0,1,2,3,4,5,6,7,8],"t":"Подлежащее","e":"Subject","ru":"молодой мальчик, который жил в небольшой деревне"},{"w":[9,10,11],"t":"Сказуемое","e":"Predicate","ru":"хотел уехать"}]}`;
 var SYS9=`You split a group of words of an English sentence into short grammatical blocks for a Russian-speaking learner. Input: the sentence, its numbered words, and the numbers of the group to split. Reply with ONLY JSON: {"b":[{"w":[word numbers],"t":"grammatical name in Russian","e":"same in English","ru":["the single most faithful translation"]}]}. Rules: blocks cover exactly the given numbers, in order, each once; every block has 1 to 4 words (never more than 5) and answers one question (Кто? Какой? Что? Где?). Start a new block at every preposition, relative pronoun or conjunction, the "to" of an infinitive, and every new noun phrase. A verb (with its auxiliaries and "to") is NEVER in one block with its object. Example: group "to be apportioned her divine duties" gives [to be apportioned] and [her divine duties].`;
 var STRICT="TRANSLATION RULE: follow the author's own words strictly. Translate every noun, verb, adjective and adverb by its direct, literal Russian equivalent. Do not paraphrase, do not replace words with more natural or more common ones, do not add or drop words (for example 'reference' = 'упоминание' or 'отсылка', never 'речь'; 'common' = 'общий' or 'обычный', not a free guess). Keep the author's word order wherever Russian grammar allows; change it only when Russian grammar requires. Give ONE translation only: the most faithful one. Use correct Russian grammar and punctuation, nothing more.";
@@ -346,14 +356,37 @@ function sentOf(w){
 function has(list,id){return (list||[]).filter(function(x){return x.w.indexOf(id)>-1})[0]||null}
 function wtxt(a,w){return w.map(function(i){return a.ws[i].textContent}).join(" ")}
 function roleOf(m){return m.t||""}
+function annotate(a){
+  var ids=a.idi?a.idi.w:(a.blk?a.blk.w:[a.id]),W=(a.A&&a.A.w)||[];
+  ids.forEach(function(i){
+    var w=a.ws[i],wi=W[i]||{};
+    w.setAttribute("data-ipa",wi.ipa||"");w.setAttribute("data-ru",wi.ru||"");w.classList.add("ann");
+  });
+  var F=parseFloat(getComputedStyle(book).fontSize),m=document.createElement("span");
+  m.style.cssText="position:absolute;visibility:hidden;white-space:nowrap;left:0;top:0";
+  book.appendChild(m);
+  ids.forEach(function(i){
+    var w=a.ws[i];w.style.minWidth="";
+    var nat=w.getBoundingClientRect().width;
+    m.style.fontSize=(F*0.5)+"px";m.textContent=w.getAttribute("data-ru")||"";var rw=m.offsetWidth;
+    m.style.fontSize=(F*0.4)+"px";m.textContent=w.getAttribute("data-ipa")||"";var iw=m.offsetWidth;
+    var need=Math.max(rw,iw)+8;if(need>nat)w.style.minWidth=need+"px";
+  });
+  book.removeChild(m);
+}
 function paintAct(){
-  book.querySelectorAll(".w.mg,.w.du,.w.su,.w.ig").forEach(function(e){e.classList.remove("mg","du","su","ig")});
+  book.querySelectorAll(".w.mg,.w.du,.w.su,.w.ig,.w.ann").forEach(function(e){
+    e.classList.remove("mg","du","su","ig","ann");e.removeAttribute("data-ipa");e.removeAttribute("data-ru");e.style.minWidth="";
+  });
   if(!act)return;
   var ws=act.ws,id=act.id,A=act.A;
   if(A)A.idi.forEach(function(p){p.w.forEach(function(i){ws[i].classList.add("ig")})});
-  if(act.idi){ws[id].classList.add("su");return}
-  if(act.blk)act.blk.w.forEach(function(i){ws[i].classList.add("mg");if(i!==id)ws[i].classList.add("du")});
-  ws[id].classList.add("mg","su");
+  if(act.idi){ws[id].classList.add("su")}
+  else{
+    if(act.blk)act.blk.w.forEach(function(i){ws[i].classList.add("mg");if(i!==id)ws[i].classList.add("du")});
+    ws[id].classList.add("mg","su");
+  }
+  if(A&&(act.blk||act.idi))annotate(act);
 }
 function closeSheet(){
   cardTok++;clearInterval(ldIv);
@@ -372,7 +405,7 @@ function fixM(d,n){
   b.forEach(function(x){x.w.forEach(function(i){u[i]=(u[i]||0)+1})});
   for(var i=0;i<n;i++)if(u[i]!==1)return null;
   var idi=part(d.idi,function(x,w){return{w:w,text:String(x.text||""),m:arr(x.m),lit:String(x.lit||"")}});
-  var wi=[];(Array.isArray(d.w)?d.w:[]).forEach(function(x){if(x&&+x.i>=0&&+x.i<n)wi[+x.i]={ipa:String(x.ipa||"").replace(/[\[\]\/]/g,"").trim(),pos:String(x.pos||"")}});
+  var wi=[];(Array.isArray(d.w)?d.w:[]).forEach(function(x){if(x&&+x.i>=0&&+x.i<n)wi[+x.i]={ipa:String(x.ipa||"").replace(/[\[\]\/]/g,"").trim(),pos:String(x.pos||""),ru:String(x.ru||"").trim()}});
   return{b:b,idi:idi,w:wi,long:b.some(function(x){return x.w.length>5}),missing:b.some(function(x){return !x.ru.length})};
 }
 function fixMem(d,n){
@@ -427,7 +460,7 @@ async function getA0(a){
   if(a.A)return a.A;
   var o=a.el;o._A=o._A||{};
   if(o._A[a.k]){a.A=o._A[a.k];return a.A}
-  var n=a.ws.length,user=ctxUser(a),key="m5|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw&&raw.v===2?raw.d:null;
+  var n=a.ws.length,user=ctxUser(a),key="m6|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw&&raw.v===2?raw.d:null;
   a.keyA=key;
   if(!d){
     var best=null;
@@ -559,19 +592,6 @@ function redo(){
   a.A=null;a.pA=null;a.blk=null;a.idi=null;clearNote();paintAct();
   analyze(a,true);
 }
-function showNote(a){
-  clearNote();
-  var src=a.idi?{w:a.idi.w,ru:a.idi.m}:a.blk,txt=src&&src.ru&&src.ru[0];
-  if(!txt||!src.w||!src.w.length)return;
-  var first=a.ws[src.w[0]],r=first.getBoundingClientRect(),br=book.getBoundingClientRect();
-  note=document.createElement("div");note.className="note";note.lang="ru";note.textContent=txt;
-  book.appendChild(note);
-  var maxW=book.clientWidth-24,left=r.left-br.left;
-  note.style.maxWidth=maxW+"px";
-  var w=note.offsetWidth;
-  if(left+w>book.clientWidth-12)left=Math.max(12,book.clientWidth-12-w);
-  note.style.left=left+"px";note.style.top=(r.top-br.top)+"px";
-}
 async function analyze(a,reopen){
   var my=++tapTok;
   busy(true,"Анализирую…",my);
@@ -581,7 +601,7 @@ async function analyze(a,reopen){
   if(act!==a)return;
   a.blk=has(a.A.b,a.id);a.idi=has(a.A.idi,a.id);
   if(!a.blk&&!a.idi)a.blk={w:[a.id],t:"",e:"",ru:[]};
-  paintAct();showNote(a);
+  paintAct();
   if(reopen)openFor(a);
 }
 function tapWord(w){
@@ -604,9 +624,11 @@ function applyS(){
   var de=document.documentElement,st=de.style;
   de.setAttribute("data-theme",S.theme);st.setProperty("--cf",S.cf||1);
   S.cSel?st.setProperty("--sel",S.cSel):st.removeProperty("--sel");
+  S.cRu?st.setProperty("--ruc",S.cRu):st.removeProperty("--ruc");
   book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";
   var cs=getComputedStyle(de);
   $("cSel").value=S.cSel||cs.getPropertyValue("--sel").trim();
+  $("cRu").value=S.cRu||cs.getPropertyValue("--ruc").trim();
   try{localStorage.setItem("rr4",JSON.stringify(S))}catch(x){}
 }
 $("aa").onclick=function(){$("set").classList.toggle("hide")};
@@ -620,6 +642,7 @@ $("set").addEventListener("click",function(e){
   if(a==="p+")S.pad=Math.min(90,S.pad+4);
   if(a.indexOf("t:")===0)S.theme=a.slice(2);
   if(a==="cs0")S.cSel=null;
+  if(a==="cr0")S.cRu=null;
   applyS();
 });
 function fillProf(){
@@ -634,6 +657,7 @@ $("aProf").onchange=function(){readProf();S.pi=+this.value;S.api=S.profs[S.pi];f
 $("aNew").onclick=function(){var n=prompt("Название сервиса");if(!n)return;readProf();S.profs.push({n:n,fmt:"openai",url:"",key:"",model:""});S.pi=S.profs.length-1;S.api=S.profs[S.pi];fillProf();applyS()};
 fillProf();
 $("cSel").oninput=function(){S.cSel=this.value;applyS()};
+$("cRu").oninput=function(){S.cRu=this.value;applyS()};
 $("aPre").onchange=function(){if(this.value)$("aMod").value=this.value};
 function mstat(t,err){var e=$("mst");e.textContent=t;e.classList.remove("hide");e.style.color=err?"#d33":""}
 $("aLs").onclick=async function(){
