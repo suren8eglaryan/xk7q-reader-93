@@ -215,6 +215,12 @@ var $=function(i){return document.getElementById(i)},book=$("book");
 var S={fs:26,pad:36,theme:"white",ru:true,cSel:null,cRu:null,cIp:null,lh:2.7,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
 if(!Array.isArray(S.profs)||!S.profs.length){S.profs=[Object.assign({n:"Основной"},S.api),{n:"Gemini",fmt:"gemini",url:"https://generativelanguage.googleapis.com/v1beta",key:"",model:"gemini-2.5-flash"}];S.pi=0}
+if(!S.starAdded){
+  S.starAdded=1;
+  var si=-1;S.profs.forEach(function(p,i){if(si<0&&/ai\.starimg\.ru/.test(p.url||"")&&p.fmt!=="gemini")si=i});
+  if(si<0){S.profs.push({n:"StarImg",fmt:"openai",url:"https://ai.starimg.ru/v1",key:"",model:"gpt-5.6-terra"});si=S.profs.length-1}
+  S.pi=si;
+}
 if(!(S.pi>=0&&S.pi<S.profs.length))S.pi=0;
 S.api=S.profs[S.pi];
 var SEL="p,h1,h2,h3,h4,h5,h6,li";
