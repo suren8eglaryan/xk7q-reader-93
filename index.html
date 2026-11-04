@@ -195,11 +195,9 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <div><span>Перевод</span><input type="color" id="cRu"><button data-a="cr0">Сброс</button></div>
   <div><span>Транскр.</span><input type="color" id="cIp"><button data-a="ci0">Сброс</button></div>
   <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Бежевый</button><button data-a="t:dark">Тёмный</button></div>
-  <div><span>Сервис</span><select id="aProf"></select><button id="aNew">+</button></div>
-  <div><span>API</span><input id="aUrl" placeholder="API URL" autocapitalize="off" autocorrect="off"></div>
-  <div><span>Формат</span><select id="aFmt"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="gemini">Gemini</option></select></div>
+  <div><span>Адрес</span><input id="aUrl" placeholder="https://…/v1" autocapitalize="off" autocorrect="off"></div>
   <div><span>Ключ</span><input id="aKey" type="password" placeholder="API key"></div>
-  <div><span>Модель</span><select id="aPre"><option value="">Выбрать…</option><option>claude-haiku-5-5</option><option>claude-sonnet-5-5</option><option>claude-opus-5-5</option><option>gemini-2.5-flash</option><option>gemini-2.5-pro</option><option>gemini-2.5-flash-lite</option></select><button id="aLs">Список</button></div>
+  <div><span>Модель</span><select id="aPre"><option value="">Выбрать…</option><option>gemini-3-pro</option><option>gpt-5.6</option><option>claude-sonnet</option><option>grok-4.6</option><option>deepseek-v3</option></select><button id="aLs">Список</button></div>
   <div><span></span><input id="aMod" placeholder="model" autocapitalize="off" autocorrect="off"></div>
   <div id="mst" class="hide"></div>
   <div><button id="aOk">Сохранить</button><button id="aClr">Очистить кэш</button></div>
@@ -214,15 +212,20 @@ var chapters=[],idx=0,bookId="book",gen=0,blocks=[],queue=[],active=0,paused=fal
 var $=function(i){return document.getElementById(i)},book=$("book");
 var S={fs:26,pad:36,theme:"white",ru:true,cSel:null,cRu:null,cIp:null,lh:2.7,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
-if(!Array.isArray(S.profs)||!S.profs.length){S.profs=[Object.assign({n:"Основной"},S.api),{n:"Gemini",fmt:"gemini",url:"https://generativelanguage.googleapis.com/v1beta",key:"",model:"gemini-2.5-flash"}];S.pi=0}
-if(!S.starAdded){
-  S.starAdded=1;
-  var si=-1;S.profs.forEach(function(p,i){if(si<0&&/ai\.starimg\.ru/.test(p.url||"")&&p.fmt!=="gemini")si=i});
-  if(si<0){S.profs.push({n:"StarImg",fmt:"openai",url:"https://ai.starimg.ru/v1",key:"",model:"gpt-5.6-terra"});si=S.profs.length-1}
-  S.pi=si;
-}
-if(!(S.pi>=0&&S.pi<S.profs.length))S.pi=0;
-S.api=S.profs[S.pi];
+(function(){
+  var a=S.api||{};
+  if(Array.isArray(S.profs)&&S.profs.length){
+    var pa=S.profs[S.pi]||S.profs[0]||{};a={url:pa.url||"",key:pa.key||"",model:pa.model||""};
+    if(!a.key){S.profs.forEach(function(p){if(!a.key&&p.key&&/starimg/.test(p.url||""))a={url:p.url,key:p.key,model:p.model||""}})}
+  }
+  if(!S.v2){
+    S.v2=1;
+    if(!a.url||/generativelanguage|openrouter|claude-n-codex|\/gemini/.test(a.url))a.url="https://ai.starimg.ru/v1";
+    a.model="gemini-3-pro";
+  }
+  delete S.profs;delete S.pi;delete S.starAdded;
+  S.api={url:a.url||"https://ai.starimg.ru/v1",key:a.key||"",model:a.model||"gemini-3-pro"};
+})();
 var SEL="p,h1,h2,h3,h4,h5,h6,li";
 var SYS6=`You are a grammar engine in a reading app for a Russian-speaking learner of English. Input: ONE sentence as numbered words, its text, and the paragraph for context. Reply with ONLY JSON:
 {"tr":"complete Russian translation, literal but grammatical (for your own reasoning, not shown)",
@@ -279,31 +282,19 @@ function busy(on,msg,own){
 async function callApi(user,sys){
   try{return await callApi2(user,sys)}catch(e){if(e instanceof TypeError)throw new Error("Нет связи с сервером ("+e.message+"). Проверьте интернет и VPN: сервис мог быть недоступен из вашей сети. Если сайт сервиса открывается, причина в запрете браузерных запросов (CORS)");throw e}
 }
-var GBASE="https://generativelanguage.googleapis.com/v1beta";
 async function ft(url,o,ms){
   var t,lim=ms||75000,to=new Promise(function(_,rej){t=setTimeout(function(){rej(new Error("Нет ответа от сервера за "+Math.round(lim/1000)+" с. Проверьте VPN и сеть: в приложении на экране «Домой» трафик может идти мимо VPN."))},lim)});
   try{return await Promise.race([fetch(url,o||undefined),to])}
   finally{clearTimeout(t)}
 }
 async function callApi2(user,sys){
-  if(!S.api.key||!S.api.model)throw new Error("Укажите ключ и модель: Aa → Перевод");
-  var c=S.api,base=c.url.replace(/\/+$/,""),r,j,anth=c.fmt==="anthropic",gem=c.fmt==="gemini";
-  if(anth)r=await ft(base.replace(/\/v1$/,"")+"/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:c.model,max_tokens:8000,system:sys,messages:[{role:"user",content:user}]})});
-  else if(gem){
-    var gm=c.model.replace(/^models\//,""),gc={temperature:0.2,responseMimeType:"application/json"};
-    if(/2\.5-flash/.test(gm))gc.thinkingConfig={thinkingBudget:0};
-    r=await ft((base||GBASE)+"/models/"+encodeURIComponent(gm)+":generateContent?key="+encodeURIComponent(c.key),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{role:"user",parts:[{text:user}]}],generationConfig:gc})});
-  }
-  else r=await ft(base+"/chat/completions",{method:"POST",headers:{"content-type":"application/json","Authorization":"Bearer "+c.key},body:JSON.stringify({model:c.model,temperature:0.2,messages:[{role:"system",content:sys},{role:"user",content:user}]})});
-  if(!r.ok)throw new Error("API "+r.status+": "+(await r.text()).slice(0,120));
-  j=await r.json();
-  if(anth)return j.content.map(function(x){return x.text||""}).join("");
-  if(gem){
-    var cd=j.candidates&&j.candidates[0],t=((cd&&cd.content&&cd.content.parts)||[]).map(function(x){return x.text||""}).join("");
-    if(!t)throw new Error("Gemini вернул пустой ответ"+(cd&&cd.finishReason?" ("+cd.finishReason+")":""));
-    return t;
-  }
-  return j.choices[0].message.content;
+  var c=S.api;
+  if(!c.url||!c.key||!c.model)throw new Error("Укажите адрес, ключ и модель: Aa → API");
+  var r=await ft(c.url.replace(/\/+$/,"")+"/chat/completions",{method:"POST",headers:{"content-type":"application/json","Authorization":"Bearer "+c.key},body:JSON.stringify({model:c.model,messages:[{role:"system",content:sys},{role:"user",content:user}]})});
+  if(!r.ok)throw new Error("API "+r.status+": "+(await r.text()).slice(0,160));
+  var j=await r.json(),m=j.choices&&j.choices[0]&&j.choices[0].message,t=m&&(typeof m.content==="string"?m.content:Array.isArray(m.content)?m.content.map(function(x){return x.text||""}).join(""):"");
+  if(!t)throw new Error("Пустой ответ модели");
+  return t;
 }
 function fix(d,n){
   var u=d&&d.u,seen={},cnt=0,out=[];if(!Array.isArray(u))return null;
@@ -696,39 +687,34 @@ $("set").addEventListener("click",function(e){
   if(a==="l+")S.lh=Math.min(3.6,+((S.lh||2.7)+0.1).toFixed(1));
   applyS();
 });
-function fillProf(){
-  var p=S.api;
-  $("aProf").innerHTML=S.profs.map(function(x,i){return '<option value="'+i+'">'+esc(x.n)+"</option>"}).join("");
-  $("aProf").value=S.pi;$("aFmt").value=p.fmt||"openai";$("aUrl").value=p.url||"";$("aKey").value=p.key||"";$("aMod").value=p.model||"";
-}
-function readProf(){
-  var p=S.profs[S.pi];p.fmt=$("aFmt").value;p.url=$("aUrl").value.trim();p.key=$("aKey").value.trim();p.model=$("aMod").value.trim();S.api=p;
-}
-$("aProf").onchange=function(){readProf();S.pi=+this.value;S.api=S.profs[S.pi];fillProf();applyS()};
-$("aNew").onclick=function(){var n=prompt("Название сервиса");if(!n)return;readProf();S.profs.push({n:n,fmt:"openai",url:"",key:"",model:""});S.pi=S.profs.length-1;S.api=S.profs[S.pi];fillProf();applyS()};
-fillProf();
+function fillApi(){var p=S.api;$("aUrl").value=p.url||"";$("aKey").value=p.key||"";$("aMod").value=p.model||""}
+function readApi(){S.api={url:$("aUrl").value.trim(),key:$("aKey").value.trim(),model:$("aMod").value.trim()}}
+fillApi();
 $("cSel").oninput=function(){S.cSel=this.value;applyS()};
 $("cRu").oninput=function(){S.cRu=this.value;applyS()};
 $("cIp").oninput=function(){S.cIp=this.value;applyS()};
 $("aPre").onchange=function(){if(this.value)$("aMod").value=this.value};
 function mstat(t,err){var e=$("mst");e.textContent=t;e.classList.remove("hide");e.style.color=err?"#d33":""}
 $("aLs").onclick=async function(){
-  var c={url:$("aUrl").value.trim().replace(/\/+$/,""),key:$("aKey").value.trim(),fmt:$("aFmt").value};
+  var url=$("aUrl").value.trim().replace(/\/+$/,""),key=$("aKey").value.trim();
   mstat("Загружаю список моделей…");
   try{
-    if(!c.key)throw new Error("сначала введите ключ");
-    var an=c.fmt==="anthropic",gm=c.fmt==="gemini",r=await ft(gm?(c.url||GBASE)+"/models?pageSize=100&key="+encodeURIComponent(c.key):an?c.url.replace(/\/v1$/,"")+"/v1/models":c.url+"/models",gm?{}:{headers:an?{"x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"}:{"Authorization":"Bearer "+c.key}},20000);
+    if(!url||!key)throw new Error("сначала введите адрес и ключ");
+    var r=await ft(url+"/models",{headers:{"Authorization":"Bearer "+key}},20000);
     if(!r.ok)throw new Error("сервис ответил "+r.status+" (возможно, он не отдаёт список моделей)");
-    var j=await r.json(),ids=gm?(j.models||[]).filter(function(m){return !m.supportedGenerationMethods||m.supportedGenerationMethods.indexOf("generateContent")>-1}).map(function(m){return String(m.name).replace(/^models\//,"")}):(j.data||[]).map(function(m){return m.id}).filter(Boolean);
+    var j=await r.json(),ids=(j.data||[]).map(function(m){return m.id}).filter(Boolean);
     if(!ids.length)throw new Error("список пуст");
     var cur=$("aMod").value.trim();
     $("aPre").innerHTML='<option value="">Выбрать…</option>'+ids.map(function(i){return "<option"+(i===cur?" selected":"")+">"+esc(i)+"</option>"}).join("");
     mstat("Моделей в списке: "+ids.length+". Выберите нужную выше.");
-  }catch(e){mstat("Список не загрузился: "+(e&&e.message||e)+". Название модели можно ввести вручную в поле ниже.",1)}
+  }catch(e){
+    var msg=e&&e.message||String(e);
+    if(e instanceof TypeError)msg="нет связи ("+msg+"): сервис не отвечает или не разрешает запросы из браузера";
+    mstat("Список не загрузился: "+msg+". Название модели можно ввести вручную в поле ниже.",1);
+  }
 };
-$("aFmt").onchange=function(){if(this.value==="gemini"&&!/generativelanguage/.test($("aUrl").value))$("aUrl").value=GBASE};
 $("aOk").onclick=function(){
-  readProf();
+  readApi();
   applyS();$("set").classList.add("hide");kick();
 };
 $("aClr").onclick=function(){kv("t","readwrite",function(s){return s.clear()});if(chapters.length)show(idx)};
