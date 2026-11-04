@@ -165,9 +165,9 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #cm{opacity:.35;box-shadow:none;font-size:15px;letter-spacing:.02em}
 #rv{opacity:.35;color:#1a6fd1;text-decoration:none;box-shadow:none}
 #mst{font:13px -apple-system,Helvetica,sans-serif;opacity:.8;line-height:1.35}
-:root{--ru0:#b3b3b3;--ip0:#b3b3b3;--ru1:#9b7ae6;--ip1:#7cc4a0}
-:root[data-theme="dark"]{--ru0:#77776f;--ip0:#77776f;--ru1:#b9a0f5;--ip1:#8ad6b0}
-:root[data-theme="beige"]{--ru0:#aaa69a;--ip0:#aaa69a}
+:root{--ru0:#cdcdcd;--ip0:#cdcdcd;--ru1:#9b7ae6;--ip1:#7cc4a0}
+:root[data-theme="dark"]{--ru0:#5c5c56;--ip0:#5c5c56;--ru1:#b9a0f5;--ip1:#8ad6b0}
+:root[data-theme="beige"]{--ru0:#c6c2b6;--ip0:#c6c2b6}
 .w.ann{text-decoration:none!important}
 #ovs{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:2}
 #ovs .ln{position:absolute;display:block}
@@ -190,7 +190,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 .gx{color:var(--fk);font-size:1em;line-height:1.45;text-align:justify;hyphens:auto;-webkit-hyphens:auto}
 .gx i{font-style:italic}
 .gr.on b{color:var(--sel)}
-#book{line-height:var(--lh,2.7)}
+#book{line-height:var(--lh,2.1)}
 #book h1,#book h2,#book h3,#book h4{line-height:1.25}
 </style>
 </head>
@@ -232,8 +232,9 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 <script>
 var chapters=[],idx=0,bookId="book",gen=0,blocks=[],queue=[],active=0,paused=false,io=null;
 var $=function(i){return document.getElementById(i)},book=$("book");
-var S={fs:26,pad:36,theme:"white",ru:true,cap:"ipa",cSel:null,cRu0:null,cRu1:null,cIp0:null,cIp1:null,rs:1,is:1,eye:false,lh:2.7,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
+var S={fs:26,pad:36,theme:"white",ru:true,cap:"ipa",cSel:null,cRu0:null,cRu1:null,cIp0:null,cIp1:null,rs:1,is:1,eye:false,lh:2.1,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
+if(!S.v3){S.v3=1;if(!S.lh||S.lh>=2.5)S.lh=2.1}
 if(S.cRu){S.cRu1=S.cRu;delete S.cRu}if(S.cIp){S.cIp1=S.cIp;delete S.cIp}
 (function(){
   var a=S.api||{};
@@ -414,7 +415,7 @@ function renderPara(el){
   var c=fmc(cs.fontStyle+" "+cs.fontWeight+" "+F+"px "+fam),mx=c.measureText("x"),xh=mx.actualBoundingBoxAscent||F*0.45,asc=mx.fontBoundingBoxAscent||F*0.9;
   function lm(it,ch){var m=fmc((it?"italic ":"")+"100px "+fam).measureText(ch),A=m.fontBoundingBoxAscent||90,D=m.fontBoundingBoxDescent||25;return{base:(100-(A+D))/2+A,xh:m.actualBoundingBoxAscent||45}}
   var mI=lm(false,"x"),mR=lm(true,"о");
-  var fsI=F*0.42*(S.is||1),fsR=F*0.5*(S.rs||1),t=Math.max(2,Math.round(F*0.075)),G=F*0.3;
+  var fsI=F*0.48*(S.is||1),fsR=F*0.56*(S.rs||1),t=Math.max(2,Math.round(F*0.075)),G=F*0.42;
   var br=book.getBoundingClientRect(),ov=document.createElement("div");ov.className="ovp";
   function line(x,y,w,kind,col){
     var e=document.createElement("i");e.className="ln";
@@ -769,7 +770,7 @@ function applyS(){
   de.setAttribute("data-theme",S.theme);st.setProperty("--cf",S.cf||1);
   S.cSel?st.setProperty("--sel",S.cSel):st.removeProperty("--sel");
   [["cRu0","--ru0"],["cRu1","--ru1"],["cIp0","--ip0"],["cIp1","--ip1"]].forEach(function(p){S[p[0]]?st.setProperty(p[1],S[p[0]]):st.removeProperty(p[1])});
-  $("eye").classList.toggle("off",!S.eye);$("cm").textContent=S.cap==="ru"?"РУ":"IPA";st.setProperty("--lh",S.lh||2.7);
+  $("eye").classList.toggle("off",!S.eye);$("cm").textContent=S.cap==="ru"?"РУ":"IPA";st.setProperty("--lh",S.lh||2.1);
   book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";
   var cs=getComputedStyle(de);
   $("cSel").value=S.cSel||cs.getPropertyValue("--sel").trim();
@@ -794,8 +795,8 @@ $("set").addEventListener("click",function(e){
   if(a==="r+")S.rs=Math.min(2,+((S.rs||1)+0.1).toFixed(2));
   if(a==="i-")S.is=Math.max(0.6,+((S.is||1)-0.1).toFixed(2));
   if(a==="i+")S.is=Math.min(2,+((S.is||1)+0.1).toFixed(2));
-  if(a==="l-")S.lh=Math.max(1.4,+((S.lh||2.7)-0.1).toFixed(1));
-  if(a==="l+")S.lh=Math.min(3.6,+((S.lh||2.7)+0.1).toFixed(1));
+  if(a==="l-")S.lh=Math.max(1.4,+((S.lh||2.1)-0.1).toFixed(1));
+  if(a==="l+")S.lh=Math.min(3.6,+((S.lh||2.1)+0.1).toFixed(1));
   applyS();
 });
 function fillApi(){var p=S.api;$("aUrl").value=p.url||"";$("aKey").value=p.key||"";$("aMod").value=p.model||""}
