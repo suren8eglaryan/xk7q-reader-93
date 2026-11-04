@@ -162,6 +162,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #sheet .chd .sec{font-size:14px}
 #book{position:relative}
 .note{position:absolute;transform:translateY(-100%);margin-top:-1px;font-size:.56em;font-style:italic;font-weight:400;line-height:1.25;text-align:left;text-indent:0;hyphens:none;color:color-mix(in srgb,var(--fg) 48%,var(--bg));background:color-mix(in srgb,var(--bg) 92%,transparent);padding:0 .4em;border-radius:6px;pointer-events:none;z-index:3;width:max-content}
+#cm{opacity:.35;box-shadow:none;font-size:15px;letter-spacing:.02em}
 #rv{opacity:.35;color:#1a6fd1;text-decoration:none;box-shadow:none}
 #mst{font:13px -apple-system,Helvetica,sans-serif;opacity:.8;line-height:1.35}
 :root{--ru0:#b3b3b3;--ip0:#b3b3b3;--ru1:#9b7ae6;--ip1:#7cc4a0}
@@ -225,13 +226,13 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 </div>
 <div id="book" class="hide" lang="en"></div>
 <div id="toast" class="hide"></div>
-<div id="fab"><a id="rv" class="fc" target="_blank" rel="noopener">R</a><button id="fb" class="fc">文A</button></div>
+<div id="fab"><button id="cm" class="fc" aria-label="Транскрипция или перевод">IPA</button><a id="rv" class="fc" target="_blank" rel="noopener">R</a><button id="fb" class="fc">文A</button></div>
 <div id="dim" class="hide"></div>
 <div id="sheet" class="sheet hide"></div>
 <script>
 var chapters=[],idx=0,bookId="book",gen=0,blocks=[],queue=[],active=0,paused=false,io=null;
 var $=function(i){return document.getElementById(i)},book=$("book");
-var S={fs:26,pad:36,theme:"white",ru:true,cSel:null,cRu0:null,cRu1:null,cIp0:null,cIp1:null,rs:1,is:1,eye:false,lh:2.7,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
+var S={fs:26,pad:36,theme:"white",ru:true,cap:"ipa",cSel:null,cRu0:null,cRu1:null,cIp0:null,cIp1:null,rs:1,is:1,eye:false,lh:2.7,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
 if(S.cRu){S.cRu1=S.cRu;delete S.cRu}if(S.cIp){S.cIp1=S.cIp;delete S.cIp}
 (function(){
@@ -413,7 +414,7 @@ function renderPara(el){
   var c=fmc(cs.fontStyle+" "+cs.fontWeight+" "+F+"px "+fam),mx=c.measureText("x"),xh=mx.actualBoundingBoxAscent||F*0.45,asc=mx.fontBoundingBoxAscent||F*0.9;
   function lm(it,ch){var m=fmc((it?"italic ":"")+"100px "+fam).measureText(ch),A=m.fontBoundingBoxAscent||90,D=m.fontBoundingBoxDescent||25;return{base:(100-(A+D))/2+A,xh:m.actualBoundingBoxAscent||45}}
   var mI=lm(false,"x"),mR=lm(true,"о");
-  var fsI=F*0.42*(S.is||1),fsR=F*0.5*(S.rs||1),t=Math.max(2,Math.round(F*0.075)),G=F*0.34;
+  var fsI=F*0.42*(S.is||1),fsR=F*0.5*(S.rs||1),t=Math.max(2,Math.round(F*0.075)),G=F*0.3;
   var br=book.getBoundingClientRect(),ov=document.createElement("div");ov.className="ovp";
   function line(x,y,w,kind,col){
     var e=document.createElement("i");e.className="ln";
@@ -428,23 +429,22 @@ function renderPara(el){
     var rs=[].slice.call(rg.getClientRects()).filter(function(r){return r.width>1});
     if(!rs.length)return;
     if(it.on&&it.kind){var col=getComputedStyle(w).color;rs.forEach(function(r){ov.appendChild(line(r.left-br.left,r.top-br.top+asc+F*0.17,r.width,it.kind,col))})}
-    if(!ru&&!ip)return;
+    var txt=it.on?ru:(S.cap==="ru"?ru:ip),isRu=it.on||S.cap==="ru";
+    if(!txt)return;
+    var fs=isRu?fsR:fsI;
     var big=rs.reduce(function(m,r){return r.width>m.width?r:m},rs[0]);
-    items.push({cx:big.left-br.left+big.width/2,base:big.top-br.top+asc,ru:ru,ip:ip,on:it.on,sr:1,si:1,
-      wr:ru?fmc("italic "+fsR+"px "+fam).measureText(ru).width:0,wi:ip?fmc(fsI+"px "+fam).measureText(ip).width:0});
+    items.push({cx:big.left-br.left+big.width/2,base:big.top-br.top+asc,txt:txt,ru:isRu,on:it.on,fs:fs,sc:1,
+      wd:fmc((isRu?"italic ":"")+fs+"px "+fam).measureText(txt).width});
   });
   items.sort(function(p,q){return Math.abs(p.base-q.base)<F?p.cx-q.cx:p.base-q.base});
   for(var k=0;k+1<items.length;k++){
     var p=items[k],q=items[k+1];if(Math.abs(p.base-q.base)>=F)continue;
-    var sp=q.cx-p.cx-6;
-    if(p.wr&&q.wr){var s1=sp/((p.wr*p.sr+q.wr*q.sr)/2);if(s1<1){p.sr=Math.max(0.55,p.sr*s1);q.sr=Math.max(0.55,q.sr*s1)}}
-    if(p.wi&&q.wi){var s2=sp/((p.wi*p.si+q.wi*q.si)/2);if(s2<1){p.si=Math.max(0.55,p.si*s2);q.si=Math.max(0.55,q.si*s2)}}
+    var s1=(q.cx-p.cx-6)/((p.wd*p.sc+q.wd*q.sc)/2);if(s1<1){p.sc=Math.max(0.55,p.sc*s1);q.sc=Math.max(0.55,q.sc*s1)}
   }
   function lab(cls,txt,cx,top,fs){var e=document.createElement("span");e.className="lb "+cls;e.textContent=txt;e.style.cssText="left:"+cx+"px;top:"+top+"px;font-size:"+fs+"px";return e}
   items.forEach(function(it){
-    var on=it.on?" on":"";
-    if(it.ip){var f1=fsI*it.si;ov.appendChild(lab("li"+on,it.ip,it.cx,it.base-xh-G-f1*mI.base/100,f1))}
-    if(it.ru){var f2=fsR*it.sr;ov.appendChild(lab("lr"+on,it.ru,it.cx,it.base+G-f2*(mR.base-mR.xh)/100,f2))}
+    var f=it.fs*it.sc,m=it.ru?mR:mI;
+    ov.appendChild(lab((it.ru?"lr":"li")+(it.on?" on":""),it.txt,it.cx,it.base-xh-G-f*m.base/100,f));
   });
   ovLayer().appendChild(ov);el._ov=ov;
 }
@@ -769,7 +769,7 @@ function applyS(){
   de.setAttribute("data-theme",S.theme);st.setProperty("--cf",S.cf||1);
   S.cSel?st.setProperty("--sel",S.cSel):st.removeProperty("--sel");
   [["cRu0","--ru0"],["cRu1","--ru1"],["cIp0","--ip0"],["cIp1","--ip1"]].forEach(function(p){S[p[0]]?st.setProperty(p[1],S[p[0]]):st.removeProperty(p[1])});
-  $("eye").classList.toggle("off",!S.eye);st.setProperty("--lh",S.lh||2.7);
+  $("eye").classList.toggle("off",!S.eye);$("cm").textContent=S.cap==="ru"?"РУ":"IPA";st.setProperty("--lh",S.lh||2.7);
   book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";
   var cs=getComputedStyle(de);
   $("cSel").value=S.cSel||cs.getPropertyValue("--sel").trim();
@@ -804,6 +804,7 @@ fillApi();
 $("cSel").oninput=function(){S.cSel=this.value;applyS()};
 ["cRu0","cRu1","cIp0","cIp1"].forEach(function(id){$(id).oninput=function(){S[id]=this.value;applyS()}});
 $("eye").onclick=function(){S.eye=!S.eye;applyS();watchEye()};
+$("cm").onclick=function(){S.cap=S.cap==="ru"?"ipa":"ru";applyS()};
 $("ob2").onclick=function(){$("set").classList.add("hide");$("file").click()};
 $("aPre").onchange=function(){if(this.value)$("aMod").value=this.value};
 function mstat(t,err){var e=$("mst");e.textContent=t;e.classList.remove("hide");e.style.color=err?"#d33":""}
