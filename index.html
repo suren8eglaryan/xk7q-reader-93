@@ -297,7 +297,7 @@ body.noscroll{overflow:hidden}
   <div><button id="aOk">Сохранить</button><button id="aClr">Очистить кэш</button></div>
   <div><span>Словарь</span><button id="vRev">Повторить</button><button id="vList">Все слова</button></div>
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-06 · 00:15</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-06 · 00:40</div>
 </div>
 <div id="book" class="hide" lang="en"></div>
 <div id="toast" class="hide"></div>
@@ -546,7 +546,8 @@ function renderPara(el){
     for(var i=0;i<=sn[1]-sn[0];i++){var gi=sn[0]+i;if(seen[gi]||!el._ws[gi])continue;list.push({w:el._ws[gi],d:(d.w&&d.w[i])||{},on:0,kind:""})}
     if(S.cap==="ph")(d.b||[]).forEach(function(b){if(b.ru&&b.ru[0])phr.push({ws:b.w.map(function(i){return el._ws[sn[0]+i]}).filter(Boolean),txt:b.ru[0],on:!!(a&&+k===a.k&&a.blk&&sameIds(b.w,a.blk.w))})});
   });
-  if(!list.length)return;
+  if(!S.eye&&el._pins)el._pins.forEach(function(p){var sn=ss[p.k];if(!sn)return;phr.push({ws:p.w.map(function(i){return el._ws[sn[0]+i]}).filter(Boolean),txt:p.txt,on:!!(a&&a.k===p.k&&sameIds(phIdsOf(a),p.w))})});
+  if(!list.length&&!phr.length)return;
   var cs=getComputedStyle(el),F=parseFloat(cs.fontSize),fam=cs.fontFamily;
   var c=fmc(cs.fontStyle+" "+cs.fontWeight+" "+F+"px "+fam),mx=c.measureText("x"),xh=mx.actualBoundingBoxAscent||F*0.45,asc=mx.fontBoundingBoxAscent||F*0.9;
   function lm(it,ch){var m=fmc((it?"italic ":"")+"100px "+fam).measureText(ch),A=m.fontBoundingBoxAscent||90,D=m.fontBoundingBoxDescent||25;return{base:(100-(A+D))/2+A,xh:m.actualBoundingBoxAscent||45}}
@@ -1089,12 +1090,24 @@ async function analyze(a,reopen){
   if(act!==a)return;
   a.blk=has(a.A.b,a.id);a.idi=has(a.A.idi,a.id);
   if(!a.blk&&!a.idi)a.blk={w:[a.id],t:"",e:"",ru:[]};
+  addPin(a);
   paintAct();
   if(reopen)openFor(a);
 
 }
+function addPin(a){
+  if(S.eye||!a.A)return;
+  var ids=phIdsOf(a),txt=a.idi?(a.idi.m&&a.idi.m[0]||""):(a.blk&&a.blk.ru&&a.blk.ru[0]||"");
+  if(!txt)return;
+  var P=a.el._pins||(a.el._pins=[]);
+  if(!P.some(function(p){return p.k===a.k&&sameIds(p.w,ids)}))P.push({k:a.k,w:ids.slice(),txt:txt});
+}
 function tapWord(w){
   var o=sentOf(w),id=o.el._ws.indexOf(w)-o.sn[0];
+  if(!S.eye){
+    var P=o.el._pins||[],pi=-1;P.forEach(function(p,j){if(p.k===o.k&&p.w.indexOf(id)>-1)pi=j});
+    if(pi>=0){P.splice(pi,1);if(act&&act.el===o.el&&act.k===o.k&&act.blk&&phIdsOf(act).indexOf(id)>-1)clearSel();else renderPara(o.el);return}
+  }
   if(act&&act.w===w){clearSel();return}
   var wasOpen=!$("sheet").classList.contains("hide");
   clearNote();retry=null;
