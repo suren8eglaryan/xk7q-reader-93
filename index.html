@@ -349,7 +349,7 @@ Rules: "w" has one entry for every word number of the phrase. "s" has 1-2 senses
 var SYS11=`You are a precise English-to-Russian translator and grammar teacher in a reading app. Input: ONE sentence as numbered words, its text, the paragraph for context, and the numbers of the words the reader selected (a word, a phrase, a member of the sentence or the whole sentence). First understand the whole sentence and its context, then translate ONLY the selection as it is meant in this sentence. Reply with ONLY JSON:
 {"tr":"Russian translation of the selection as used in this sentence; for a single word or short phrase give the best translation, optionally a second one after a comma",
 "ex":"short explanation in Russian, 1-3 sentences: what the selection is grammatically (part of speech or kind of phrase / member of the sentence), its form (tense with its English name, voice, number, infinitive, participle...), and why it is translated this way here. Write English words in Latin letters as they are."}`;
-var SYS12=`You are a grammar engine. Input: ONE sentence as numbered words and its text. Split the sentence into its full members (членов предложения): subject, predicate, objects, adverbials, attributes, subordinate clauses. Reply with ONLY JSON: {"m":[{"w":[word numbers],"t":"member in Russian, e.g. Подлежащее, Сказуемое, Прямое дополнение, Обстоятельство времени, Определение, Придаточное времени"}]}. Every word number appears in exactly one member; no nesting; keep each member's words together as they form one member (an article and adjectives belong to their noun's member, a preposition to its noun).`;
+var SYS12=`You are a grammar engine. Input: ONE sentence as numbered words and its text. Split the sentence into its full members (членов предложения): subject, predicate, objects, adverbials, attributes, subordinate clauses. Reply with ONLY JSON: {"m":[{"w":[word numbers],"t":"member in Russian, e.g. Подлежащее, Сказуемое, Прямое дополнение, Обстоятельство времени, Определение, Придаточное времени"}]}. Every word number appears in exactly one member; no nesting. A member includes ALL words that depend on it: articles, adjectives, possessives, prepositional phrases, appositions and participle phrases that modify its noun belong to the same member. Example: in "Zeus's ambition for a new era, a new dispensation for the cosmos, encompassed more than the simple distribution of powers" the subject is the whole group "Zeus's ambition for a new era, a new dispensation for the cosmos", the predicate is "encompassed", and the object is "more than the simple distribution of powers".`;
 SYS6+="\n"+STRICT;SYS8+="\n"+STRICT;SYS9+="\n"+STRICT;SYS10+="\n"+STRICT;SYS11+="\n"+STRICT;
 function resolve(base,href){var o=[];(base+href).split("/").forEach(function(p){if(p==="..")o.pop();else if(p&&p!==".")o.push(p)});return decodeURIComponent(o.join("/"))}
 function wrapWords(root){
@@ -565,30 +565,24 @@ function paintAct(){
 }
 async function getMem(a){
   var o=a.el;o._MM=o._MM||{};if(o._MM[a.k])return o._MM[a.k];
-  var user=ctxUser(a),key="mb1|"+hash(user),d=await kv("t","readonly",function(st){return st.get(key)}),m=d?fixMem(d,a.ws.length):null;
+  var user=ctxUser(a),key="mb2|"+hash(user),d=await kv("t","readonly",function(st){return st.get(key)}),m=d?fixMem(d,a.ws.length):null;
   for(var t=0;t<2&&!m;t++){var out=await callApi(user,SYS12),pr=null;try{pr=JSON.parse(out.match(/\{[\s\S]*\}/)[0]);m=fixMem(pr,a.ws.length)}catch(e){m=null}if(m)kv("t","readwrite",function(st){return st.put(pr,key)})}
   if(!m)throw new Error("Модель вернула неверный формат");
   o._MM[a.k]=m;return m;
 }
 function sameIds(p,q){return p.length===q.length&&p.every(function(x,i){return x===q[i]})}
-function levelUp(a){
-  var before=selIds(a);
-  for(var n=0;n<4;n++){
-    a.lv=(a.lv||1)+1;
-    if(a.lv>4)return false;
-    if(a.lv===3&&!a.mem)break;
-    if(!a.A||!sameIds(selIds(a),before))break;
-  }
-  return true;
-}
+function levelUp(a){a.lv=(a.lv||1)+1;return a.lv<=4}
 function stepLevel(a){
   if(!levelUp(a)){clearSel();return}
   var open=!$("sheet").classList.contains("hide");
-  paintAct();toast("Выделено: "+LVN[a.lv],1);
+  function note(){var same=a.lv>=2&&sameIds(selIds(a),a.lv===2?[a.id]:a.lv===3?phIdsOf(a):(a.mem&&has(a.mem,a.id)||{w:[]}).w);toast("Выделено: "+LVN[a.lv]+(same?" (совпадает с предыдущим)":""),1)}
+  paintAct();
   if(a.lv===3&&!a.mem){
     var my=++tapTok;busy(true,"Определяю член предложения…",my);
-    getMem(a).then(function(m){busy(false,"",my);if(act!==a)return;a.mem=m;if(sameIds(selIds(a),phIdsOf(a))&&a.lv===3){a.lv=4}paintAct();if(open)refreshAI(a)},function(e){busy(false,"",my);if(act===a){retry=function(){stepLevel0(a)};toast(e.message)}});
+    getMem(a).then(function(m){busy(false,"",my);if(act!==a)return;a.mem=m;paintAct();note();if(open)refreshAI(a)},function(e){busy(false,"",my);if(act===a){a.lv=2;retry=function(){stepLevel(a)};toast(e.message)}});
+    return;
   }
+  note();
   if(open)refreshAI(a);
 }
 function stepLevel0(a){a.lv=2;stepLevel(a)}
