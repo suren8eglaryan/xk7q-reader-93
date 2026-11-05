@@ -174,7 +174,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #ovs .lb{position:absolute;transform:translateX(-50%);white-space:nowrap;line-height:1;font-weight:400;text-indent:0;font-family:inherit}
 #ovs .li{color:var(--ip0);font-style:normal}
 #ovs .li.on{color:var(--ip1)}
-#ovs .lr{color:var(--ru0);font-style:italic}
+#ovs .lr{color:var(--ru0);font-style:italic;font-weight:300;font-family:-apple-system,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif}
 #ovs .lr.on{color:var(--ru1)}
 #eye{display:flex;align-items:center;justify-content:center;padding:6px 10px}
 #eye.off .sl{display:inline}#eye .sl{display:none}
@@ -324,9 +324,15 @@ if(S.cRu){S.cRu1=S.cRu;delete S.cRu}if(S.cIp){S.cIp1=S.cIp;delete S.cIp}
 var SEL="p,h1,h2,h3,h4,h5,h6,li";
 var SYS6=`You are a grammar engine in a reading app for a Russian-speaking learner of English. Input: ONE sentence as numbered words, its text, and the paragraph for context. Reply with ONLY JSON:
 {"tr":"complete Russian translation, literal but grammatical (for your own reasoning, not shown)",
-"w":[{"i":0,"ipa":"American IPA without brackets","pos":"ONE Russian word: существительное, глагол, прилагательное, наречие, местоимение, предлог, союз, артикль, числительное, частица, междометие","ru":"literal translation of THIS word as used in this sentence: one Russian word or a very short phrase; empty string for an article or any word without a separate Russian equivalent"}],
+"w":[{"i":0,"ipa":"American IPA without brackets","pos":"ONE Russian word: существительное, глагол, прилагательное, наречие, местоимение, предлог, союз, артикль, числительное, частица, междометие","ru":"Russian gloss of THIS word as used in this sentence (see GLOSS RULES)"}],
 "b":[{"q":"the question this block answers, in Russian: Кто? Какой? Что делал? Чей? Где? Когда? Что?","w":[word numbers],"t":"grammatical name of the block in Russian, e.g. Именная группа","e":"same in English, e.g. Noun phrase","ru":["the single most faithful translation of the block"]}],
 "idi":[{"w":[word numbers],"text":"idiom as written","m":["the single best meaning in Russian"],"lit":"literal word-for-word translation"}]}
+GLOSS RULES for "w[].ru" (they are shown above each English word, so they must be correct in THIS sentence):
+- Translate the meaning the word has HERE, not its first dictionary meaning. "another" = "ещё один / ещё одно" when it means one more, "другой" only when it means a different one. "one" used as a pronoun instead of a noun ("one who was older") = what it stands for ("та, которая", "такое, которое", "один из"), never "то". "there" in "there is / there was" = empty string.
+- Phrasal verbs, prepositional verbs and fixed phrases are ONE unit: put the Russian meaning of the whole unit on the main verb or head word and leave the particle / preposition empty ("call upon" -> call: "обратиться к", upon: ""; "pick up" -> pick: "раздобыть", up: ""). Never gloss a particle of a phrasal verb with a stand-alone preposition.
+- Infinitive used as an attribute after a noun ("a deity to call upon", "a book to read") = modal meaning: "к которому можно обратиться", "которую надо прочесть".
+- Articles, the "to" of an infinitive, auxiliary "do", dummy "it"/"there" and other purely grammatical words = empty string. Auxiliaries that form a tense ("was smoking", "had done") put the whole verb meaning on the main verb and leave the auxiliary empty.
+- Use the Russian form that fits this sentence (case, gender, number, tense).
 Rules for "b" (short grammatical blocks):
 1. Blocks split the WHOLE sentence in order, every word in exactly one block.
 2. Think like a teacher asking questions about the sentence: each block is the short answer to ONE question. Example: "The young boy who lived in a small village wanted to discover the mysterious world that existed beyond the mountains." = [The young boy] Кто? | [who lived] Который что делал? | [in a small village] Где? | [wanted to discover] Что хотел? | [the mysterious world] Что? | [that existed] Который что делал? | [beyond the mountains] Где?
@@ -362,7 +368,8 @@ var SYS10=`You are an English teacher's engine for a Russian-speaking learner at
 Rules: "w" has one entry for every word number of the phrase. "s" has 1-2 senses; the first is exactly the meaning in this sentence. Definitions use only easy words and never repeat the phrase itself.`;
 var SYS11=`You are a precise English-to-Russian translator and grammar teacher in a reading app. Input: ONE sentence as numbered words, its text, the paragraph for context, and the numbers of the words the reader selected (a word, a phrase, a member of the sentence or the whole sentence). First understand the whole sentence and its context, then translate ONLY the selection as it is meant in this sentence. Reply with ONLY JSON:
 {"tr":"Russian translation of the selection as used in this sentence; for a single word or short phrase give the best translation, optionally a second one after a comma",
-"ex":"short explanation in Russian, 1-3 sentences: what the selection is grammatically (part of speech or kind of phrase / member of the sentence), its form (tense with its English name, voice, number, infinitive, participle...), and why it is translated this way here. Write English words in Latin letters as they are."}`;
+"ex":"short explanation in Russian, 1-3 sentences: what the selection is grammatically (part of speech or kind of phrase / member of the sentence), its form (tense with its English name, voice, number, infinitive, participle...), and why it is translated this way here. Write English words in Latin letters as they are."}
+Rules: translate by the meaning in this sentence, not by the first dictionary meaning. Phrasal and prepositional verbs are one unit. An infinitive used as an attribute after a noun ("a deity to call upon") has a modal, often passive meaning: translate it as "к которому можно обратиться" and say in "ex" that the form is active but the meaning is modal/passive. "another" = "ещё один" when it means one more. A pronoun "one" stands for a noun: translate what it replaces.`;
 var SYS12=`You are a grammar engine. Input: ONE sentence as numbered words and its text. Split the sentence into its full members (членов предложения): subject, predicate, objects, adverbials, attributes, subordinate clauses. Reply with ONLY JSON: {"m":[{"w":[word numbers],"t":"member in Russian, e.g. Подлежащее, Сказуемое, Прямое дополнение, Обстоятельство времени, Определение, Придаточное времени"}]}. Every word number appears in exactly one member; no nesting. A member includes ALL words that depend on it: articles, adjectives, possessives, prepositional phrases, appositions and participle phrases that modify its noun belong to the same member. Example: in "Zeus's ambition for a new era, a new dispensation for the cosmos, encompassed more than the simple distribution of powers" the subject is the whole group "Zeus's ambition for a new era, a new dispensation for the cosmos", the predicate is "encompassed", and the object is "more than the simple distribution of powers".`;
 var SYS13=`You are an English grammar engine. Input: ONE sentence as numbered words and its text. Split the sentence into small groups of words that are DIRECTLY bound to each other grammatically: a head word together with the words that exist in the sentence only because of it or that it requires. Typical groups: determiner / article / possessive + its noun; preposition + its object noun group; auxiliary, "to" or particle + its verb; "more ... than"; a conjunction with what it introduces. For each group list its word numbers in "w" and, in "c", the CORE words: words required by grammar (without them the group is ungrammatical or impossible, e.g. "a" exists because of the singular countable noun "era", and "era" needs a determiner). Words the author added only for meaning (descriptive adjectives, adverbs of manner, intensifiers like "very", optional modifiers) belong to the group of the word they describe but are NOT in "c". A predicate adjective or complement required by its verb IS core. Keep groups small: a verb is never in one group with its subject or its object. Every word number appears in at most one group. Reply with ONLY JSON: {"g":[{"w":[...],"c":[...]}]}.
 Example: "Zeus's ambition for a new era encompassed more than the simple distribution of powers." (Zeus's0 ambition1 for2 a3 new4 era5 encompassed6 more7 than8 the9 simple10 distribution11 of12 powers13) -> {"g":[{"w":[0,1],"c":[0,1]},{"w":[2,3,4,5],"c":[2,3,5]},{"w":[6],"c":[6]},{"w":[7,8],"c":[7,8]},{"w":[9,10,11],"c":[9,11]},{"w":[12,13],"c":[12,13]}]}`;
@@ -497,25 +504,27 @@ function fmc(font){ovCv=ovCv||document.createElement("canvas").getContext("2d");
 function renderPara(el){
   if(el._ov&&el._ov.parentNode)el._ov.parentNode.removeChild(el._ov);el._ov=null;
   if(!el._ws||!el.isConnected||book.classList.contains("hide"))return;
-  var list=[],seen={},a=(act&&act.el===el&&act.A)?act:null;
+  var list=[],seen={},a=(act&&act.el===el&&act.A)?act:null,ss=sents(el),sentsOn={};
   if(a){
     (a.sel||selIds(a)).forEach(function(i){
       var w=a.ws[i];if(!w)return;seen[a.sn[0]+i]=1;
       list.push({w:w,d:a.A.w[i]||{},on:1,kind:w.classList.contains("su")?"s":(w.classList.contains("du")?"d":"")});
     });
+    sentsOn[a.k]=a.A;
   }
-  if(S.eye&&el._A){
-    var ss=sents(el);
-    Object.keys(el._A).forEach(function(k){
-      var d=el._A[k],sn=ss[+k];if(!d||!sn)return;
-      for(var i=0;i<=sn[1]-sn[0];i++){var gi=sn[0]+i;if(seen[gi]||!el._ws[gi])continue;list.push({w:el._ws[gi],d:(d.w&&d.w[i])||{},on:0,kind:""})}
-    });
-  }
+  if(S.eye&&el._A)Object.keys(el._A).forEach(function(k){if(el._A[k])sentsOn[k]=el._A[k]});
+  var phr=[];
+  if(S.eye)Object.keys(sentsOn).forEach(function(k){
+    var d=sentsOn[k],sn=ss[+k];if(!d||!sn)return;
+    for(var i=0;i<=sn[1]-sn[0];i++){var gi=sn[0]+i;if(seen[gi]||!el._ws[gi])continue;list.push({w:el._ws[gi],d:(d.w&&d.w[i])||{},on:0,kind:""})}
+    if(S.cap==="ph")(d.b||[]).forEach(function(b){if(b.ru&&b.ru[0])phr.push({ws:b.w.map(function(i){return el._ws[sn[0]+i]}).filter(Boolean),txt:b.ru[0],on:!!(a&&+k===a.k&&a.blk&&sameIds(b.w,a.blk.w))})});
+  });
   if(!list.length)return;
   var cs=getComputedStyle(el),F=parseFloat(cs.fontSize),fam=cs.fontFamily;
   var c=fmc(cs.fontStyle+" "+cs.fontWeight+" "+F+"px "+fam),mx=c.measureText("x"),xh=mx.actualBoundingBoxAscent||F*0.45,asc=mx.fontBoundingBoxAscent||F*0.9;
   function lm(it,ch){var m=fmc((it?"italic ":"")+"100px "+fam).measureText(ch),A=m.fontBoundingBoxAscent||90,D=m.fontBoundingBoxDescent||25;return{base:(100-(A+D))/2+A,xh:m.actualBoundingBoxAscent||45}}
-  var mI=lm(false,"x"),mR=lm(true,"о");
+  var LF='-apple-system,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif',mI=lm(false,"x");
+  var mR=(function(){var m=fmc("italic 300 100px "+LF).measureText("о"),A=m.fontBoundingBoxAscent||90,D=m.fontBoundingBoxDescent||25;return{base:(100-(A+D))/2+A,xh:m.actualBoundingBoxAscent||45}})();
   var fsI=F*0.48*(S.is||1),fsR=F*0.56*(S.rs||1),t=Math.max(2,Math.round(F*0.075)),G=F*0.42;
   var br=book.getBoundingClientRect(),ov=document.createElement("div");ov.className="ovp";
   function line(x,y,w,kind,col){
@@ -531,12 +540,18 @@ function renderPara(el){
     var rs=[].slice.call(rg.getClientRects()).filter(function(r){return r.width>1});
     if(!rs.length)return;
     if(it.on&&it.kind){var col=getComputedStyle(w).color;rs.forEach(function(r){ov.appendChild(line(r.left-br.left,r.top-br.top+asc+F*0.17,r.width,it.kind,col))})}
-    var txt=!S.eye?"":(it.on?ru:(S.cap==="ru"?ru:ip)),isRu=it.on||S.cap==="ru";
+    var txt=!S.eye||S.cap==="ph"?"":(it.on?ru:(S.cap==="ru"?ru:ip)),isRu=it.on||S.cap==="ru";
     if(!txt)return;
     var fs=isRu?fsR:fsI;
     var big=rs.reduce(function(m,r){return r.width>m.width?r:m},rs[0]);
     items.push({cx:big.left-br.left+big.width/2,base:big.top-br.top+asc,txt:txt,ru:isRu,on:it.on,fs:fs,sc:1,
-      wd:fmc((isRu?"italic ":"")+fs+"px "+fam).measureText(txt).width});
+      wd:fmc(isRu?"italic 300 "+fs+"px "+LF:fs+"px "+fam).measureText(txt).width});
+  });
+  phr.forEach(function(p){
+    var rs=[];p.ws.forEach(function(w){var rg=document.createRange();rg.selectNodeContents(w);[].slice.call(rg.getClientRects()).forEach(function(r){if(r.width>1)rs.push(r)})});
+    if(!rs.length)return;
+    var top0=rs[0].top,line1=rs.filter(function(r){return Math.abs(r.top-top0)<F*0.5}),L=Math.min.apply(null,line1.map(function(r){return r.left})),R=Math.max.apply(null,line1.map(function(r){return r.right}));
+    items.push({cx:(L+R)/2-br.left,base:top0-br.top+asc,txt:p.txt,ru:true,on:p.on,fs:fsR,sc:1,wd:fmc("italic 300 "+fsR+"px "+LF).measureText(p.txt).width});
   });
   items.sort(function(p,q){return Math.abs(p.base-q.base)<F?p.cx-q.cx:p.base-q.base});
   for(var k=0;k+1<items.length;k++){
@@ -544,6 +559,17 @@ function renderPara(el){
     var s1=(q.cx-p.cx-6)/((p.wd*p.sc+q.wd*q.sc)/2);if(s1<1){p.sc=Math.max(0.55,p.sc*s1);q.sc=Math.max(0.55,q.sc*s1)}
   }
   function lab(cls,txt,cx,top,fs){var e=document.createElement("span");e.className="lb "+cls;e.textContent=txt;e.style.cssText="left:"+cx+"px;top:"+top+"px;font-size:"+fs+"px";return e}
+  var bcs=getComputedStyle(book),pL=parseFloat(bcs.paddingLeft)||0,pR=parseFloat(bcs.paddingRight)||0,BW=br.width,minL=pL-8,maxR=BW-pR+8,GAP=6;
+  var lines=[];items.forEach(function(it){var L=lines.filter(function(l){return Math.abs(l[0].base-it.base)<F})[0];if(L)L.push(it);else lines.push([it])});
+  lines.forEach(function(L){
+    L.sort(function(p,q){return p.cx-q.cx});
+    var tot=L.reduce(function(s2,it){return s2+it.wd*it.sc},0)+GAP*(L.length-1),av=maxR-minL;
+    if(tot>av){var k2=av/tot;L.forEach(function(it){it.sc=Math.max(0.5,it.sc*k2)})}
+    L.forEach(function(it){it.w2=it.wd*it.sc;it.x=it.cx-it.w2/2});
+    for(var i=0;i<L.length;i++){if(i===0)L[i].x=Math.max(minL,L[i].x);else L[i].x=Math.max(L[i].x,L[i-1].x+L[i-1].w2+GAP)}
+    for(var j=L.length-1;j>=0;j--){if(j===L.length-1)L[j].x=Math.min(L[j].x,maxR-L[j].w2);else L[j].x=Math.min(L[j].x,L[j+1].x-GAP-L[j].w2)}
+    L.forEach(function(it){it.x=Math.max(minL,it.x);it.cx=it.x+it.w2/2});
+  });
   items.forEach(function(it){
     var f=it.fs*it.sc,m=it.ru?mR:mI;
     ov.appendChild(lab((it.ru?"lr":"li")+(it.on?" on":""),it.txt,it.cx,it.base-xh-G-f*m.base/100,f));
@@ -627,7 +653,7 @@ var eq=[],eAct=0,ePause=false,eio=null;
 function mkA(el,k){var sn=sents(el)[k];return{w:el._ws[sn[0]],el:el,k:k,sn:sn,ws:el._ws.slice(sn[0],sn[1]+1),id:0,A:null,pA:null}}
 function watchEye(){
   eq=[];ePause=false;if(eio){eio.disconnect();eio=null}
-  if(!S.eye||book.classList.contains("hide"))return;
+  if(!S.eye||!S.auto||book.classList.contains("hide"))return;
   eio=new IntersectionObserver(function(es){
     es.forEach(function(e){
       if(!e.isIntersecting)return;var el=e.target;eio.unobserve(el);
@@ -714,7 +740,7 @@ function ctxUser(a){
   if(ws[sn[1]+1])rg.setEndBefore(ws[sn[1]+1]);else rg.setEnd(o,o.childNodes.length);
   return "Words:\n"+a.ws.map(function(w,i){return i+":"+w.textContent}).join(" ")+"\n\nSentence:\n"+rg.toString().replace(/\s+/g," ").trim()+"\n\nParagraph (context only):\n"+o.textContent.replace(/\s+/g," ").trim().slice(0,1200);
 }
-function akey(a){return "m6|"+hash(ctxUser(a))}
+function akey(a){return "m7|"+hash(ctxUser(a))}
 function getA(a){
   if(a.pA)return a.pA;
   var P=a.el._P||(a.el._P={});
@@ -875,7 +901,7 @@ function refreshAI(a){
 var CPY='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="13" rx="2.5"/><path d="M16 8V5.5A2.5 2.5 0 0 0 13.5 3h-7A2.5 2.5 0 0 0 4 5.5v9A2.5 2.5 0 0 0 6.5 17H8"/></svg>';
 async function getAI(a,ids){
   var o=a.el;o._AI=o._AI||{};var mk=a.k+":"+ids.join(",");if(o._AI[mk])return o._AI[mk];
-  var user=ctxUser(a)+"\n\nSelected word numbers: "+ids.join(",")+"\nSelected text: "+selText(a,ids),key="ai1|"+hash(user);
+  var user=ctxUser(a)+"\n\nSelected word numbers: "+ids.join(",")+"\nSelected text: "+selText(a,ids),key="ai2|"+hash(user);
   var d=await kv("t","readonly",function(st){return st.get(key)});
   if(!(d&&d.tr)){
     var out=await callApi(user,SYS11);d=JSON.parse(out.match(/\{[\s\S]*\}/)[0]);
@@ -1078,7 +1104,7 @@ function applyS(){
   de.setAttribute("data-theme",S.theme);st.setProperty("--cf",S.cf||1);
   S.cSel?st.setProperty("--sel",S.cSel):st.removeProperty("--sel");
   [["cRu0","--ru0"],["cRu1","--ru1"],["cIp0","--ip0"],["cIp1","--ip1"]].forEach(function(p){S[p[0]]?st.setProperty(p[1],S[p[0]]):st.removeProperty(p[1])});
-  $("eye").classList.toggle("off",!S.eye);if(typeof paintAct==="function"&&act)paintAct();$("cm").textContent=S.cap==="ru"?"РУ":"IPA";st.setProperty("--lh",S.lh||2.1);
+  $("eye").classList.toggle("off",!S.eye);if(typeof paintAct==="function"&&act)paintAct();$("cm").textContent=S.cap==="ru"?"СЛ":S.cap==="ph"?"ФР":"IPA";st.setProperty("--lh",S.lh||2.1);
   book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";
   var cs=getComputedStyle(de);
   $("cSel").value=S.cSel||cs.getPropertyValue("--sel").trim();
@@ -1116,7 +1142,7 @@ fillApi();
 $("cSel").oninput=function(){S.cSel=this.value;applyS()};
 ["cRu0","cRu1","cIp0","cIp1"].forEach(function(id){$(id).oninput=function(){S[id]=this.value;applyS()}});
 $("eye").onclick=function(){S.eye=!S.eye;applyS();watchEye()};
-$("cm").onclick=function(){S.cap=S.cap==="ru"?"ipa":"ru";applyS()};
+$("cm").onclick=function(){S.cap=S.cap==="ipa"?"ru":S.cap==="ru"?"ph":"ipa";applyS();toast(S.cap==="ipa"?"Над словами: транскрипция":S.cap==="ru"?"Над словами: перевод слов":"Над фразами: перевод фраз",1)};
 $("ob2").onclick=function(){$("set").classList.add("hide");$("file").click()};
 $("aPre").onchange=function(){if(this.value)$("aMod").value=this.value};
 function mstat(t,err){var e=$("mst");e.textContent=t;e.classList.remove("hide");e.style.color=err?"#d33":""}
