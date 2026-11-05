@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bad+Script&display=swap" rel="stylesheet">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -176,7 +177,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #ovs .lb{position:absolute;transform:translateX(-50%);white-space:nowrap;line-height:1;font-weight:400;text-indent:0;font-family:inherit}
 #ovs .li{color:var(--ip0);font-style:normal}
 #ovs .li.on{color:var(--ip1)}
-#ovs .lr{color:var(--ru0);font-style:italic;font-weight:300;font-family:-apple-system,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif}
+#ovs .lr{color:var(--ru0);font-style:normal;font-weight:400;font-family:"Bad Script",cursive}
 #ovs .lr.on{color:var(--ru1)}
 #eye{display:flex;align-items:center;justify-content:center;padding:6px 10px}
 #eye.off .sl{display:inline}#eye .sl{display:none}
@@ -295,7 +296,7 @@ body.noscroll{overflow:hidden}
   <div><button id="aOk">Сохранить</button><button id="aClr">Очистить кэш</button></div>
   <div><span>Словарь</span><button id="vRev">Повторить</button><button id="vList">Все слова</button></div>
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-05 · 22:15</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-05 · 23:20</div>
 </div>
 <div id="book" class="hide" lang="en"></div>
 <div id="toast" class="hide"></div>
@@ -467,6 +468,7 @@ book.addEventListener("click",function(e){
   if(!w){clearSel();return}
   tapWord(w);
 });
+if(document.fonts&&document.fonts.load)document.fonts.load('20px "Bad Script"').then(function(){rerenderAll()},function(){});
 var rzT=0;window.addEventListener("resize",function(){clearTimeout(rzT);rzT=setTimeout(rerenderAll,150)});
 /* fab */
 $("fb").onclick=function(){if(!act){toast("Сначала коснитесь слова",1);return}openFor(act)};
@@ -526,9 +528,9 @@ function renderPara(el){
   var cs=getComputedStyle(el),F=parseFloat(cs.fontSize),fam=cs.fontFamily;
   var c=fmc(cs.fontStyle+" "+cs.fontWeight+" "+F+"px "+fam),mx=c.measureText("x"),xh=mx.actualBoundingBoxAscent||F*0.45,asc=mx.fontBoundingBoxAscent||F*0.9;
   function lm(it,ch){var m=fmc((it?"italic ":"")+"100px "+fam).measureText(ch),A=m.fontBoundingBoxAscent||90,D=m.fontBoundingBoxDescent||25;return{base:(100-(A+D))/2+A,xh:m.actualBoundingBoxAscent||45}}
-  var LF='-apple-system,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif',mI=lm(false,"x");
-  var mR=(function(){var m=fmc("italic 300 100px "+LF).measureText("о"),A=m.fontBoundingBoxAscent||90,D=m.fontBoundingBoxDescent||25;return{base:(100-(A+D))/2+A,xh:m.actualBoundingBoxAscent||45}})();
-  var fsI=F*0.48*(S.is||1),fsR=F*0.56*(S.rs||1),t=Math.max(2,Math.round(F*0.075)),G=F*0.42;
+  var LF='"Bad Script",cursive',mI=lm(false,"x");
+  var mR=(function(){var m=fmc("100px "+LF).measureText("о"),A=m.fontBoundingBoxAscent||90,D=m.fontBoundingBoxDescent||25;return{base:(100-(A+D))/2+A,xh:m.actualBoundingBoxAscent||45}})();
+  var fsI=F*0.48*(S.is||1),fsR=F*0.6*(S.rs||1),t=Math.max(2,Math.round(F*0.075)),G=F*0.42;
   var br=book.getBoundingClientRect(),ov=document.createElement("div");ov.className="ovp";
   function line(x,y,w,kind,col){
     var e=document.createElement("i");e.className="ln";
@@ -538,6 +540,7 @@ function renderPara(el){
   var items=[];
   list.forEach(function(it){
     var w=it.w,ru=it.d.ru||"",ip=String(it.d.ipa||"").replace(/[\[\]\/]/g,"").trim();
+    if(/^fn\d+$/i.test(w.textContent)||w.closest("a")){ru="";ip=""}
     if(it.on)w.classList.add("ann");
     var rg=document.createRange();rg.selectNodeContents(w);
     var rs=[].slice.call(rg.getClientRects()).filter(function(r){return r.width>1});
@@ -548,26 +551,28 @@ function renderPara(el){
     var fs=isRu?fsR:fsI;
     var big=rs.reduce(function(m,r){return r.width>m.width?r:m},rs[0]);
     items.push({cx:big.left-br.left+big.width/2,base:big.top-br.top+asc,txt:txt,ru:isRu,on:it.on,fs:fs,sc:1,
-      wd:fmc(isRu?"italic 300 "+fs+"px "+LF:fs+"px "+fam).measureText(txt).width});
+      wd:fmc(isRu?fs+"px "+LF:fs+"px "+fam).measureText(txt).width});
   });
   phr.forEach(function(p){
-    var rs=[];p.ws.forEach(function(w){var rg=document.createRange();rg.selectNodeContents(w);[].slice.call(rg.getClientRects()).forEach(function(r){if(r.width>1)rs.push(r)})});
+    var ws2=p.ws.filter(function(w){return !/^fn\d+$/i.test(w.textContent)&&!w.closest("a")});
+    var rs=[];ws2.forEach(function(w){var rg=document.createRange();rg.selectNodeContents(w);[].slice.call(rg.getClientRects()).forEach(function(r){if(r.width>1)rs.push(r)})});
     if(!rs.length)return;
-    var top0=rs[0].top,line1=rs.filter(function(r){return Math.abs(r.top-top0)<F*0.5}),L=Math.min.apply(null,line1.map(function(r){return r.left})),R=Math.max.apply(null,line1.map(function(r){return r.right}));
-    items.push({cx:(L+R)/2-br.left,base:top0-br.top+asc,txt:p.txt,ru:true,on:p.on,fs:fsR,sc:1,wd:fmc("italic 300 "+fsR+"px "+LF).measureText(p.txt).width});
+    var segs=[];rs.forEach(function(r){var sg=segs.filter(function(x){return Math.abs(x.top-r.top)<F*0.5})[0];if(sg){sg.L=Math.min(sg.L,r.left);sg.R=Math.max(sg.R,r.right)}else segs.push({top:r.top,L:r.left,R:r.right})});
+    segs.sort(function(x,y){return x.top-y.top});
+    var parts=splitLab(p.txt,segs.map(function(x){return x.R-x.L}),fsR,LF);
+    segs.forEach(function(sg,i){
+      var t=parts[i];if(!t)return;
+      items.push({cx:(sg.L+sg.R)/2-br.left,base:sg.top-br.top+asc,txt:t,ru:true,on:p.on,fs:fsR,sc:1,wd:fmc(fsR+"px "+LF).measureText(t).width});
+    });
   });
   items.sort(function(p,q){return Math.abs(p.base-q.base)<F?p.cx-q.cx:p.base-q.base});
-  for(var k=0;k+1<items.length;k++){
-    var p=items[k],q=items[k+1];if(Math.abs(p.base-q.base)>=F)continue;
-    var s1=(q.cx-p.cx-6)/((p.wd*p.sc+q.wd*q.sc)/2);if(s1<1){p.sc=Math.max(0.55,p.sc*s1);q.sc=Math.max(0.55,q.sc*s1)}
-  }
   function lab(cls,txt,cx,top,fs){var e=document.createElement("span");e.className="lb "+cls;e.textContent=txt;e.style.cssText="left:"+cx+"px;top:"+top+"px;font-size:"+fs+"px";return e}
   var bcs=getComputedStyle(book),pL=parseFloat(bcs.paddingLeft)||0,pR=parseFloat(bcs.paddingRight)||0,BW=br.width,minL=pL-8,maxR=BW-pR+8,GAP=6;
   var lines=[];items.forEach(function(it){var L=lines.filter(function(l){return Math.abs(l[0].base-it.base)<F})[0];if(L)L.push(it);else lines.push([it])});
   lines.forEach(function(L){
     L.sort(function(p,q){return p.cx-q.cx});
     var tot=L.reduce(function(s2,it){return s2+it.wd*it.sc},0)+GAP*(L.length-1),av=maxR-minL;
-    if(tot>av){var k2=av/tot;L.forEach(function(it){it.sc=Math.max(0.5,it.sc*k2)})}
+    if(tot>av){var k2=av/tot;L.forEach(function(it){it.sc=Math.max(0.8,it.sc*k2)})}
     L.forEach(function(it){it.w2=it.wd*it.sc;it.x=it.cx-it.w2/2});
     for(var i=0;i<L.length;i++){if(i===0)L[i].x=Math.max(minL,L[i].x);else L[i].x=Math.max(L[i].x,L[i-1].x+L[i-1].w2+GAP)}
     for(var j=L.length-1;j>=0;j--){if(j===L.length-1)L[j].x=Math.min(L[j].x,maxR-L[j].w2);else L[j].x=Math.min(L[j].x,L[j+1].x-GAP-L[j].w2)}
@@ -578,6 +583,24 @@ function renderPara(el){
     ov.appendChild(lab((it.ru?"lr":"li")+(it.on?" on":""),it.txt,it.cx,it.base-xh-G-f*m.base/100,f));
   });
   ovLayer().appendChild(ov);el._ov=ov;
+}
+function splitLab(txt,widths,fs,LF){
+  if(widths.length<2)return [txt];
+  var c=fmc(fs+"px "+LF),words=txt.split(/\s+/),tot=widths.reduce(function(a,b){return a+b},0),out=[],wi=0;
+  for(var i=0;i<widths.length;i++){
+    if(i===widths.length-1){out.push(words.slice(wi).join(" "));break}
+    var target=c.measureText(txt).width*widths[i]/tot,line="";
+    while(wi<words.length){
+      var cand=line?line+" "+words[wi]:words[wi];
+      if(c.measureText(cand).width<=target||!line&&c.measureText(cand).width<=target*1.25){line=cand;wi++}
+      else{
+        if(!line&&words[wi].length>5){var w=words[wi],k=Math.max(3,Math.min(w.length-3,Math.round(w.length*target/c.measureText(w).width)));line=w.slice(0,k)+"-";words[wi]=w.slice(k)}
+        break;
+      }
+    }
+    out.push(line);
+  }
+  return out;
 }
 function rerenderAll(){
   if(book.classList.contains("hide"))return;
