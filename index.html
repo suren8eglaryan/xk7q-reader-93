@@ -216,6 +216,29 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 .sr{display:flex;gap:.45em;align-items:flex-start;color:color-mix(in srgb,var(--fg) 45%,var(--bg));font-size:.98em;line-height:1.4;margin:0 0 10px;text-align:left}
 .sr .ra{flex:none;width:1.05em;height:1.05em;margin-top:.12em}
 .rev{display:inline-block;color:#4a7be0;font-size:1em;margin:2px 0 8px;cursor:pointer}
+.cth{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.svb{flex:none;font-size:14px;padding:6px 12px;border-radius:16px;background:var(--bar);color:var(--fk)}
+.svb.on{color:var(--sel);font-weight:600}
+#sheet ol.sn>li.sv.here{background:color-mix(in srgb,var(--sel) 8%,transparent);border-radius:10px;border-top-color:transparent;padding-right:8px}
+#sheet ol.sn>li.sv.here::before{color:var(--sel);font-weight:700}
+#rvw{position:fixed;inset:0;z-index:40;background:var(--bg);overflow:auto;padding:calc(10px + env(safe-area-inset-top,0px)) 22px calc(30px + env(safe-area-inset-bottom,0px));font:17px -apple-system,Helvetica,sans-serif;color:var(--fk)}
+body.noscroll{overflow:hidden}
+.rvh{display:flex;gap:8px;align-items:center;margin-bottom:18px}
+.rvh button:not(.ib){background:var(--bar)}
+.rvh button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
+.rvh #rvx{margin-left:auto}
+.rvn{font-size:13px;opacity:.5;margin-bottom:14px}
+.rvdef{font-size:22px;font-style:italic;line-height:1.4;margin:10px 0 16px;color:var(--fk)}
+.rvs{font:19px/1.5 "Iowan Old Style",Palatino,Georgia,serif;margin:14px 0 22px;color:color-mix(in srgb,var(--fg) 75%,var(--bg))}
+.rvs .gap{letter-spacing:.05em;color:var(--sel)}
+.rvw2{font-size:32px;font-weight:700;margin:4px 0 6px}
+.rvbtn{display:block;width:100%;padding:14px;font-size:17px;border-radius:14px;background:var(--bar);margin-top:10px}
+.rvg{display:flex;gap:10px;margin-top:22px}.rvg button{flex:1;padding:14px;font-size:17px;border-radius:14px;background:var(--bar)}
+#rvok{color:var(--sel);font-weight:600}
+.rvdone{text-align:center;opacity:.6;margin-top:30vh;line-height:1.6}
+.vrow{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:12px 0;border-top:1px dashed color-mix(in srgb,var(--fg) 14%,transparent)}
+.vd{font-size:14px;font-style:italic;opacity:.6;margin-top:3px}
+.vdel{flex:none;width:32px;height:32px;padding:0;border-radius:50%;background:var(--bar)}
 </style>
 </head>
 <body>
@@ -246,10 +269,12 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
   <div><span></span><input id="aMod" placeholder="model" autocapitalize="off" autocorrect="off"></div>
   <div id="mst" class="hide"></div>
   <div><button id="aOk">Сохранить</button><button id="aClr">Очистить кэш</button></div>
+  <div><span>Словарь</span><button id="vRev">Повторить</button><button id="vList">Все слова</button></div>
   <div><button id="ob2">Открыть другую книгу</button></div>
 </div>
 <div id="book" class="hide" lang="en"></div>
 <div id="toast" class="hide"></div>
+<div id="rvw" class="hide"><div class="rvh"><button id="rvt1" class="on">Повторение</button><button id="rvt2">Все слова</button><button class="ib" id="rvx">✕</button></div><div id="rvb"></div></div>
 <div id="fab"><button id="cm" class="fc" aria-label="Транскрипция или перевод">IPA</button><a id="rv" class="fc" target="_blank" rel="noopener">R</a><button id="fb" class="fc">文A</button></div>
 <div id="dim" class="hide"></div>
 <div id="sheet" class="sheet hide"></div>
@@ -310,7 +335,7 @@ Rules: list EVERY part of speech the word can be (max 4), the most common first;
 var SYS10=`You are an English teacher's engine for a Russian-speaking learner at A1 level. Input: ONE sentence as numbered words, its text, the paragraph for context, and the word numbers of one phrase from the sentence. Explain this phrase AS USED IN THIS SENTENCE. Reply with ONLY JSON:
 {"type":"grammatical type of the phrase in English, lower case: noun phrase, verb phrase, prepositional phrase, adjective phrase, adverb phrase, phrasal verb, infinitive phrase, relative clause, idiom...",
 "form":"tense / aspect / voice of the phrase if it contains a verb, e.g. Past Simple, Present Perfect, Past Simple Passive, to-infinitive; empty string otherwise",
-"w":[{"i":0,"pos":"part of speech of this word in this sentence, one English word: noun, verb, adjective, adverb, pronoun, preposition, conjunction, article, determiner, particle, numeral, interjection","f":"its exact grammatical form in English, e.g. Past Simple, Past Participle, Present Participle, infinitive, plural, comparative, superlative, possessive; empty string for a base form"}],
+"w":[{"i":0,"pos":"part of speech of this word in this sentence, one English word: noun, verb, adjective, adverb, pronoun, preposition, conjunction, article, determiner, particle, numeral, interjection","f":"its exact grammatical form in English, e.g. Past Simple, Past Participle, Present Participle, infinitive, plural, comparative, superlative, possessive; empty string for a base form","k":"1-2 word sense label in English for the meaning of this word here, the label a learner's dictionary would use (e.g. weight, color, desire)","d":"very simple A1-level English definition of this word as used here, at most 10 words; empty for articles and other purely grammatical words","dr":"accurate Russian translation of that definition","t":["1-3 precise Russian translations of this word as used here"]}],
 "s":[{"k":"1-2 word sense label in English","d":"very simple A1-level English definition of the whole phrase, at most 12 words","dr":"accurate Russian translation of that definition","t":["1-3 precise Russian translations of the phrase"]}]}
 Rules: "w" has one entry for every word number of the phrase. "s" has 1-2 senses; the first is exactly the meaning in this sentence. Definitions use only easy words and never repeat the phrase itself.`;
 SYS6+="\n"+STRICT;SYS8+="\n"+STRICT;SYS9+="\n"+STRICT;SYS10+="\n"+STRICT;
@@ -664,23 +689,23 @@ function phIds(a){return a.idi?a.idi.w:(a.blk?a.blk.w:[a.id])}
 async function getP(a){
   var ids=phIds(a),o=a.el;o._PH=o._PH||{};var mk=a.k+":"+ids.join(",");
   if(o._PH[mk])return o._PH[mk];
-  var user=ctxUser(a)+"\n\nPhrase word numbers: "+ids.join(",")+(a.idi?"\nThis phrase is an idiom.":""),key="ph1|"+hash(user);a.keyP=key;
+  var user=ctxUser(a)+"\n\nPhrase word numbers: "+ids.join(",")+(a.idi?"\nThis phrase is an idiom.":""),key="ph2|"+hash(user);a.keyP=key;
   var d=await kv("t","readonly",function(st){return st.get(key)});
   if(!(d&&Array.isArray(d.s))){
     var out=await callApi(user,SYS10);d=JSON.parse(out.match(/\{[\s\S]*\}/)[0]);
     if(!Array.isArray(d.s))throw new Error("неверный формат ответа");
     kv("t","readwrite",function(st){return st.put(d,key)});
   }
-  var w={};(Array.isArray(d.w)?d.w:[]).forEach(function(x){if(x&&x.i!=null)w[+x.i]={pos:String(x.pos||""),f:String(x.f||"")}});
+  var w={};(Array.isArray(d.w)?d.w:[]).forEach(function(x){if(x&&x.i!=null)w[+x.i]={pos:String(x.pos||""),f:String(x.f||""),k:String(x.k||""),d:String(x.d||""),dr:String(x.dr||""),t:(Array.isArray(x.t)?x.t:[x.t]).filter(Boolean).map(String)}});
   var r={type:String(d.type||""),form:String(d.form||""),w:w,s:fixS(d.s)};
   o._PH[mk]=r;return r;
 }
 function dots(){var sh=$("sheet");sh.querySelectorAll(".dots i").forEach(function(d,i){d.classList.toggle("on",i===pageIdx)})}
 function buildSheet(a){
   var sh=$("sheet");
-  sh.innerHTML='<div class="sh"><button class="ib" id="rd" title="Повторить анализ">↻</button><div class="dots"><i></i><i></i><i></i></div><button class="ib" id="cx">✕</button></div><div id="pager"><div class="pg"><div class="chd" id="h1"><div class="sec" style="margin:0 0 4px">PHRASE</div></div><div class="cbody" id="b1"><div class="ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd" id="h2"><div class="sec" style="margin:0 0 4px">PARTS OF SPEECH</div><div class="ct">'+esc(a.w.textContent)+'</div><div class="mut" id="wmeta"></div></div><div class="cbody" id="b2"><div id="tr2" class="ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd"><div class="sec" style="margin:0 0 4px">ГРАММАТИКА</div></div><div class="cbody" id="b3"><div class="ld">Анализирую… 0.0 с</div></div></div></div>';
+  sh.innerHTML='<div class="sh"><button class="ib" id="rd" title="Повторить анализ">↻</button><div class="dots"><i></i><i></i><i></i></div><button class="ib" id="cx">✕</button></div><div id="pager"><div class="pg"><div class="chd" id="h1"><div class="sec" style="margin:0 0 4px">PHRASE</div></div><div class="cbody" id="b1"><div class="ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd" id="h2"><div class="sec" style="margin:0 0 4px">PARTS OF SPEECH</div><div class="cth"><div class="ct">'+esc(a.w.textContent)+'</div><button id="svw" class="svb">+ В словарь</button></div><div class="mut" id="wmeta"></div></div><div class="cbody" id="b2"><div id="tr2" class="ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd"><div class="sec" style="margin:0 0 4px">ГРАММАТИКА</div></div><div class="cbody" id="b3"><div class="ld">Анализирую… 0.0 с</div></div></div></div>';
   sh.classList.remove("hide");book.classList.add("cardopen");
-  $("cx").onclick=closeSheet;$("rd").onclick=redo;
+  $("cx").onclick=closeSheet;$("rd").onclick=redo;$("svw").onclick=saveWord;vGet(vnorm(a.w.textContent)).then(function(e){setSv(!!e)});
   var pg=$("pager");
   pg.onscroll=function(){var i=Math.round(pg.scrollLeft/pg.clientWidth);if(i!==pageIdx){pageIdx=i;dots()}};
   pg.scrollLeft=pageIdx*pg.clientWidth;dots();
@@ -696,10 +721,11 @@ function pHead(a,label,w,type){
   if(type)h+='<div class="mut" style="margin-top:6px">'+esc(type)+"</div>";
   return h;
 }
-function senses(list,pk){
+function senses(list,pk,hk){
+  hk=String(hk||"").toLowerCase();
   var h='<ol class="sn">';
   list.forEach(function(x){
-    h+='<li class="sv"><div class="sd" lang="en">'+(x.k?'<span class="sk">('+esc(x.k)+')</span> ':"")+esc(x.d)+'</div><div class="sx hide">';
+    h+='<li class="sv'+(hk&&x.k.toLowerCase()===hk?" here":"")+'"><div class="sd" lang="en">'+(x.k?'<span class="sk">('+esc(x.k)+')</span> ':"")+esc(x.d)+'</div><div class="sx hide">';
     if(x.dr)h+='<div class="sr" lang="ru"><svg class="ra" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2.5v4.5a4 4 0 0 0 4 4h6.5"/><path d="M10.5 8l3 3-3 3"/></svg><span>'+esc(x.dr)+"</span></div>";
     if(x.t.length)h+='<div class="chips">'+x.t.map(function(t){return '<span class="chip ch-'+pk+'" lang="ru">'+esc(t)+"</span>"}).join("")+"</div>";
     h+="</div></li>";
@@ -791,9 +817,10 @@ function fillGram(a){
   }
 }
 function trHtml(a,d){
-  var px=a.Ph&&!a.Ph.e?a.Ph.d.w[a.id]:null,ps=posKey(px?px.pos:((a.A&&a.A.w[a.id])||{}).pos);
-  var gs=d.pos.slice(0,4),first=gs.filter(function(g){return posKey(g.n)===ps}),rest=gs.filter(function(g){return first.indexOf(g)<0}),h="";
-  first.concat(rest).forEach(function(g){var pk=posKey(g.n);h+='<div class="pgp">'+posTag(pk,g.n.toLowerCase())+"</div>"+senses(g.s,pk)});
+  var px=a.Ph&&!a.Ph.e?a.Ph.d.w[a.id]:null,ps=posKey(px?px.pos:((a.A&&a.A.w[a.id])||{}).pos),h="";
+  if(px&&px.d){h+='<div class="sec" style="margin-top:4px">IN THIS SENTENCE</div>'+senses([{k:px.k,d:px.d,dr:px.dr,t:px.t}],ps)+'<div class="dv"></div>'}
+  var gs=d.pos.slice(0,4),first=gs.filter(function(g){return posKey(g.n)===ps}),rest=gs.filter(function(g){return first.indexOf(g)<0});
+  first.concat(rest).forEach(function(g,gi){var pk=posKey(g.n);h+='<div class="pgp">'+posTag(pk,g.n.toLowerCase())+"</div>"+senses(g.s,pk,gi===0&&first.length&&px?px.k:"")});
   return h||'<div class="mut">Нет данных</div>';
 }
 function showErr(e){
@@ -829,7 +856,7 @@ function redo(){
   if(!act)return;
   var a=act;
   [akey(a),"gr1|"+hash(ctxUser(a))].forEach(function(k){kv("t","readwrite",function(st){return st.delete(k)})});
-  if(a.el._A)delete a.el._A[a.k];if(a.el._P)delete a.el._P[a.k];if(a.el._G)delete a.el._G[a.k];if(a.el._PH)a.el._PH={};if(a.keyP)kv("t","readwrite",function(st){return st.delete(a.keyP)});
+  if(a.el._A)delete a.el._A[a.k];if(a.el._P)delete a.el._P[a.k];if(a.el._G)delete a.el._G[a.k];(function(k){kv("t","readwrite",function(st){return st.delete(k)})})("d3|"+a.w.textContent.toLowerCase());if(a.el._PH)a.el._PH={};if(a.keyP)kv("t","readwrite",function(st){return st.delete(a.keyP)});
   a.A=null;a.pA=null;a.blk=null;a.idi=null;clearNote();paintAct();
   analyze(a,true);
 }
@@ -866,6 +893,62 @@ $("sheet").addEventListener("click",function(e){
   if(m.classList.contains("rt")){redo();return}
   if(m.previousElementSibling){m.previousElementSibling.querySelectorAll(".more").forEach(function(x){x.classList.remove("hide")});m.remove()}
 });
+/* dictionary */
+function vnorm(w){return String(w).toLowerCase().replace(/[’‘]/g,"'").replace(/^'+|'+$/g,"").replace(/'s$/,"")}
+function vGet(w){return kv("t","readonly",function(st){return st.get("v|"+w)})}
+function vPut(e){return kv("t","readwrite",function(st){return st.put(e,"v|"+e.w)})}
+function vDel(w){return kv("t","readwrite",function(st){return st.delete("v|"+w)})}
+function vAll(){return kv("t","readonly",function(st){return st.getAll(IDBKeyRange.bound("v|","v|￿"))}).then(function(r){return r||[]})}
+function setSv(on){var b=$("svw");if(!b)return;b.classList.toggle("on",on);b.textContent=on?"✓ В словаре":"+ В словарь"}
+function sentText(a){
+  var o=a.el,ws=o._ws,sn=a.sn,rg=document.createRange();rg.setStartBefore(ws[sn[0]]);
+  if(ws[sn[1]+1])rg.setEndBefore(ws[sn[1]+1]);else rg.setEnd(o,o.childNodes.length);
+  return rg.toString().replace(/\s+/g," ").trim();
+}
+async function saveWord(){
+  var a=act;if(!a)return;var w=vnorm(a.w.textContent);
+  if(await vGet(w)){await vDel(w);setSv(false);toast("Удалено из словаря",1);return}
+  var px=a.Ph&&!a.Ph.e?a.Ph.d.w[a.id]:null,bd=a.Bd,g0=bd&&bd.pos&&bd.pos[0],s0=g0&&g0.s[0];
+  var e={w:w,shown:a.w.textContent,ipa:((a.A&&a.A.w[a.id])||{}).ipa||(bd&&bd.ipa)||"",pos:px&&px.pos||(g0?g0.n:""),
+    d:(px&&px.d)||(s0&&s0.d)||"",dr:(px&&px.dr)||(s0&&s0.dr)||"",t:(px&&px.t.length?px.t:(s0?s0.t:[])),
+    sent:sentText(a),added:Date.now(),due:Date.now(),iv:0,n:0};
+  if(!e.d){toast("Подождите, пока загрузится определение",1);return}
+  await vPut(e);setSv(true);toast("Добавлено в словарь",1);
+}
+var rq=[],rc=null;
+function rvOpen(tab){$("set").classList.add("hide");$("rvw").classList.remove("hide");document.body.classList.add("noscroll");if(tab==="list")rvList();else rvStart()}
+function rvClose(){$("rvw").classList.add("hide");document.body.classList.remove("noscroll")}
+function rvTabs(t){$("rvt1").classList.toggle("on",t==="rev");$("rvt2").classList.toggle("on",t==="list")}
+async function rvStart(){var now=Date.now();rq=(await vAll()).filter(function(e){return e.due<=now}).sort(function(p,q){return p.due-q.due});rvTabs("rev");rvNext()}
+function blankIn(sent,shown){var re=new RegExp("(^|[^A-Za-z])("+shown.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")(?=[^A-Za-z]|$)","i");return sent.replace(re,function(m,p){return p+"\u0001"})}
+function sentHtml(e,hide){
+  var t=blankIn(e.sent||"",e.shown||e.w),parts=t.split("\u0001");
+  if(parts.length<2)return esc(e.sent||"");
+  return esc(parts[0])+(hide?'<span class="gap">_____</span>':'<b class="c-'+posKey(e.pos)+'">'+esc(e.shown||e.w)+"</b>")+esc(parts.slice(1).join(""));
+}
+function rvNext(){
+  var b=$("rvb");rc=rq.shift();
+  if(!rc){vAll().then(function(all){b.innerHTML='<div class="rvdone">'+(all.length?"На сегодня всё повторено.<br>Слов в словаре: "+all.length:"Словарь пуст.<br>Добавляйте слова кнопкой «+ В словарь» в карточке PARTS OF SPEECH.")+"</div>"});return}
+  b.innerHTML='<div class="rvn">Осталось: '+(rq.length+1)+'</div><div class="sec">ВСПОМНИТЕ СЛОВО</div><div class="rvdef" lang="en">'+esc(rc.d)+"</div>"+(rc.sent?'<div class="rvs" lang="en">'+sentHtml(rc,true)+"</div>":"")+'<button class="rvbtn" id="rvsh">Показать ответ</button>';
+  $("rvsh").onclick=rvShow;
+}
+function rvShow(){
+  var b=$("rvb"),pk=posKey(rc.pos);
+  b.innerHTML='<div class="rvn">Осталось: '+(rq.length+1)+'</div><div class="rvw2"><span class="c-'+pk+'">'+esc(rc.shown||rc.w)+'</span></div><div class="mut">'+[rc.ipa?"["+esc(rc.ipa.replace(/[\[\]\/]/g,""))+"]":"",pk!=="x"?posTag(pk,POSN[pk]):""].filter(Boolean).join(" ")+'</div><div class="rvdef" lang="en">'+esc(rc.d)+"</div>"+(rc.dr?'<div class="sr" lang="ru"><svg class="ra" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2.5v4.5a4 4 0 0 0 4 4h6.5"/><path d="M10.5 8l3 3-3 3"/></svg><span>'+esc(rc.dr)+"</span></div>":"")+(rc.t&&rc.t.length?'<div class="chips">'+rc.t.map(function(t){return '<span class="chip ch-'+pk+'">'+esc(t)+"</span>"}).join("")+"</div>":"")+(rc.sent?'<div class="rvs" lang="en">'+sentHtml(rc,false)+"</div>":"")+'<div class="rvg"><button id="rvno">Не помню</button><button id="rvok">Помню</button></div>';
+  $("rvno").onclick=function(){rvGrade(false)};$("rvok").onclick=function(){rvGrade(true)};
+}
+function rvGrade(ok){
+  var now=Date.now();
+  if(ok){rc.n=(rc.n||0)+1;rc.iv=rc.iv?Math.round(rc.iv*2.5):1;rc.due=now+rc.iv*864e5}
+  else{rc.iv=0;rc.due=now+6e5;rq.push(rc)}
+  vPut(rc);rvNext();
+}
+async function rvList(){
+  rvTabs("list");var all=(await vAll()).sort(function(p,q){return q.added-p.added}),b=$("rvb");
+  if(!all.length){b.innerHTML='<div class="rvdone">Словарь пуст.</div>';return}
+  b.innerHTML='<div class="rvn">Слов: '+all.length+"</div>"+all.map(function(e){var pk=posKey(e.pos);return '<div class="vrow"><div><b class="c-'+pk+'">'+esc(e.shown||e.w)+'</b> <span class="mut">'+esc((e.t||[]).join(", "))+'</span><div class="vd" lang="en">'+esc(e.d)+'</div></div><button class="vdel" data-w="'+esc(e.w)+'">✕</button></div>'}).join("");
+}
+async function vCount(){var now=Date.now(),all=await vAll(),n=all.filter(function(e){return e.due<=now}).length;$("vRev").textContent="Повторить"+(n?" ("+n+")":"")}
 function applyS(){
   var de=document.documentElement,st=de.style;
   de.setAttribute("data-theme",S.theme);st.setProperty("--cf",S.cf||1);
@@ -879,7 +962,10 @@ function applyS(){
   try{localStorage.setItem("rr4",JSON.stringify(S))}catch(x){}
   rerenderAll();
 }
-$("aa").onclick=function(){$("set").classList.toggle("hide")};
+$("aa").onclick=function(){$("set").classList.toggle("hide");vCount()};
+$("vRev").onclick=function(){rvOpen("rev")};$("vList").onclick=function(){rvOpen("list")};
+$("rvx").onclick=rvClose;$("rvt1").onclick=rvStart;$("rvt2").onclick=rvList;
+$("rvb").addEventListener("click",function(e){var d=e.target.closest(".vdel");if(d){vDel(d.getAttribute("data-w")).then(rvList)}});
 $("set").addEventListener("click",function(e){
   var b=e.target.closest("[data-a]");if(!b)return;var a=b.getAttribute("data-a");
   if(a==="f-")S.fs=Math.max(14,S.fs-1);
