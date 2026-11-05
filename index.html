@@ -267,7 +267,6 @@ body.noscroll{overflow:hidden}
 <div id="set" class="hide">
   <div><span>Размер</span><button data-a="f-">A−</button><button data-a="f+">A+</button></div>
   <div><span>Карточки</span><button data-a="c-">A−</button><button data-a="c+">A+</button></div>
-  <div><span>Цвета</span><button data-a="cl1" id="cl1">Связи</button><button data-a="cl0" id="cl0">Части речи</button></div>
   <div><span>Строки</span><button data-a="l-">Теснее</button><button data-a="l+">Свободнее</button></div>
   <div><span>Поля</span><button data-a="p-">Меньше</button><button data-a="p+">Больше</button></div>
   <div><span>Выделение</span><input type="color" id="cSel"><button data-a="cs0">Сброс</button></div>
@@ -560,8 +559,7 @@ function paintAct(){
   var prev=paintedEl;paintedEl=act?act.el:null;
   if(act){
     var ws=act.ws,id=act.id,A=act.A,ids=selIds(act);act.sel=ids;
-    var idiOn=act.idi&&(act.lv||1)===2,links=S.col!=="pos"&&act.CG;
-    if(links)ws.forEach(function(w,i){var m=act.CG[i];if(m){w.classList.add("cg","g"+(m.g%8));if(!m.core)w.classList.add("lt")}});
+    var idiOn=act.idi&&(act.lv||1)===2,links=true;
     if(A)A.idi.forEach(function(p){p.w.forEach(function(i){if(ws[i])ws[i].classList.add("ig")})});
     if(idiOn){ws[id].classList.add("su")}
     else{
@@ -984,7 +982,7 @@ async function analyze(a,reopen){
   if(!a.blk&&!a.idi)a.blk={w:[a.id],t:"",e:"",ru:[]};
   paintAct();
   if(reopen)openFor(a);
-  if(S.col!=="pos")loadCG(a);
+
 }
 function tapWord(w){
   var o=sentOf(w),id=o.el._ws.indexOf(w)-o.sn[0];
@@ -1070,7 +1068,7 @@ function applyS(){
   de.setAttribute("data-theme",S.theme);st.setProperty("--cf",S.cf||1);
   S.cSel?st.setProperty("--sel",S.cSel):st.removeProperty("--sel");
   [["cRu0","--ru0"],["cRu1","--ru1"],["cIp0","--ip0"],["cIp1","--ip1"]].forEach(function(p){S[p[0]]?st.setProperty(p[1],S[p[0]]):st.removeProperty(p[1])});
-  $("eye").classList.toggle("off",!S.eye);$("cl1").classList.toggle("on",S.col!=="pos");$("cl0").classList.toggle("on",S.col==="pos");if(typeof paintAct==="function"&&act)paintAct();$("cm").textContent=S.cap==="ru"?"РУ":"IPA";st.setProperty("--lh",S.lh||2.1);
+  $("eye").classList.toggle("off",!S.eye);if(typeof paintAct==="function"&&act)paintAct();$("cm").textContent=S.cap==="ru"?"РУ":"IPA";st.setProperty("--lh",S.lh||2.1);
   book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";
   var cs=getComputedStyle(de);
   $("cSel").value=S.cSel||cs.getPropertyValue("--sel").trim();
@@ -1091,8 +1089,6 @@ $("set").addEventListener("click",function(e){
   if(a==="p-")S.pad=Math.max(4,S.pad-4);
   if(a==="p+")S.pad=Math.min(90,S.pad+4);
   if(a.indexOf("t:")===0)S.theme=a.slice(2);
-  if(a==="cl1"){S.col="links";if(act&&act.A)loadCG(act)}
-  if(a==="cl0")S.col="pos";
   if(a==="cs0")S.cSel=null;
   if(a==="cr0"){S.cRu0=null;S.cRu1=null}
   if(a==="ci0"){S.cIp0=null;S.cIp1=null}
