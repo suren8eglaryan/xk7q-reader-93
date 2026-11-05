@@ -251,6 +251,16 @@ body.noscroll{overflow:hidden}
 :root[data-theme="dark"]{--g0:#6fa8f0;--g1:#ef7fb0;--g2:#e6ae4c;--g3:#5fd09a;--g4:#ae91f5;--g5:#4fcdd8;--g6:#f08a66;--g7:#bfd15a}
 .w.cg.g0{color:var(--g0)}.w.cg.g1{color:var(--g1)}.w.cg.g2{color:var(--g2)}.w.cg.g3{color:var(--g3)}.w.cg.g4{color:var(--g4)}.w.cg.g5{color:var(--g5)}.w.cg.g6{color:var(--g6)}.w.cg.g7{color:var(--g7)}
 .w.cg.g0.lt{color:color-mix(in srgb,var(--g0) 45%,var(--bg))}.w.cg.g1.lt{color:color-mix(in srgb,var(--g1) 45%,var(--bg))}.w.cg.g2.lt{color:color-mix(in srgb,var(--g2) 45%,var(--bg))}.w.cg.g3.lt{color:color-mix(in srgb,var(--g3) 45%,var(--bg))}.w.cg.g4.lt{color:color-mix(in srgb,var(--g4) 45%,var(--bg))}.w.cg.g5.lt{color:color-mix(in srgb,var(--g5) 45%,var(--bg))}.w.cg.g6.lt{color:color-mix(in srgb,var(--g6) 45%,var(--bg))}.w.cg.g7.lt{color:color-mix(in srgb,var(--g7) 45%,var(--bg))}
+/* single accent: only the selection is green */
+#sheet [class*="c-"],#rvw [class*="c-"]{color:var(--fk)!important}
+#sheet .pi [class*="c-"]{color:inherit!important}
+#sheet .on[class*="c-"],#sheet .pw.on,#sheet .pi .on,#sheet .aih .on{color:var(--sel)!important}
+#sheet #wmeta [class*="c-"]{color:inherit!important}
+.tag2{color:var(--fk)!important;background:var(--bar)!important}
+.chip{border-top-color:var(--sel)!important}
+#sheet .sk{color:color-mix(in srgb,var(--fg) 62%,var(--bg))}
+.w.ig,#sheet .idp .on{color:var(--sel)!important}
+#rvw .rvw2 span,#rvw .rvs b{color:var(--sel)!important}
 </style>
 </head>
 <body>
@@ -560,7 +570,7 @@ function paintAct(){
   if(act){
     var ws=act.ws,id=act.id,A=act.A,ids=selIds(act);act.sel=ids;
     var idiOn=act.idi&&(act.lv||1)===2,links=true;
-    if(A)A.idi.forEach(function(p){p.w.forEach(function(i){if(ws[i])ws[i].classList.add("ig")})});
+    if(idiOn)act.idi.w.forEach(function(i){if(ws[i])ws[i].classList.add("ig")});
     if(idiOn){ws[id].classList.add("su")}
     else{
       ids.forEach(function(i){if(!ws[i])return;ws[i].classList.add("mg");if(i!==id)ws[i].classList.add("du");if(!links&&A&&A.w[i])ws[i].classList.add("p-"+posKey(A.w[i].pos))});
