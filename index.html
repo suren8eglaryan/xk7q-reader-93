@@ -826,7 +826,7 @@ var aiTok=0;
 function refreshAI(a){
   var h=$("h0"),b=$("b0");if(!h||!b)return;
   var ids=a.sel||selIds(a),my=++aiTok,txt=selText(a,ids);
-  h.innerHTML='<div class="sec" style="margin:0 0 4px">AI ПЕРЕВОД · '+esc(LVN[a.lv||1]).toUpperCase()+'</div><div class="ct pt aih" lang="en">'+ids.map(function(i){var pk=a.A&&a.A.w[i]?posKey(a.A.w[i].pos):"x";return '<span class="c-'+pk+(i===a.id?" on":"")+'">'+esc(a.ws[i].textContent)+"</span>"}).join(" ")+"</div>";
+  h.innerHTML='<div class="sec" style="margin:0 0 4px">AI ПЕРЕВОД</div><div class="ct pt aih" lang="en">'+ids.map(function(i){var pk=a.A&&a.A.w[i]?posKey(a.A.w[i].pos):"x";return '<span class="c-'+pk+(i===a.id?" on":"")+'">'+esc(a.ws[i].textContent)+"</span>"}).join(" ")+"</div>";
   b.innerHTML='<div class="ld">Анализирую… 0.0 с</div>';
   var t0=Date.now(),iv=setInterval(function(){var l=b.querySelector(".ld");if(l)l.textContent="Анализирую… "+((Date.now()-t0)/1000).toFixed(1)+" с"},100);
   getAI(a,ids).then(function(d){
@@ -959,11 +959,11 @@ async function analyze(a,reopen){
 }
 function tapWord(w){
   var o=sentOf(w),id=o.el._ws.indexOf(w)-o.sn[0];
-  if(act&&act.w===w){stepLevel(act);return}
+  if(act&&act.w===w){clearSel();return}
   var wasOpen=!$("sheet").classList.contains("hide");
   clearNote();retry=null;
   var gTop=(wasOpen&&act&&act.el===o.el&&act.k===o.k&&$("b3"))?$("b3").scrollTop:0;
-  act={w:w,el:o.el,k:o.k,sn:o.sn,ws:o.el._ws.slice(o.sn[0],o.sn[1]+1),id:id,A:null,pA:null,blk:null,idi:null,gTop:gTop,lv:1};
+  act={w:w,el:o.el,k:o.k,sn:o.sn,ws:o.el._ws.slice(o.sn[0],o.sn[1]+1),id:id,A:null,pA:null,blk:null,idi:null,gTop:gTop,lv:2};
   selW=[w];upd();paintAct();
   $("fb").classList.add("act");
   analyze(act,wasOpen);
