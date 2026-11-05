@@ -297,7 +297,7 @@ body.noscroll{overflow:hidden}
   <div><button id="aOk">Сохранить</button><button id="aClr">Очистить кэш</button></div>
   <div><span>Словарь</span><button id="vRev">Повторить</button><button id="vList">Все слова</button></div>
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-05 · 23:45</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-05 · 23:55</div>
 </div>
 <div id="book" class="hide" lang="en"></div>
 <div id="toast" class="hide"></div>
@@ -536,7 +536,11 @@ function renderPara(el){
     sentsOn[a.k]=a.A;
   }
   if(S.eye&&el._A)Object.keys(el._A).forEach(function(k){if(el._A[k])sentsOn[k]=el._A[k]});
-  var phr=[];
+  var phr=[],capSet={};
+  Object.keys(sentsOn).forEach(function(k){
+    var d=sentsOn[k],sn=ss[+k];if(!d||!sn||!el._ws[sn[0]]||!/^[A-Z]/.test(el._ws[sn[0]].textContent))return;
+    for(var i=0;i<=sn[1]-sn[0];i++){if(d.w&&d.w[i]&&d.w[i].ru){capSet[sn[0]+i]=1;break}}
+  });
   if(S.eye)Object.keys(sentsOn).forEach(function(k){
     var d=sentsOn[k],sn=ss[+k];if(!d||!sn)return;
     for(var i=0;i<=sn[1]-sn[0];i++){var gi=sn[0]+i;if(seen[gi]||!el._ws[gi])continue;list.push({w:el._ws[gi],d:(d.w&&d.w[i])||{},on:0,kind:""})}
@@ -565,6 +569,7 @@ function renderPara(el){
     if(!rs.length)return;
     if(it.on&&it.kind){var col=getComputedStyle(w).color;rs.forEach(function(r){ov.appendChild(line(r.left-br.left,r.top-br.top+asc+F*0.17,r.width,it.kind,col))})}
     var txt=!S.eye||S.cap==="ph"?"":(it.on?ru:(S.cap==="ru"?ru:ip)),isRu=it.on||S.cap==="ru";
+    if(txt&&isRu){txt=decor(txt,el,w,w);if(capSet[el._ws.indexOf(w)])txt=txt.charAt(0).toUpperCase()+txt.slice(1)}
     if(!txt)return;
     var fs=isRu?fsR:fsI;
     var big=rs.reduce(function(m,r){return r.width>m.width?r:m},rs[0]);
@@ -580,6 +585,7 @@ function renderPara(el){
     var parts=splitLab(p.txt,segs.map(function(x){return x.R-x.L}),fsR,PR+fsR+"px "+LF);
     segs.forEach(function(sg,i){
       var t=parts[i];if(!t)return;
+      t=decor(t,el,i===0?ws2[0]:null,i===segs.length-1||parts.slice(i+1).every(function(x){return !x})?ws2[ws2.length-1]:null);
       items.push({cx:(sg.L+sg.R)/2-br.left,base:sg.top-br.top+asc,txt:t,ru:true,on:p.on,fs:fsR,sc:1,wd:fmc(PR+fsR+"px "+LF).measureText(t).width});
     });
   });
@@ -601,6 +607,26 @@ function renderPara(el){
     ov.appendChild(lab((it.ru?"lr":"li")+(it.on?" on":""),it.txt,it.cx,it.base-xh-G-f*m.base/100,f));
   });
   ovLayer().appendChild(ov);el._ov=ov;
+}
+function gapText(el,a,b){
+  var ws=el._ws,rg=document.createRange();
+  if(a)rg.setStartAfter(a);else rg.setStart(el,0);
+  if(b)rg.setEndBefore(b);else rg.setEnd(el,el.childNodes.length);
+  return rg.toString();
+}
+function punctAfter(el,w){var i=el._ws.indexOf(w),t=gapText(el,w,el._ws[i+1]||null);var m=t.replace(/\s+/g," ").trim().match(/^[.,;:!?…)\]»”’"'–—-]+(?:\s*[–—]+)?/);return m?m[0].replace(/\s+/g," "):""}
+function punctBefore(el,w){var i=el._ws.indexOf(w),t=gapText(el,el._ws[i-1]||null,w);var m=t.replace(/\s+/g,"").match(/[(\[«“‘"']+$/);return m?m[0]:""}
+function decor(txt,el,first,last){
+  if(!txt)return txt;
+  var hy=/-$/.test(txt)&&!last;
+  var t=hy?txt:txt.replace(/[\s.,;:!?…–—]+$/,"");
+  if(first){
+    var e=first.textContent;
+    if(/^[A-Z]/.test(e))t=t.charAt(0).toUpperCase()+t.slice(1);
+    t=punctBefore(el,first)+t;
+  }
+  if(last){var pa=punctAfter(el,last);if(pa)t+=/^[–—]/.test(pa)?" "+pa:pa}
+  return t;
 }
 function splitLab(txt,widths,fs,font){
   var m=widths.length;if(m<2)return [txt];
