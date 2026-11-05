@@ -213,7 +213,8 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
 .chip{display:inline-block;padding:6px 11px 7px;border:1px solid color-mix(in srgb,var(--fg) 12%,transparent);border-top:3px solid var(--c-x);border-radius:8px;background:color-mix(in srgb,var(--fg) 3%,var(--bg));font-weight:700;color:var(--fk);font-size:1.04em}
 .ch-noun{border-top-color:var(--c-noun)}.ch-verb{border-top-color:var(--c-verb)}.ch-adj{border-top-color:var(--c-adj)}.ch-adv{border-top-color:var(--c-adv)}.ch-pron{border-top-color:var(--c-pron)}.ch-prep{border-top-color:var(--c-prep)}.ch-conj{border-top-color:var(--c-conj)}.ch-art{border-top-color:var(--c-art)}.ch-part{border-top-color:var(--c-part)}.ch-num{border-top-color:var(--c-num)}.ch-intj{border-top-color:var(--c-intj)}
-.sr{color:color-mix(in srgb,var(--fg) 45%,var(--bg));font-size:.98em;line-height:1.4}
+.sr{display:flex;gap:.45em;align-items:flex-start;color:color-mix(in srgb,var(--fg) 45%,var(--bg));font-size:.98em;line-height:1.4;margin:0 0 10px;text-align:left}
+.sr .ra{flex:none;width:1.05em;height:1.05em;margin-top:.12em}
 .rev{display:inline-block;color:#4a7be0;font-size:1em;margin:2px 0 8px;cursor:pointer}
 </style>
 </head>
@@ -699,8 +700,8 @@ function senses(list,pk){
   var h='<ol class="sn">';
   list.forEach(function(x){
     h+='<li class="sv"><div class="sd" lang="en">'+(x.k?'<span class="sk">('+esc(x.k)+')</span> ':"")+esc(x.d)+'</div><div class="sx hide">';
+    if(x.dr)h+='<div class="sr" lang="ru"><svg class="ra" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2.5v4.5a4 4 0 0 0 4 4h6.5"/><path d="M10.5 8l3 3-3 3"/></svg><span>'+esc(x.dr)+"</span></div>";
     if(x.t.length)h+='<div class="chips">'+x.t.map(function(t){return '<span class="chip ch-'+pk+'" lang="ru">'+esc(t)+"</span>"}).join("")+"</div>";
-    if(x.dr)h+='<div class="sr" lang="ru">↳ '+esc(x.dr)+"</div>";
     h+="</div></li>";
   });
   return h+"</ol>";
