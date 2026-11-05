@@ -132,7 +132,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #sheet .mrole::before{content:"\00B7";margin-right:.45em}
 #sheet .mb.hot .mtx{color:var(--sel)}
 #sheet .mtx,#sheet .mrr,#sheet li,#sheet .alone{text-align:justify;text-justify:inter-word;hyphens:auto;-webkit-hyphens:auto}
-#sheet .pt .on,#sheet .pi .on{color:var(--sel)}
+
 #sheet .idp .pt .on,#sheet .idp .pi .on{color:var(--idi)}
 #sheet .pt{font-weight:700;line-height:1.25}
 #sheet .pi{margin-top:2px;line-height:1.3}
@@ -192,6 +192,29 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 .gr.on b{color:var(--sel)}
 #book{line-height:var(--lh,2.1)}
 #book h1,#book h2,#book h3,#book h4{line-height:1.25}
+:root{--c-noun:#1f6fb8;--c-verb:#a8327f;--c-adj:#b06a10;--c-adv:#1f8a4c;--c-pron:#6a4fc2;--c-prep:#0c8a95;--c-conj:#7c8a1c;--c-art:#7d8796;--c-part:#8f6b46;--c-num:#c4502f;--c-intj:#c23c6c;--c-x:var(--sel);
+--t-noun:#e4f0fb;--t-verb:#f8e4f2;--t-adj:#fdf0dc;--t-adv:#e1f4e9;--t-pron:#ece7fb;--t-prep:#ddf3f5;--t-conj:#f0f3dc;--t-art:#eceef1;--t-part:#f3ebe2;--t-num:#fbe6df;--t-intj:#fbe3ec;--t-x:#e8f3ee}
+:root[data-theme="dark"]{--c-noun:#6fb0ee;--c-verb:#e27fc0;--c-adj:#e3a44f;--c-adv:#5fcf8f;--c-pron:#a993f0;--c-prep:#4fc4cf;--c-conj:#bdc95a;--c-art:#a3abb8;--c-part:#c9a37c;--c-num:#ef8a6c;--c-intj:#ef7ba3;
+--t-noun:#1d2d3d;--t-verb:#3a2034;--t-adj:#3a2e1c;--t-adv:#1b3326;--t-pron:#2a2540;--t-prep:#163234;--t-conj:#2f331a;--t-art:#2a2d31;--t-part:#332a21;--t-num:#3a2420;--t-intj:#3a2029;--t-x:#1f2f28}
+.w.mg.p-noun{color:var(--c-noun)}.w.mg.p-verb{color:var(--c-verb)}.w.mg.p-adj{color:var(--c-adj)}.w.mg.p-adv{color:var(--c-adv)}.w.mg.p-pron{color:var(--c-pron)}.w.mg.p-prep{color:var(--c-prep)}.w.mg.p-conj{color:var(--c-conj)}.w.mg.p-art{color:var(--c-art)}.w.mg.p-part{color:var(--c-part)}.w.mg.p-num{color:var(--c-num)}.w.mg.p-intj{color:var(--c-intj)}
+.c-noun{color:var(--c-noun)}.c-verb{color:var(--c-verb)}.c-adj{color:var(--c-adj)}.c-adv{color:var(--c-adv)}.c-pron{color:var(--c-pron)}.c-prep{color:var(--c-prep)}.c-conj{color:var(--c-conj)}.c-art{color:var(--c-art)}.c-part{color:var(--c-part)}.c-num{color:var(--c-num)}.c-intj{color:var(--c-intj)}.c-x{color:var(--sel)}
+#sheet .pt .pw.on{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
+#sheet .pi .on{opacity:1}
+.tag2{display:inline-block;padding:2px 10px;border-radius:6px;font-size:.95em;line-height:1.35}
+.tg-noun{color:var(--c-noun);background:var(--t-noun)}.tg-verb{color:var(--c-verb);background:var(--t-verb)}.tg-adj{color:var(--c-adj);background:var(--t-adj)}.tg-adv{color:var(--c-adv);background:var(--t-adv)}.tg-pron{color:var(--c-pron);background:var(--t-pron)}.tg-prep{color:var(--c-prep);background:var(--t-prep)}.tg-conj{color:var(--c-conj);background:var(--t-conj)}.tg-art{color:var(--c-art);background:var(--t-art)}.tg-part{color:var(--c-part);background:var(--t-part)}.tg-num{color:var(--c-num);background:var(--t-num)}.tg-intj{color:var(--c-intj);background:var(--t-intj)}.tg-x{color:var(--sel);background:var(--t-x)}
+.pgp{margin:18px 0 6px}.pgp:first-child{margin-top:6px}
+#sheet ol.sn{list-style:none;margin:0;padding:0;counter-reset:sn}
+#sheet ol.sn>li.sv{counter-increment:sn;position:relative;padding:10px 0 10px 1.7em;margin:0;border-top:1px dashed color-mix(in srgb,var(--fg) 14%,transparent);cursor:pointer;font-size:1em}
+#sheet ol.sn>li.sv:first-child{border-top:0}
+#sheet ol.sn>li.sv::before{content:counter(sn) ".";position:absolute;left:0;top:10px;width:auto;height:auto;border-radius:0;background:none;color:var(--fk);font-size:1.06em}
+.sd{color:color-mix(in srgb,var(--fg) 62%,var(--bg));font-style:italic;font-size:1.06em;line-height:1.4}
+.sk{color:#2e8b57;font-style:italic}
+.sx{margin-top:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+.chip{display:inline-block;padding:6px 11px 7px;border:1px solid color-mix(in srgb,var(--fg) 12%,transparent);border-top:3px solid var(--c-x);border-radius:8px;background:color-mix(in srgb,var(--fg) 3%,var(--bg));font-weight:700;color:var(--fk);font-size:1.04em}
+.ch-noun{border-top-color:var(--c-noun)}.ch-verb{border-top-color:var(--c-verb)}.ch-adj{border-top-color:var(--c-adj)}.ch-adv{border-top-color:var(--c-adv)}.ch-pron{border-top-color:var(--c-pron)}.ch-prep{border-top-color:var(--c-prep)}.ch-conj{border-top-color:var(--c-conj)}.ch-art{border-top-color:var(--c-art)}.ch-part{border-top-color:var(--c-part)}.ch-num{border-top-color:var(--c-num)}.ch-intj{border-top-color:var(--c-intj)}
+.sr{color:color-mix(in srgb,var(--fg) 45%,var(--bg));font-size:.98em;line-height:1.4}
+.rev{display:inline-block;color:#4a7be0;font-size:1em;margin:2px 0 8px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -280,9 +303,16 @@ Example for "I was lucky enough to pick up a book." (I0 was1 lucky2 enough3 to4 
 {"tr":"Я был достаточно удачлив, чтобы раздобыть книгу.","g":[{"w":[0],"r":"личное местоимение в форме именительного падежа, так как выполняет роль подлежащего (я)."},{"w":[1],"r":"глагол to be в форме прошедшего времени (Past Simple) единственного числа, так как согласуется с местоимением I (был)."},{"w":[2],"r":"прилагательное в начальной форме, выражает качественный признак (удачливый)."},{"w":[3],"r":"наречие степени; в английском всегда ставится после прилагательного, которое характеризует (достаточно)."},{"w":[4],"r":"частица, указывающая, что следующий за ней глагол стоит в форме инфинитива."},{"w":[5,6],"r":"неделимый фразовый глагол в форме инфинитива (благодаря частице to): pick — глагольная основа, up — наречный послелог, меняющий значение (раздобыть / подобрать)."},{"w":[7],"r":"неопределённый артикль: дальше идёт исчисляемое существительное book в единственном числе, упомянутое впервые."},{"w":[8],"r":"нарицательное неодушевлённое существительное в единственном числе; прямое дополнение (книгу)."}]}`;
 var SYS9=`You split a group of words of an English sentence into short grammatical blocks for a Russian-speaking learner. Input: the sentence, its numbered words, and the numbers of the group to split. Reply with ONLY JSON: {"b":[{"w":[word numbers],"t":"grammatical name in Russian","e":"same in English","ru":["the single most faithful translation"]}]}. Rules: blocks cover exactly the given numbers, in order, each once; every block has 1 to 4 words (never more than 5) and answers one question (Кто? Какой? Что? Где?). Start a new block at every preposition, relative pronoun or conjunction, the "to" of an infinitive, and every new noun phrase. A verb (with its auxiliaries and "to") is NEVER in one block with its object. Example: group "to be apportioned her divine duties" gives [to be apportioned] and [her divine duties].`;
 var STRICT="TRANSLATION RULE: follow the author's own words strictly. Translate every noun, verb, adjective and adverb by its direct, literal Russian equivalent. Do not paraphrase, do not replace words with more natural or more common ones, do not add or drop words (for example 'reference' = 'упоминание' or 'отсылка', never 'речь'; 'common' = 'общий' or 'обычный', not a free guess). Keep the author's word order wherever Russian grammar allows; change it only when Russian grammar requires. Give ONE translation only: the most faithful one. Use correct Russian grammar and punctuation, nothing more.";
-var SYS7=`You are a bilingual English-Russian dictionary. Reply with ONLY JSON: {"pos":[{"n":"Part of speech in Russian, only the first letter uppercase","t":["Russian translations, most common first"]}]}. List EVERY part of speech the word can be (max 5). For each part of speech give 5 to 10 distinct translations (fewer only if the word really has fewer), covering different senses.`;
-
-SYS6+="\n"+STRICT;SYS8+="\n"+STRICT;SYS9+="\n"+STRICT;
+var SYS7=`You are an English learner's dictionary for a Russian-speaking learner at A1 level. Input: one English word. Reply with ONLY JSON:
+{"ipa":"American IPA without brackets","pos":[{"n":"part of speech in English, one word: noun, verb, adjective, adverb, pronoun, preposition, conjunction, article, determiner, particle, numeral, interjection","s":[{"k":"1-2 word sense label in English, e.g. weight, color, ignite","d":"very simple A1-level English definition, at most 12 words, so a beginner understands the word","dr":"accurate Russian translation of that definition","t":["1-3 precise Russian translations of the word in this sense"]}]}]}
+Rules: list EVERY part of speech the word can be (max 4), the most common first; give 1-3 of the most common senses for each, no rare or archaic senses. Definitions must be correct, short and use only easy words; never use the word itself in its definition. Example for "light": {"ipa":"laɪt","pos":[{"n":"adjective","s":[{"k":"weight","d":"not heavy; easy to lift or carry","dr":"не тяжёлый; легко поднять или нести","t":["лёгкий"]},{"k":"color","d":"pale, not dark","dr":"бледный, не тёмный","t":["светлый"]}]},{"n":"noun","s":[{"k":"illumination","d":"a thing that gives brightness in a room","dr":"то, что даёт свет в комнате","t":["лампа","светильник"]}]},{"n":"verb","s":[{"k":"ignite","d":"to start a fire or make something burn","dr":"разжечь огонь или заставить что-то гореть","t":["зажигать","зажечь"]}]}]}`;
+var SYS10=`You are an English teacher's engine for a Russian-speaking learner at A1 level. Input: ONE sentence as numbered words, its text, the paragraph for context, and the word numbers of one phrase from the sentence. Explain this phrase AS USED IN THIS SENTENCE. Reply with ONLY JSON:
+{"type":"grammatical type of the phrase in English, lower case: noun phrase, verb phrase, prepositional phrase, adjective phrase, adverb phrase, phrasal verb, infinitive phrase, relative clause, idiom...",
+"form":"tense / aspect / voice of the phrase if it contains a verb, e.g. Past Simple, Present Perfect, Past Simple Passive, to-infinitive; empty string otherwise",
+"w":[{"i":0,"pos":"part of speech of this word in this sentence, one English word: noun, verb, adjective, adverb, pronoun, preposition, conjunction, article, determiner, particle, numeral, interjection","f":"its exact grammatical form in English, e.g. Past Simple, Past Participle, Present Participle, infinitive, plural, comparative, superlative, possessive; empty string for a base form"}],
+"s":[{"k":"1-2 word sense label in English","d":"very simple A1-level English definition of the whole phrase, at most 12 words","dr":"accurate Russian translation of that definition","t":["1-3 precise Russian translations of the phrase"]}]}
+Rules: "w" has one entry for every word number of the phrase. "s" has 1-2 senses; the first is exactly the meaning in this sentence. Definitions use only easy words and never repeat the phrase itself.`;
+SYS6+="\n"+STRICT;SYS8+="\n"+STRICT;SYS9+="\n"+STRICT;SYS10+="\n"+STRICT;
 function resolve(base,href){var o=[];(base+href).split("/").forEach(function(p){if(p==="..")o.pop();else if(p&&p!==".")o.push(p)});return decodeURIComponent(o.join("/"))}
 function wrapWords(root){
   var wk=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),nodes=[],n,cnt=0,re=/[\p{L}\p{N}][\p{L}\p{N}'’\-]*/gu;
@@ -390,6 +420,23 @@ function sentOf(w){
 function has(list,id){return (list||[]).filter(function(x){return x.w.indexOf(id)>-1})[0]||null}
 function wtxt(a,w){return w.map(function(i){return a.ws[i].textContent}).join(" ")}
 function roleOf(m){return m.t||""}
+var POSN={noun:"noun",verb:"verb",adj:"adjective",adv:"adverb",pron:"pronoun",prep:"preposition",conj:"conjunction",art:"article",part:"particle",num:"numeral",intj:"interjection"};
+function posKey(t){
+  t=String(t||"").toLowerCase();
+  if(/идиом|idiom/.test(t))return "x";
+  if(/артикл|article|determiner|определит/.test(t))return "art";
+  if(/местоим|pronoun/.test(t))return "pron";
+  if(/предлог|preposition/.test(t))return "prep";
+  if(/союз|conjunction/.test(t))return "conj";
+  if(/частиц|particle/.test(t))return "part";
+  if(/числит|numeral|number/.test(t))return "num";
+  if(/междом|interjection|exclamation/.test(t))return "intj";
+  if(/нареч|adverb/.test(t))return "adv";
+  if(/прилаг|adjective/.test(t))return "adj";
+  if(/глагол|причаст|verb|participle|infinitive/.test(t))return "verb";
+  if(/существ|noun/.test(t))return "noun";
+  return "x";
+}
 var paintedEl=null,ovCv=null;
 function ovLayer(){var L=$("ovs");if(!L){L=document.createElement("div");L.id="ovs";book.appendChild(L)}return L}
 function fmc(font){ovCv=ovCv||document.createElement("canvas").getContext("2d");ovCv.font=font;return ovCv}
@@ -430,7 +477,7 @@ function renderPara(el){
     var rs=[].slice.call(rg.getClientRects()).filter(function(r){return r.width>1});
     if(!rs.length)return;
     if(it.on&&it.kind){var col=getComputedStyle(w).color;rs.forEach(function(r){ov.appendChild(line(r.left-br.left,r.top-br.top+asc+F*0.17,r.width,it.kind,col))})}
-    var txt=it.on?ru:(S.cap==="ru"?ru:ip),isRu=it.on||S.cap==="ru";
+    var txt=!S.eye?"":(it.on?ru:(S.cap==="ru"?ru:ip)),isRu=it.on||S.cap==="ru";
     if(!txt)return;
     var fs=isRu?fsR:fsI;
     var big=rs.reduce(function(m,r){return r.width>m.width?r:m},rs[0]);
@@ -454,15 +501,15 @@ function rerenderAll(){
   book.querySelectorAll(SEL).forEach(function(el){if(el._ov||el._A||(act&&act.el===el))renderPara(el)});
 }
 function paintAct(){
-  book.querySelectorAll(".w.mg,.w.du,.w.su,.w.ig,.w.ann").forEach(function(e){e.classList.remove("mg","du","su","ig","ann")});
+  book.querySelectorAll(".w.mg,.w.du,.w.su,.w.ig,.w.ann").forEach(function(e){e.classList.remove("mg","du","su","ig","ann");[].slice.call(e.classList).forEach(function(c){if(c.indexOf("p-")===0)e.classList.remove(c)})});
   var prev=paintedEl;paintedEl=act?act.el:null;
   if(act){
     var ws=act.ws,id=act.id,A=act.A;
     if(A)A.idi.forEach(function(p){p.w.forEach(function(i){if(ws[i])ws[i].classList.add("ig")})});
     if(act.idi){ws[id].classList.add("su")}
     else{
-      if(act.blk)act.blk.w.forEach(function(i){if(!ws[i])return;ws[i].classList.add("mg");if(i!==id)ws[i].classList.add("du")});
-      ws[id].classList.add("mg","su");
+      if(act.blk)act.blk.w.forEach(function(i){if(!ws[i])return;ws[i].classList.add("mg");if(i!==id)ws[i].classList.add("du");if(A&&A.w[i])ws[i].classList.add("p-"+posKey(A.w[i].pos))});
+      ws[id].classList.add("mg","su");if(A&&A.w[id])ws[id].classList.add("p-"+posKey(A.w[id].pos));
     }
   }
   if(prev&&prev!==paintedEl)renderPara(prev);
@@ -602,17 +649,35 @@ async function getM(a){
   if(!d)throw new Error("Модель вернула неверный формат");
   o._G[a.k]=d;return d;
 }
+function fixS(list){return (Array.isArray(list)?list:[]).filter(function(x){return x&&x.d}).map(function(x){return{k:String(x.k||""),d:String(x.d),dr:String(x.dr||""),t:(Array.isArray(x.t)?x.t:[x.t]).filter(Boolean).map(String)}})}
 async function getB(word){
-  var k="d2|"+word.toLowerCase(),d=await kv("t","readonly",function(st){return st.get(k)});
-  if(d&&Array.isArray(d.pos))return d;
-  var o=await callApi("Word: "+word,SYS7);d=JSON.parse(o.match(/\{[\s\S]*\}/)[0]);
-  if(!Array.isArray(d.pos))throw new Error("неверный формат ответа");
-  kv("t","readwrite",function(st){return st.put(d,k)});return d;
+  var k="d3|"+word.toLowerCase(),d=await kv("t","readonly",function(st){return st.get(k)});
+  if(!(d&&Array.isArray(d.pos))){
+    var o=await callApi("Word: "+word,SYS7);d=JSON.parse(o.match(/\{[\s\S]*\}/)[0]);
+    if(!Array.isArray(d.pos))throw new Error("неверный формат ответа");
+    kv("t","readwrite",function(st){return st.put(d,k)});
+  }
+  return{ipa:String(d.ipa||""),pos:d.pos.map(function(g){return{n:String(g.n||""),s:fixS(g.s)}}).filter(function(g){return g.s.length})};
+}
+function phIds(a){return a.idi?a.idi.w:(a.blk?a.blk.w:[a.id])}
+async function getP(a){
+  var ids=phIds(a),o=a.el;o._PH=o._PH||{};var mk=a.k+":"+ids.join(",");
+  if(o._PH[mk])return o._PH[mk];
+  var user=ctxUser(a)+"\n\nPhrase word numbers: "+ids.join(",")+(a.idi?"\nThis phrase is an idiom.":""),key="ph1|"+hash(user);a.keyP=key;
+  var d=await kv("t","readonly",function(st){return st.get(key)});
+  if(!(d&&Array.isArray(d.s))){
+    var out=await callApi(user,SYS10);d=JSON.parse(out.match(/\{[\s\S]*\}/)[0]);
+    if(!Array.isArray(d.s))throw new Error("неверный формат ответа");
+    kv("t","readwrite",function(st){return st.put(d,key)});
+  }
+  var w={};(Array.isArray(d.w)?d.w:[]).forEach(function(x){if(x&&x.i!=null)w[+x.i]={pos:String(x.pos||""),f:String(x.f||"")}});
+  var r={type:String(d.type||""),form:String(d.form||""),w:w,s:fixS(d.s)};
+  o._PH[mk]=r;return r;
 }
 function dots(){var sh=$("sheet");sh.querySelectorAll(".dots i").forEach(function(d,i){d.classList.toggle("on",i===pageIdx)})}
 function buildSheet(a){
   var sh=$("sheet");
-  sh.innerHTML='<div class="sh"><button class="ib" id="rd" title="Повторить анализ">↻</button><div class="dots"><i></i><i></i><i></i></div><button class="ib" id="cx">✕</button></div><div id="pager"><div class="pg"><div class="chd" id="h1"><div class="sec" style="margin:0 0 4px">ФРАЗА</div></div><div class="cbody" id="b1"><div class="ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd" id="h2"><div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div></div><div class="cbody" id="b2"><div class="sec" style="margin-top:6px">ПЕРЕВОДЫ</div><div id="tr2" class="ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd"><div class="sec" style="margin:0 0 4px">ГРАММАТИКА</div></div><div class="cbody" id="b3"><div class="ld">Анализирую… 0.0 с</div></div></div></div>';
+  sh.innerHTML='<div class="sh"><button class="ib" id="rd" title="Повторить анализ">↻</button><div class="dots"><i></i><i></i><i></i></div><button class="ib" id="cx">✕</button></div><div id="pager"><div class="pg"><div class="chd" id="h1"><div class="sec" style="margin:0 0 4px">PHRASE</div></div><div class="cbody" id="b1"><div class="ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd" id="h2"><div class="sec" style="margin:0 0 4px">PARTS OF SPEECH</div><div class="ct">'+esc(a.w.textContent)+'</div><div class="mut" id="wmeta"></div></div><div class="cbody" id="b2"><div id="tr2" class="ld">Анализирую… 0.0 с</div></div></div><div class="pg"><div class="chd"><div class="sec" style="margin:0 0 4px">ГРАММАТИКА</div></div><div class="cbody" id="b3"><div class="ld">Анализирую… 0.0 с</div></div></div></div>';
   sh.classList.remove("hide");book.classList.add("cardopen");
   $("cx").onclick=closeSheet;$("rd").onclick=redo;
   var pg=$("pager");
@@ -620,14 +685,27 @@ function buildSheet(a){
   pg.scrollLeft=pageIdx*pg.clientWidth;dots();
 }
 function pHead(a,label,w,type){
+  var ph=a.Ph&&!a.Ph.e?a.Ph.d:null;
+  function pk(i){var x=ph&&ph.w[i];return posKey(x?x.pos:(a.A.w[i]||{}).pos)}
   var h='<div class="sec" style="margin:0 0 4px">'+label+'</div><div class="ct pt" lang="en">';
-  w.forEach(function(i,j){h+=(j?" ":"")+'<span class="'+(i===a.id?"on":"")+'">'+esc(a.ws[i].textContent)+"</span>"});
+  w.forEach(function(i,j){h+=(j?" ":"")+'<span class="pw c-'+pk(i)+(i===a.id?" on":"")+'">'+esc(a.ws[i].textContent)+"</span>"});
   h+='</div><div class="mut pi">[';
-  w.forEach(function(i,j){h+=(j?" ":"")+'<span class="'+(i===a.id?"on":"")+'">'+esc((a.A.w[i]||{}).ipa||"")+"</span>"});
+  w.forEach(function(i,j){h+=(j?" ":"")+'<span class="'+(i===a.id?"on c-"+pk(i):"")+'">'+esc((a.A.w[i]||{}).ipa||"")+"</span>"});
   h+="]</div>";
   if(type)h+='<div class="mut" style="margin-top:6px">'+esc(type)+"</div>";
   return h;
 }
+function senses(list,pk){
+  var h='<ol class="sn">';
+  list.forEach(function(x){
+    h+='<li class="sv"><div class="sd" lang="en">'+(x.k?'<span class="sk">('+esc(x.k)+')</span> ':"")+esc(x.d)+'</div><div class="sx hide">';
+    if(x.t.length)h+='<div class="chips">'+x.t.map(function(t){return '<span class="chip ch-'+pk+'" lang="ru">'+esc(t)+"</span>"}).join("")+"</div>";
+    if(x.dr)h+='<div class="sr" lang="ru">↳ '+esc(x.dr)+"</div>";
+    h+="</div></li>";
+  });
+  return h+"</ol>";
+}
+function posTag(pk,name){return '<span class="tag2 tg-'+pk+'">'+esc(name||POSN[pk]||"")+"</span>"}
 function normR(t){return String(t).toLowerCase().replace(/ё/g,"е")}
 function hiRu(text,needles){
   var hay=normR(text);
@@ -659,17 +737,36 @@ function fillMem(a,list){
   var e=$("mem");if(e){e.classList.remove("ld");e.innerHTML=h}
 }
 function fillCards(a){
-  var A=a.A,src=a.idi?{w:a.idi.w,t:"Идиома",e:"Idiom",ru:a.idi.m}:a.blk;
-  $("h1").classList.toggle("idp",!!a.idi);$("h1").innerHTML=pHead(a,"ФРАЗА",src.w,roleOf(src));
-  $("b1").innerHTML='<div class="sec" style="margin-top:6px">ПЕРЕВОД</div>'+(src.ru&&src.ru.length?lis(src.ru,4):'<div class="mut">Перевод недоступен</div><a class="mo rt">Повторить анализ</a>')+'<div class="dv"></div><div class="sec" style="margin-top:0">ПРЕДЛОЖЕНИЕ</div><div id="sen" class="ld">Анализирую… 0.0 с</div>';
-  var wi=A.w[a.id]||{};
-  $("h2").innerHTML='<div class="sec" style="margin:0 0 4px">ЧАСТИ РЕЧИ</div><div class="ct">'+esc(a.w.textContent)+'</div><div class="mut">'+[wi.ipa?"["+wi.ipa+"]":"",cap(wi.pos)].filter(Boolean).map(esc).join(" · ")+"</div>";
+  var A=a.A,src=a.idi?{w:a.idi.w}:a.blk;
+  $("h1").classList.toggle("idp",!!a.idi);
+  $("h1").innerHTML=pHead(a,"PHRASE",src.w,"")+'<div class="mut" id="ptype" style="margin-top:6px"></div>';
+  $("b1").innerHTML='<div id="psn" class="ld">Анализирую… 0.0 с</div><div class="dv"></div><div class="sec" style="margin-top:0">SENTENCE</div><a class="rev" data-t="sen">Show translation</a><div id="sen" class="ld hide">Анализирую… 0.0 с</div>';
+  wordMeta(a);
   var idi=a.idi||A.idi[0];
   if(idi){
-    $("pager").insertAdjacentHTML("beforeend",'<div class="pg"><div class="chd idp">'+pHead(a,"ИДИОМА",idi.w,"Идиома")+'</div><div class="cbody"><div class="sec" style="margin-top:6px">ЗНАЧЕНИЯ</div>'+lis(idi.m,4)+(idi.lit?'<div class="dv"></div><div class="sec" style="margin-top:0">БУКВАЛЬНО</div><div class="mrr"><i>'+esc(idi.lit)+"</i></div>":"")+"</div></div>");
+    $("pager").insertAdjacentHTML("beforeend",'<div class="pg"><div class="chd idp">'+pHead(a,"IDIOM",idi.w,"idiom")+'</div><div class="cbody"><div class="sec" style="margin-top:6px">MEANING</div>'+lis(idi.m,4)+(idi.lit?'<div class="dv"></div><div class="sec" style="margin-top:0">LITERALLY</div><div class="mrr"><i>'+esc(idi.lit)+"</i></div>":"")+"</div></div>");
     $("sheet").querySelector(".dots").insertAdjacentHTML("beforeend","<i></i>");dots();
   }
   if(a.Gr)fillGram(a);
+  if(a.Ph)fillPhrase(a);
+}
+function wordMeta(a){
+  var e=$("wmeta");if(!e||!a.A)return;
+  var wi=a.A.w[a.id]||{},px=a.Ph&&!a.Ph.e?a.Ph.d.w[a.id]:null,pk=posKey(px?px.pos:wi.pos);
+  var ipa=wi.ipa||(a.Bd&&a.Bd.ipa)||"";
+  var parts=[];if(ipa)parts.push(esc("["+ipa.replace(/[\[\]\/]/g,"")+"]"));
+  if(pk!=="x")parts.push('<span class="c-'+pk+'">'+esc(POSN[pk])+"</span>");
+  if(px&&px.f)parts.push(esc(px.f));
+  e.innerHTML=parts.join(" · ");
+}
+function fillPhrase(a){
+  var r=a.Ph,e=$("psn");if(!r)return;
+  wordMeta(a);
+  if(r.e){if(e){e.classList.remove("ld");e.innerHTML="<div>"+esc("Не удалось: "+r.e.message)+'</div><a class="mo rt">Повторить</a>'}return}
+  var d=r.d,src=a.idi?{w:a.idi.w}:a.blk,h1=$("h1");
+  if(h1){h1.innerHTML=pHead(a,"PHRASE",src.w,"")+'<div class="mut" id="ptype" style="margin-top:6px"></div>'}
+  var pt=$("ptype");if(pt)pt.innerHTML=[d.type?esc(d.type):"",d.form?esc(d.form):""].filter(Boolean).join(" · ");
+  if(e){e.classList.remove("ld");e.className="";e.innerHTML=d.s.length?senses(d.s,a.idi?"x":posKey(d.type)):'<div class="mut">Нет данных</div>'}
 }
 function itEn(t){
   var re=/[A-Za-z][A-Za-z'’\-]*(?:\s+[A-Za-z][A-Za-z'’\-]*)*/g,o="",last=0,m;t=String(t);
@@ -683,7 +780,7 @@ function fillGram(a){
     if(s){s.classList.remove("ld");s.innerHTML=msg}if(b)b.innerHTML=msg;return;
   }
   var G=r.d,src=a.idi?{ru:a.idi.m}:a.blk;
-  if(s){s.classList.remove("ld");s.className="sen";s.lang="ru";s.innerHTML=G.tr?hiRu(G.tr,(src&&src.ru)||[]):'<span class="mut">Перевод недоступен</span>'}
+  if(s){s.classList.remove("ld");s.className="sen"+(s._open?"":" hide");s.lang="ru";s.innerHTML=G.tr?hiRu(G.tr,(src&&src.ru)||[]):'<span class="mut">Перевод недоступен</span>'}
   if(b&&!b._done){
     var h='<div class="gt">';
     G.g.forEach(function(x){h+='<div class="gr'+(x.w.indexOf(a.id)>-1?" on":"")+'"><b lang="en">'+esc(x.w.map(function(i){return a.ws[i]?a.ws[i].textContent:""}).join(" "))+'</b><div class="gx" lang="ru">'+itEn(x.r)+"</div></div>"});
@@ -693,36 +790,35 @@ function fillGram(a){
   }
 }
 function trHtml(a,d){
-  var ps=((a.A&&a.A.w[a.id]&&a.A.w[a.id].pos)||"").toLowerCase().slice(0,4),gs=d.pos.slice(0,5);
-  var first=gs.filter(function(g){return ps&&String(g.n||"").toLowerCase().slice(0,4)===ps}),rest=gs.filter(function(g){return first.indexOf(g)<0}),h="";
-  first.concat(rest).forEach(function(g){h+='<div class="ph">'+esc(cap(g.n))+"</div>"+lis(g.t,4)});
-  return h;
+  var px=a.Ph&&!a.Ph.e?a.Ph.d.w[a.id]:null,ps=posKey(px?px.pos:((a.A&&a.A.w[a.id])||{}).pos);
+  var gs=d.pos.slice(0,4),first=gs.filter(function(g){return posKey(g.n)===ps}),rest=gs.filter(function(g){return first.indexOf(g)<0}),h="";
+  first.concat(rest).forEach(function(g){var pk=posKey(g.n);h+='<div class="pgp">'+posTag(pk,g.n.toLowerCase())+"</div>"+senses(g.s,pk)});
+  return h||'<div class="mut">Нет данных</div>';
 }
 function showErr(e){
   clearInterval(ldIv);
-  ["b1","tr2","b3"].forEach(function(id){var b=$(id);if(b){b.classList.remove("ld");b.innerHTML="<div>"+esc("Не удалось: "+e.message)+'</div><a class="mo rt">Повторить</a>'}});
+  ["psn","tr2","b3"].forEach(function(id){var b=$(id);if(b){b.classList.remove("ld");b.innerHTML="<div>"+esc("Не удалось: "+e.message)+'</div><a class="mo rt">Повторить</a>'}});
 }
 async function openFor(a){
   var my=++cardTok,ar=a.w.getBoundingClientRect();
   buildSheet(a);paintAct();
   var tp=$("top").getBoundingClientRect().bottom-10,sp=$("sheet").getBoundingClientRect().top,cy=(tp+sp)/2;
   window.scrollBy({top:(ar.top+ar.height/2)-cy,behavior:"smooth"});
-  var t0=Date.now(),pend=2;clearInterval(ldIv);
+  var t0=Date.now(),pend=3;clearInterval(ldIv);
   ldIv=setInterval(function(){document.querySelectorAll("#sheet .ld").forEach(function(e){e.textContent="Анализирую… "+((Date.now()-t0)/1000).toFixed(1)+" с"})},100);
   function fin(){if(--pend<=0)clearInterval(ldIv)}
   var pB=getB(a.w.textContent).then(function(d){return{d:d}},function(e){return{e:e}});
-  a.Gr=null;var pM=getM(a).then(function(d){return{d:d}},function(e){return{e:e}});
+  a.Gr=null;a.Ph=null;var pM=getM(a).then(function(d){return{d:d}},function(e){return{e:e}});
   try{await getA(a)}catch(e){if(my!==cardTok)return;showErr(e);return}
   if(my!==cardTok)return;
   a.blk=has(a.A.b,a.id);a.idi=has(a.A.idi,a.id);
   if(!a.blk&&!a.idi)a.blk={w:[a.id],t:"",e:"",ru:[]};
   paintAct();fillCards(a);
-  pB.then(function(r){
-    if(my!==cardTok)return;
-    var tr=$("tr2");tr.classList.remove("ld");
-    if(r.e)tr.innerHTML="<div>"+esc("Не удалось: "+r.e.message)+'</div><a class="mo rt">Повторить</a>';else tr.innerHTML=trHtml(a,r.d);
-    fin();
-  });
+  var pP=getP(a).then(function(d){return{d:d}},function(e){return{e:e}});
+  var bRes=null;
+  function drawB(){var tr=$("tr2");if(!tr||!bRes)return;tr.classList.remove("ld");if(bRes.e)tr.innerHTML="<div>"+esc("Не удалось: "+bRes.e.message)+'</div><a class="mo rt">Повторить</a>';else{a.Bd=bRes.d;tr.innerHTML=trHtml(a,bRes.d);wordMeta(a)}}
+  pB.then(function(r){if(my!==cardTok)return;bRes=r;drawB();fin()});
+  pP.then(function(r){if(my!==cardTok)return;a.Ph=r;fillPhrase(a);drawB();fin()});
   pM.then(function(r){
     if(my!==cardTok)return;
     a.Gr=r;fillGram(a);fin();
@@ -732,7 +828,7 @@ function redo(){
   if(!act)return;
   var a=act;
   [akey(a),"gr1|"+hash(ctxUser(a))].forEach(function(k){kv("t","readwrite",function(st){return st.delete(k)})});
-  if(a.el._A)delete a.el._A[a.k];if(a.el._P)delete a.el._P[a.k];if(a.el._G)delete a.el._G[a.k];
+  if(a.el._A)delete a.el._A[a.k];if(a.el._P)delete a.el._P[a.k];if(a.el._G)delete a.el._G[a.k];if(a.el._PH)a.el._PH={};if(a.keyP)kv("t","readwrite",function(st){return st.delete(a.keyP)});
   a.A=null;a.pA=null;a.blk=null;a.idi=null;clearNote();paintAct();
   analyze(a,true);
 }
@@ -760,6 +856,10 @@ function tapWord(w){
   analyze(act,wasOpen);
 }
 $("sheet").addEventListener("click",function(e){
+  var sv=e.target.closest(".sv");
+  if(sv){var sx=sv.querySelector(".sx");sx.classList.toggle("hide");sv.classList.toggle("open",!sx.classList.contains("hide"));return}
+  var rv=e.target.closest(".rev");
+  if(rv){var t=$(rv.getAttribute("data-t"));if(t){t._open=!t._open;t.classList.toggle("hide",!t._open)}rv.textContent=t&&t._open?"Hide translation":"Show translation";return}
   var m=e.target.closest(".mo");
   if(!m)return;
   if(m.classList.contains("rt")){redo();return}
