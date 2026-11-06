@@ -324,12 +324,17 @@ body.noscroll{overflow:hidden}
 body.hasbook #top:not(.menu)>*:not(#title){display:none!important}
 body.hasbook #top.menu>#title{display:none}
 body:not(.hasbook) #title{display:none}
-#bot{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:30px 16px calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--bg) 0,var(--bg) 45%,transparent 100%);pointer-events:none;font:12px -apple-system,Helvetica,sans-serif}
-#prog{pointer-events:auto;display:flex;align-items:center;gap:10px;width:100%;padding:6px 0;background:transparent;color:var(--fg);border-radius:0}
-#prog .trk{flex:1;height:3px;border-radius:2px;background:rgba(128,128,128,.22);overflow:hidden;position:relative}
-#progf{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--fg);opacity:.45;border-radius:2px}
-#progt{flex:none;min-width:92px;text-align:right;opacity:.5;font-variant-numeric:tabular-nums}
-#fab{bottom:calc(52px + env(safe-area-inset-bottom,0px))}
+#bot{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:34px 16px calc(4px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--bg) 0,var(--bg) 62%,transparent 100%);pointer-events:none;font:11px -apple-system,Helvetica,sans-serif}
+#bot .pw{display:flex;align-items:center;justify-content:center;gap:14px;max-width:340px;margin:0 auto}
+#prog{pointer-events:auto;flex:0 1 220px;display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:8px 0 4px;background:transparent;color:var(--fg);border-radius:0}
+#prog .trk{display:block;height:3px;border-radius:2px;background:rgba(128,128,128,.22);overflow:hidden;position:relative}
+#progf{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--fg);opacity:.5;border-radius:2px}
+#progt{text-align:center;opacity:.5;font-variant-numeric:tabular-nums;line-height:1}
+#bot .pn{flex:none;width:40px;height:34px;display:flex;align-items:center;justify-content:center;padding:0;background:var(--bar);color:var(--fg);opacity:0;pointer-events:none;transition:opacity .15s}
+#bot.nav .pn{opacity:1;pointer-events:auto}
+#top #sb{margin-left:auto}
+#top #sb.hide~#aa{margin-left:auto}
+#fab{bottom:calc(64px + env(safe-area-inset-bottom,0px))}
 </style>
 </head>
 <body>
@@ -339,7 +344,6 @@ body:not(.hasbook) #title{display:none}
   <button id="sb" class="ic hide" aria-label="Поиск"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><line x1="16" y1="16" x2="20.5" y2="20.5"/></svg></button>
   <span id="title"></span>
   <button id="aa" class="ic" aria-label="Настройки"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
-  <button id="prev" class="ic" aria-label="Предыдущая глава"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 5 8 12 15 19"/></svg></button><button id="next" class="ic" aria-label="Следующая глава"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 5 16 12 9 19"/></svg></button>
 </div>
 <div id="empty">Откройте EPUB-файл.<br>Тап по слову выделяет фразу. Кнопки справа выдвигаются стрелочкой внизу экрана.<br>Сначала введите адрес, ключ и модель: шестерёнка → API.</div>
 <div id="toc" class="hide"><div class="top"><b>Оглавление</b><button id="tocx" class="ic" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div><div id="tocl"></div></div>
@@ -366,7 +370,7 @@ body:not(.hasbook) #title{display:none}
   <div id="fol" class="fol"></div>
   <div class="sub">Книга</div>
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-06 · 23:50</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 00:45</div>
   </div>
   <div class="tp hide" id="tB">
   <div><span>Адрес</span><input id="aUrl" placeholder="https://…/v1" autocapitalize="off" autocorrect="off"></div>
@@ -384,7 +388,7 @@ body:not(.hasbook) #title{display:none}
 <div id="book" class="hide" lang="en"></div>
 <div id="toast" class="hide"></div>
 <div id="rvw" class="hide"><div class="rvh"><button id="rvt1" class="on">Повторение</button><button id="rvt2">Все слова</button><button class="ib" id="rvx">✕</button></div><div id="rvb"></div></div>
-<div id="bot" class="hide"><button id="prog" aria-label="Прогресс чтения"><span class="trk"><i id="progf"></i></span><span id="progt">0%</span></button></div>
+<div id="bot" class="hide"><div class="pw"><button id="prev" class="ic pn" aria-label="Предыдущая глава"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 5 8 12 15 19"/></svg></button><button id="prog" aria-label="Прогресс чтения"><span class="trk"><i id="progf"></i></span><span id="progt">0%</span></button><button id="next" class="ic pn" aria-label="Следующая глава"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 5 16 12 9 19"/></svg></button></div></div>
 <div id="fab" class="closed"><div id="fabb"><button id="eye" class="fc" aria-label="Подсказки"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/><line class="sl" x1="3.5" y1="3.5" x2="20.5" y2="20.5"/></svg></button><button id="fb" class="fc" aria-label="Перевод">文A</button><button id="cm" class="fc" aria-label="Транскрипция или перевод">IPA</button><a id="rv" class="fc" target="_blank" rel="noopener" aria-label="Reverso">R</a></div><button id="fabt" aria-label="Кнопки"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 5 8 12 15 19"/></svg></button></div>
 <div id="dim" class="hide"></div>
 <div id="sheet" class="sheet hide"></div>
@@ -1438,6 +1442,7 @@ $("sx").onclick=closeSearch;$("sgo").onclick=doSearch;
 $("sq").addEventListener("keydown",function(e){if(e.key==="Enter")doSearch()});
 $("title").onclick=function(e){e.stopPropagation();$("top").classList.add("menu")};
 document.addEventListener("click",function(e){
+  if(!e.target.closest("#bot"))$("bot").classList.remove("nav");
   var t=$("top");if(!t.classList.contains("menu"))return;
   if(e.target.closest("#top,#set,#toc,#sp,.sheet,#dim,#rvw,#toast"))return;
   t.classList.remove("menu");["set","toc","sp"].forEach(function(id){$(id).classList.add("hide")});
@@ -1449,9 +1454,9 @@ function progUpd(){
   var pc=tot?(bef+texts[idx].length*fr)/tot*100:0;pc=Math.max(0,Math.min(100,pc));
   var r=Math.floor(pc);if(pc>=99.95)r=100;
   $("progf").style.width=pc.toFixed(2)+"%";
-  $("progt").textContent=S.pm?(100-r)+"% осталось":r+"% прочитано";
+  $("progt").textContent=r+"%";
 }
-$("prog").onclick=function(){S.pm=!S.pm;try{localStorage.setItem("rr4",JSON.stringify(S))}catch(x){}progUpd()};
+$("prog").onclick=function(){$("bot").classList.toggle("nav")};
 window.addEventListener("scroll",function(){requestAnimationFrame(progUpd)},{passive:true});
 window.addEventListener("resize",progUpd);
 $("prev").onclick=function(){show(idx-1)};$("next").onclick=function(){show(idx+1)};
