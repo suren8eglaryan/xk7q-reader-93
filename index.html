@@ -270,8 +270,17 @@ body.noscroll{overflow:hidden}
 #toc{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:6;max-height:75vh;overflow:auto;padding:12px;border-radius:14px;background:var(--bar);box-shadow:0 6px 24px rgba(0,0,0,.25);font:15px -apple-system,Helvetica,sans-serif}
 #toc .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 #toc .ic,#sp .ic{display:flex;align-items:center;justify-content:center;padding:6px;background:var(--bg)}
-.tci{display:block;width:100%;text-align:left;margin:0 0 6px;padding:10px 12px;font:15px/1.35 Georgia,serif;background:var(--bg)}
-.tci.on{font-weight:700;color:var(--sel)}
+#tocl{display:flex;flex-direction:column}
+.tcr{display:flex;align-items:stretch;padding-left:calc(var(--lv) * 18px);border-bottom:1px solid rgba(128,128,128,.14)}
+.tcr:last-child{border-bottom:0}
+.tct,.tcs{flex:none;width:34px;display:flex;align-items:center;justify-content:center;padding:0;background:transparent;color:var(--fg);opacity:.55}
+.tct svg{transition:transform .15s}.tct.op svg{transform:rotate(90deg)}
+.tci{flex:1;min-width:0;text-align:left;padding:11px 8px 11px 2px;font:15px/1.3 Georgia,serif;background:transparent;color:var(--fg);border-radius:8px}
+.tcr.lv0>.tci{font-weight:600}
+.tcr.lv0.grp{margin-top:4px}
+.tcr:not(.lv0)>.tci{font-size:14.5px;opacity:.85}
+.tcr.lv2>.tci,.tcr.lv3>.tci{font-size:14px;opacity:.75}
+.tcr.on>.tci{color:var(--sel);opacity:1;font-weight:700}
 #set .tabs{display:flex;gap:6px;margin-bottom:4px}
 #set .tabs button{flex:1;background:var(--bg)}
 #set .tabs button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
@@ -289,6 +298,27 @@ body.noscroll{overflow:hidden}
 #set,#toc{z-index:8}
 #fab:not(.closed) #fabt svg{transform:rotate(180deg)}
 #eye.fc{opacity:.35;box-shadow:none}
+/* settings layout v2 */
+#set{padding:0 14px 14px;gap:0;overflow-x:hidden}
+#set .tabs{position:sticky;top:0;z-index:2;display:flex;gap:0;margin:0 -14px 6px;padding:12px 14px 10px;background:var(--bar)}
+#set .tabs::before{content:"";position:absolute;left:14px;right:14px;top:12px;bottom:10px;border-radius:10px;background:rgba(120,120,128,.16);z-index:-1}
+#set .tabs button{flex:1;margin:2px;padding:7px 0;border-radius:8px;background:transparent;box-shadow:none;font-size:14px;font-weight:500;color:var(--fg)}
+#set .tabs button.on{background:var(--bg);box-shadow:0 1px 3px rgba(0,0,0,.18);font-weight:600}
+#set .tp{display:flex;flex-direction:column;align-items:stretch;gap:8px}
+#set .tp>div{display:flex;align-items:center;gap:8px;width:100%;min-width:0;justify-content:flex-start}
+#set .tp>div>span{width:84px;flex:none;font-size:14px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#set .tp>div>button,#set .tp>div>select,#set .tp>div>input{flex:1 1 0;min-width:0}
+#set .tp>div>input[type=color]{height:36px;padding:3px;border-radius:10px;background:var(--bg)}
+#set .tp>div>button{padding:8px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#set .tp>.sub{display:block;margin:12px 0 0;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;opacity:.5}
+#set .tp>.sub:first-child{margin-top:4px}
+#set .tp>.hint{display:block;font-size:12px;opacity:.5;margin-top:-2px}
+#set .tp>.fol{display:flex;flex-direction:column;gap:8px;align-items:stretch}
+#set .forow{display:flex;align-items:center;gap:8px;width:100%}
+#set .forow span{flex:1;min-width:0;font-size:14px;text-align:left}
+#set .forow button{flex:none;width:48px;padding:8px 0}
+#set #ver{justify-content:center;margin-top:6px}
+
 </style>
 </head>
 <body>
@@ -304,23 +334,28 @@ body.noscroll{overflow:hidden}
 <div id="toc" class="hide"><div class="top"><b>Оглавление</b><button id="tocx" class="ic" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div><div id="tocl"></div></div>
 <div id="sp" class="hide"><div class="top"><input id="sq" type="search" placeholder="Поиск по книге"><button id="sgo">Найти</button><button id="sx" class="ic" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div><div id="scount"></div><div id="sres"></div></div>
 <div id="set" class="hide">
-  <div class="tabs"><button data-tab="tA" class="on">Аа</button><button data-tab="tB">API</button><button data-tab="tC">Словарь</button></div>
+  <div class="tabs" role="tablist"><button data-tab="tA" class="on">Аа</button><button data-tab="tB">API</button><button data-tab="tC">Словарь</button></div>
   <div class="tp" id="tA">
+  <div class="sub">Текст книги</div>
   <div><span>Размер</span><button data-a="f-">A−</button><button data-a="f+">A+</button></div>
-  <div><span>Карточки</span><button data-a="c-">A−</button><button data-a="c+">A+</button></div>
   <div><span>Строки</span><button data-a="l-">Теснее</button><button data-a="l+">Свободнее</button></div>
   <div><span>Поля</span><button data-a="p-">Меньше</button><button data-a="p+">Больше</button></div>
+  <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Беж.</button><button data-a="t:dark">Тёмный</button></div>
   <div><span>Выделение</span><input type="color" id="cSel"><button data-a="cs0">Сброс</button></div>
-  <div><span>Перевод</span><input type="color" id="cRu0" title="Обычный"><input type="color" id="cRu1" title="Выделенный"><button data-a="cr0">Сброс</button></div>
-  <div><span>Транскр.</span><input type="color" id="cIp0" title="Обычный"><input type="color" id="cIp1" title="Выделенный"><button data-a="ci0">Сброс</button></div>
-  <div><span>Почерк</span><select id="rfSel"></select></div>
-  <div><span>Шрифт пер.</span><button data-a="r-">A−</button><button data-a="r+">A+</button></div>
-  <div><span>Шрифт тр.</span><button data-a="i-">A−</button><button data-a="i+">A+</button></div>
-  <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Бежевый</button><button data-a="t:dark">Тёмный</button></div>
+  <div class="sub">Подсказки над словами</div>
+  <div><span>Шрифт</span><select id="rfSel"></select></div>
+  <div><span>Перевод</span><button data-a="r-">A−</button><button data-a="r+">A+</button></div>
+  <div><span>Транскр.</span><button data-a="i-">A−</button><button data-a="i+">A+</button></div>
+  <div><span>Цвет пер.</span><input type="color" id="cRu0" title="Обычный"><input type="color" id="cRu1" title="Выделенный"><button data-a="cr0">Сброс</button></div>
+  <div><span>Цвет тр.</span><input type="color" id="cIp0" title="Обычный"><input type="color" id="cIp1" title="Выделенный"><button data-a="ci0">Сброс</button></div>
+  <div class="hint">Левый цвет — обычный, правый — у выделенной фразы.</div>
+  <div class="sub">Карточки</div>
+  <div><span>Размер</span><button data-a="c-">A−</button><button data-a="c+">A+</button></div>
   <div class="sub">Кнопки справа (сверху вниз)</div>
   <div id="fol" class="fol"></div>
+  <div class="sub">Книга</div>
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-06 · 19:30</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-06 · 20:10</div>
   </div>
   <div class="tp hide" id="tB">
   <div><span>Адрес</span><input id="aUrl" placeholder="https://…/v1" autocapitalize="off" autocorrect="off"></div>
@@ -331,8 +366,8 @@ body.noscroll{overflow:hidden}
   <div><button id="aOk">Сохранить</button><button id="aClr">Очистить кэш</button></div>
   </div>
   <div class="tp hide" id="tC">
-  <div><span>Словарь</span><button id="vRev">Повторить</button><button id="vList">Все слова</button></div>
-  <div class="mut" style="font-size:13px">Слова добавляются кнопкой «+ В словарь» в карточке PARTS OF SPEECH.</div>
+  <div><span>Слова</span><button id="vRev">Повторить</button><button id="vList">Все слова</button></div>
+  <div class="hint">Слова добавляются кнопкой «+ В словарь» в карточке PARTS OF SPEECH.</div>
   </div>
 </div>
 <div id="book" class="hide" lang="en"></div>
@@ -1255,13 +1290,31 @@ $("fol").addEventListener("click",function(e){
 $("fabt").onclick=function(){$("fab").classList.toggle("closed")};
 renderFab();
 var chapTitles=[];
+var tocTree=null,tocOpen={};
+function tocFind(list){var best=null;(function walk(l){l.forEach(function(n){if(n.ch>=0&&n.ch<=idx&&(!best||n.ch>=best.ch))best=n;walk(n.k)})})(list);return best}
 function renderToc(){
-  $("tocl").innerHTML=chapTitles.map(function(t,i){return '<button class="tci'+(i===idx?" on":"")+'" data-i="'+i+'">'+esc(t)+"</button>"}).join("");
+  var tree=tocTree&&tocTree.length?tocTree:chapTitles.map(function(t,i){return {t:t,ch:i,f:"",k:[]}});
+  var cur=tocFind(tree),uid=0,h="";
+  function hasCur(n){return n===cur||n.k.some(hasCur)}
+  function walk(l,lv){l.forEach(function(n){
+    var id=n.id||(n.id="n"+(++uid)),kids=n.k.length,open=tocOpen[id]!==undefined?tocOpen[id]:hasCur(n);
+    h+='<div class="tcr lv'+Math.min(lv,3)+(n===cur?" on":"")+(kids?" grp":"")+'" style="--lv:'+lv+'">'
+      +(kids?'<button class="tct'+(open?" op":"")+'" data-t="'+id+'" aria-label="Раскрыть"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg></button>':'<span class="tcs"></span>')
+      +'<button class="tci" data-i="'+n.ch+'" data-f="'+esc(n.f||"")+'">'+esc(n.t)+'</button></div>';
+    if(kids&&open)walk(n.k,lv+1);
+  })}
+  walk(tree,0);$("tocl").innerHTML=h;tocTree=tocTree&&tocTree.length?tree:null;
   var on=$("tocl").querySelector(".on");if(on)on.scrollIntoView({block:"center"});
 }
-$("tocb").onclick=function(){$("set").classList.add("hide");$("sp").classList.add("hide");var t=$("toc");t.classList.toggle("hide");if(!t.classList.contains("hide"))renderToc()};
+$("tocb").onclick=function(){$("set").classList.add("hide");$("sp").classList.add("hide");var t=$("toc");t.classList.toggle("hide");if(!t.classList.contains("hide")){tocOpen={};renderToc()}};
 $("tocx").onclick=function(){$("toc").classList.add("hide")};
-$("tocl").addEventListener("click",function(e){var b=e.target.closest(".tci");if(!b)return;$("toc").classList.add("hide");show(+b.getAttribute("data-i"))});
+$("tocl").addEventListener("click",function(e){
+  var g=e.target.closest(".tct");
+  if(g){var id=g.getAttribute("data-t");tocOpen[id]=!g.classList.contains("op");var st=$("toc").scrollTop;renderToc();$("toc").scrollTop=st;return}
+  var b=e.target.closest(".tci");if(!b)return;var ch=+b.getAttribute("data-i"),f=b.getAttribute("data-f");if(ch<0)return;
+  $("toc").classList.add("hide");show(ch);
+  if(f){var el=null;try{el=book.querySelector("#"+CSS.escape(f))}catch(x){}if(el)setTimeout(function(){window.scrollTo(0,el.getBoundingClientRect().top+window.scrollY-80)},30)}
+});
 $("vRev").onclick=function(){rvOpen("rev")};$("vList").onclick=function(){rvOpen("list")};
 $("rvx").onclick=rvClose;$("rvt1").onclick=rvStart;$("rvt2").onclick=rvList;
 $("rvb").addEventListener("click",function(e){var d=e.target.closest(".vdel");if(d){vDel(d.getAttribute("data-w")).then(rvList)}});
@@ -1376,6 +1429,31 @@ $("file").addEventListener("change",async function(){
   var f=this.files[0];if(!f)return;var buf=await f.arrayBuffer();
   kv("b","readwrite",function(s){return s.put({name:f.name,buf:buf},"last")});openBook(buf,f.name);
 });
+async function readToc(zip,P,opf,base,fmap){
+  function link(dir,href){if(!href)return {ch:-1,f:""};var pr=href.split("#"),fp=resolve(dir,pr[0]);var ch=fmap[fp];if(ch===undefined)ch=-1;if(ch>=chapters.length)ch=chapters.length-1;return {ch:ch,f:pr[1]?decodeURIComponent(pr[1]):""}}
+  function clean(t){return (t||"").replace(/\s+/g," ").trim()}
+  function fix(l){l.forEach(function(n){fix(n.k);if(n.ch<0&&n.k.length){n.ch=n.k[0].ch;n.f=n.k[0].f}});return l.filter(function(n){return n.t&&(n.ch>=0||n.k.length)})}
+  var navIt=opf.querySelector('manifest > item[properties~="nav"]');
+  if(navIt){
+    var np=resolve(base,navIt.getAttribute("href")),nz=zip.file(np);
+    if(nz){var nd=P.parseFromString(await nz.async("string"),"text/html"),dir=np.indexOf("/")>-1?np.slice(0,np.lastIndexOf("/")+1):"";
+      var navs=[].slice.call(nd.querySelectorAll("nav")),nav=navs.find(function(n){return /toc/.test(n.getAttribute("epub:type")||n.getAttribute("type")||n.getAttribute("role")||n.id||"")})||navs[0];
+      var ol=nav&&nav.querySelector("ol");
+      if(ol){var walk=function(o){return [].slice.call(o.children).filter(function(x){return x.tagName.toLowerCase()==="li"}).map(function(li){
+          var a=li.querySelector(":scope > a, :scope > span"),sub=li.querySelector(":scope > ol"),L=link(dir,a&&a.getAttribute("href"));
+          return {t:clean(a&&a.textContent),ch:L.ch,f:L.f,k:sub?walk(sub):[]}})};
+        var r=fix(walk(ol));if(r.length)return r}}
+  }
+  var nid=(opf.querySelector("spine")||{getAttribute:function(){}}).getAttribute("toc"),nh=null;
+  opf.querySelectorAll("manifest > item").forEach(function(it){if((nid&&it.getAttribute("id")===nid)||/dtbncx/.test(it.getAttribute("media-type")||""))nh=nh||it.getAttribute("href")});
+  if(!nh)return null;var npth=resolve(base,nh),nf=zip.file(npth);if(!nf)return null;
+  var x=P.parseFromString(await nf.async("string"),"text/xml"),d2=npth.indexOf("/")>-1?npth.slice(0,npth.lastIndexOf("/")+1):"";
+  var map=x.getElementsByTagNameNS("*","navMap")[0];if(!map)return null;
+  function w2(el){return [].slice.call(el.children).filter(function(c){return c.localName==="navPoint"}).map(function(np){
+    var lab=[].slice.call(np.children).find(function(c){return c.localName==="navLabel"}),ct=[].slice.call(np.children).find(function(c){return c.localName==="content"});
+    var L=link(d2,ct&&ct.getAttribute("src"));return {t:clean(lab&&lab.textContent),ch:L.ch,f:L.f,k:w2(np)}})}
+  var r2=fix(w2(map));return r2.length?r2:null;
+}
 async function openBook(f,fname){
   try{
     var zip=await JSZip.loadAsync(f),P=new DOMParser();
@@ -1386,10 +1464,10 @@ async function openBook(f,fname){
     opf.querySelectorAll("manifest > item").forEach(function(it){man[it.getAttribute("id")]=it.getAttribute("href")});
     var t=opf.getElementsByTagNameNS("*","title")[0];
     $("title").textContent=t?t.textContent:fname;bookId=$("title").textContent;
-    chapters=[];var refs=opf.querySelectorAll("spine > itemref");
+    chapters=[];var refs=opf.querySelectorAll("spine > itemref"),fmap={};
     for(var k=0;k<refs.length;k++){
       var href=man[refs[k].getAttribute("idref")];if(!href)continue;
-      var zf=zip.file(resolve(base,href));if(!zf)continue;
+      var fp=resolve(base,href.split("#")[0]),zf=zip.file(fp);if(!zf)continue;fmap[fp]=chapters.length;
       var doc=P.parseFromString(await zf.async("string"),"text/html");
       doc.querySelectorAll("script,style,link,img,svg,image").forEach(function(x){x.remove()});
       doc.querySelectorAll("[style],[align]").forEach(function(x){x.removeAttribute("style");x.removeAttribute("align")});
@@ -1397,6 +1475,7 @@ async function openBook(f,fname){
       if(html.replace(/<[^>]+>/g,"").trim().length>0)chapters.push(html);
     }
     if(!chapters.length)throw new Error("empty");
+    tocTree=null;try{tocTree=await readToc(zip,P,opf,base,fmap)}catch(x){tocTree=null}
     $("empty").classList.add("hide");book.classList.remove("hide");
     $("openb").classList.add("hide");$("sb").classList.remove("hide");$("tocb").classList.remove("hide");
     var d=document.createElement("div");
