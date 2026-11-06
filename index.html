@@ -9,13 +9,13 @@
 <title>Читалка EN→RU</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-:root{--bg:#fff;--fg:#1d1d1b;--bar:#e9e9ec;--ru:#9aa1ad;--sel:#000;box-sizing:border-box;padding-top:max(0px,calc(env(safe-area-inset-top,0px) - 6px));padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--bg:#fff;--fg:#1d1d1b;--bar:#e9e9ec;--ru:#9aa1ad;--sel:#000;box-sizing:border-box;padding-top:max(0px,calc(env(safe-area-inset-top,0px) - 18px));padding-bottom:env(safe-area-inset-bottom,0px)}
 :root[data-theme="beige"]{--bg:#f0eee0;--bar:#d6d3c8;--ru:#9b9788}
 :root[data-theme="dark"]{--bg:#1b1c1a;--fg:#e6e4da;--bar:#2a2b28;--ru:#7d7d76;--sel:#fff}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--fg);font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif}
 .hide{display:none!important}
-#top{position:sticky;top:max(0px,calc(env(safe-area-inset-top,0px) - 6px));z-index:5;display:flex;gap:8px;align-items:center;padding:0 12px 14px;margin-bottom:-4px;background:linear-gradient(to bottom,var(--bg) 0,var(--bg) 70%,transparent 100%);font:15px -apple-system,Helvetica,sans-serif;pointer-events:none}
+#top{position:sticky;top:max(0px,calc(env(safe-area-inset-top,0px) - 18px));z-index:5;display:flex;gap:8px;align-items:center;padding:0 12px 14px;margin-bottom:-4px;background:linear-gradient(to bottom,var(--bg) 0,var(--bg) 70%,transparent 100%);font:15px -apple-system,Helvetica,sans-serif;pointer-events:none}
 #top>*{pointer-events:auto}
 #top button,#top label.btn{background:var(--bar)}
 #title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.55}
@@ -324,9 +324,9 @@ body.noscroll{overflow:hidden}
 body.hasbook #top:not(.menu)>*:not(#title){display:none!important}
 body.hasbook #top.menu>#title{display:none}
 body:not(.hasbook) #title{display:none}
-#bot{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:14px 16px max(10px,calc(env(safe-area-inset-bottom,0px) / 2));background:linear-gradient(to top,var(--bg) 0,var(--bg) 70%,transparent 100%);pointer-events:none;font:11px -apple-system,Helvetica,sans-serif}
+#bot{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:14px 16px max(6px,calc(env(safe-area-inset-bottom,0px) / 2 - 10px));background:linear-gradient(to top,var(--bg) 0,var(--bg) 70%,transparent 100%);pointer-events:none;font:11px -apple-system,Helvetica,sans-serif}
 #bot .pw{display:flex;align-items:center;justify-content:center;gap:14px;max-width:340px;margin:0 auto}
-#prog{pointer-events:auto;flex:0 1 220px;display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:8px 0;background:transparent;color:var(--fg);border-radius:0}
+#prog{pointer-events:auto;flex:0 1 220px;display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:8px 0 3px;background:transparent;color:var(--fg);border-radius:0}
 #prog .trk{display:block;height:3px;border-radius:2px;background:rgba(128,128,128,.22);overflow:hidden;position:relative}
 #progf{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--fg);opacity:.5;border-radius:2px}
 #progt{text-align:center;opacity:.5;font-variant-numeric:tabular-nums;line-height:1}
@@ -370,7 +370,7 @@ body:not(.hasbook) #title{display:none}
   <div id="fol" class="fol"></div>
   <div class="sub">Книга</div>
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 01:05</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 01:15</div>
   </div>
   <div class="tp hide" id="tB">
   <div><span>Адрес</span><input id="aUrl" placeholder="https://…/v1" autocapitalize="off" autocorrect="off"></div>
