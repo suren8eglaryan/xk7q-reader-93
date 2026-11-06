@@ -166,10 +166,10 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #book{position:relative}
 .note{position:absolute;transform:translateY(-100%);margin-top:-1px;font-size:.56em;font-style:italic;font-weight:400;line-height:1.25;text-align:left;text-indent:0;hyphens:none;color:color-mix(in srgb,var(--fg) 48%,var(--bg));background:color-mix(in srgb,var(--bg) 92%,transparent);padding:0 .4em;border-radius:6px;pointer-events:none;z-index:3;width:max-content}
 #cm{opacity:.35;box-shadow:none;font-size:15px;letter-spacing:.02em}
-#rv{opacity:.35;color:#1a6fd1;text-decoration:none;box-shadow:none}
+#rv{opacity:.35;color:var(--fg);text-decoration:none;box-shadow:none}
 #mst{font:13px -apple-system,Helvetica,sans-serif;opacity:.8;line-height:1.35}
-:root{--ru0:#cdcdcd;--ip0:#cdcdcd;--ru1:#9b7ae6;--ip1:#7cc4a0}
-:root[data-theme="dark"]{--ru0:#5c5c56;--ip0:#5c5c56;--ru1:#b9a0f5;--ip1:#8ad6b0}
+:root{--ru0:#cdcdcd;--ip0:#cdcdcd;--ru1:#8891c2;--ip1:#7cc4a0}
+:root[data-theme="dark"]{--ru0:#5c5c56;--ip0:#5c5c56;--ru1:#a6aede;--ip1:#8ad6b0}
 :root[data-theme="beige"]{--ru0:#c6c2b6;--ip0:#c6c2b6}
 .w.ann{text-decoration:none!important}
 #ovs{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:2}
@@ -264,20 +264,48 @@ body.noscroll{overflow:hidden}
 #sheet .sk{color:color-mix(in srgb,var(--fg) 62%,var(--bg))}
 .w.ig,#sheet .idp .on{color:var(--sel)!important}
 #rvw .rvw2 span,#rvw .rvs b{color:var(--sel)!important}
+#top .ic{display:flex;align-items:center;justify-content:center;padding:7px 10px;color:var(--fg)}
+#top #sb,#top #tocb{order:0}
+#eye{padding:0}
+#toc{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:6;max-height:75vh;overflow:auto;padding:12px;border-radius:14px;background:var(--bar);box-shadow:0 6px 24px rgba(0,0,0,.25);font:15px -apple-system,Helvetica,sans-serif}
+#toc .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+#toc .ic,#sp .ic{display:flex;align-items:center;justify-content:center;padding:6px;background:var(--bg)}
+.tci{display:block;width:100%;text-align:left;margin:0 0 6px;padding:10px 12px;font:15px/1.35 Georgia,serif;background:var(--bg)}
+.tci.on{font-weight:700;color:var(--sel)}
+#set .tabs{display:flex;gap:6px;margin-bottom:4px}
+#set .tabs button{flex:1;background:var(--bg)}
+#set .tabs button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
+#set .tp{display:flex;flex-direction:column;gap:10px}
+#set .sub{font-size:13px;opacity:.6;margin-top:6px}
+#set .fol{display:flex;flex-direction:column;gap:6px}
+#set .forow{display:flex;gap:8px;align-items:center}
+#set .forow span{flex:1;width:auto;font-size:15px}
+#set .forow button{flex:none;width:44px}
+#set .forow button[disabled]{opacity:.3}
+#fab{flex-direction:column;align-items:center;gap:0}
+#fabb{display:flex;flex-direction:column-reverse;gap:12px;align-items:center;margin-bottom:10px;transition:opacity .2s,transform .2s}
+#fab.closed #fabb{opacity:0;transform:translateY(16px);pointer-events:none}
+#fabt{width:30px;height:46px;padding:0;border-radius:14px 0 0 14px;background:transparent;box-shadow:none;color:var(--fg);opacity:.4;display:flex;align-items:center;justify-content:center;align-self:flex-end;margin-right:-16px;transition:transform .2s}
+#set,#toc{z-index:8}
+#fab:not(.closed) #fabt svg{transform:rotate(180deg)}
+#eye.fc{opacity:.35;box-shadow:none}
 </style>
 </head>
 <body>
 <div id="top">
   <label class="btn" id="openb">Открыть EPUB<input id="file" type="file" accept=".epub,application/epub+zip" hidden></label>
-  <button id="sb" class="hide" aria-label="Поиск">🔍</button>
+  <button id="tocb" class="ic hide" aria-label="Оглавление"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></button>
+  <button id="sb" class="ic hide" aria-label="Поиск"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><line x1="16" y1="16" x2="20.5" y2="20.5"/></svg></button>
   <span id="title"></span>
-  <button id="eye" class="hide" aria-label="Перевод и транскрипция"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/><line class="sl" x1="3.5" y1="3.5" x2="20.5" y2="20.5"/></svg></button>
-  <button id="aa">Aa</button>
-  <button id="prev">‹</button><button id="next">›</button>
+  <button id="aa" class="ic" aria-label="Настройки"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  <button id="prev" class="ic" aria-label="Предыдущая глава"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 5 8 12 15 19"/></svg></button><button id="next" class="ic" aria-label="Следующая глава"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 5 16 12 9 19"/></svg></button>
 </div>
-<div id="empty">Откройте EPUB-файл.<br>Коснитесь слова: подсветится его фраза с транскрипцией и переводом. Кнопка 文A открывает карточки, глаз включает подписи для всего текста.<br>Сначала введите адрес, ключ и модель: Aa.</div>
-<div id="sp" class="hide"><div class="top"><input id="sq" type="search" placeholder="Поиск по книге"><button id="sgo">Найти</button><button id="sx">✕</button></div><div id="scount"></div><div id="sres"></div></div>
+<div id="empty">Откройте EPUB-файл.<br>Тап по слову выделяет фразу. Кнопки справа выдвигаются стрелочкой внизу экрана.<br>Сначала введите адрес, ключ и модель: шестерёнка → API.</div>
+<div id="toc" class="hide"><div class="top"><b>Оглавление</b><button id="tocx" class="ic" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div><div id="tocl"></div></div>
+<div id="sp" class="hide"><div class="top"><input id="sq" type="search" placeholder="Поиск по книге"><button id="sgo">Найти</button><button id="sx" class="ic" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div><div id="scount"></div><div id="sres"></div></div>
 <div id="set" class="hide">
+  <div class="tabs"><button data-tab="tA" class="on">Аа</button><button data-tab="tB">API</button><button data-tab="tC">Словарь</button></div>
+  <div class="tp" id="tA">
   <div><span>Размер</span><button data-a="f-">A−</button><button data-a="f+">A+</button></div>
   <div><span>Карточки</span><button data-a="c-">A−</button><button data-a="c+">A+</button></div>
   <div><span>Строки</span><button data-a="l-">Теснее</button><button data-a="l+">Свободнее</button></div>
@@ -289,27 +317,37 @@ body.noscroll{overflow:hidden}
   <div><span>Шрифт пер.</span><button data-a="r-">A−</button><button data-a="r+">A+</button></div>
   <div><span>Шрифт тр.</span><button data-a="i-">A−</button><button data-a="i+">A+</button></div>
   <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Бежевый</button><button data-a="t:dark">Тёмный</button></div>
+  <div class="sub">Кнопки справа (сверху вниз)</div>
+  <div id="fol" class="fol"></div>
+  <div><button id="ob2">Открыть другую книгу</button></div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-06 · 19:30</div>
+  </div>
+  <div class="tp hide" id="tB">
   <div><span>Адрес</span><input id="aUrl" placeholder="https://…/v1" autocapitalize="off" autocorrect="off"></div>
   <div><span>Ключ</span><input id="aKey" type="password" placeholder="API key"></div>
   <div><span>Модель</span><select id="aPre"><option value="">Выбрать…</option><option>gemini-3-pro</option><option>gpt-5.6</option><option>claude-sonnet</option><option>grok-4.6</option><option>deepseek-v3</option></select><button id="aLs">Список</button></div>
   <div><span></span><input id="aMod" placeholder="model" autocapitalize="off" autocorrect="off"></div>
   <div id="mst" class="hide"></div>
   <div><button id="aOk">Сохранить</button><button id="aClr">Очистить кэш</button></div>
+  </div>
+  <div class="tp hide" id="tC">
   <div><span>Словарь</span><button id="vRev">Повторить</button><button id="vList">Все слова</button></div>
-  <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-06 · 00:40</div>
+  <div class="mut" style="font-size:13px">Слова добавляются кнопкой «+ В словарь» в карточке PARTS OF SPEECH.</div>
+  </div>
 </div>
 <div id="book" class="hide" lang="en"></div>
 <div id="toast" class="hide"></div>
 <div id="rvw" class="hide"><div class="rvh"><button id="rvt1" class="on">Повторение</button><button id="rvt2">Все слова</button><button class="ib" id="rvx">✕</button></div><div id="rvb"></div></div>
-<div id="fab"><button id="cm" class="fc" aria-label="Транскрипция или перевод">IPA</button><a id="rv" class="fc" target="_blank" rel="noopener">R</a><button id="fb" class="fc">文A</button></div>
+<div id="fab" class="closed"><div id="fabb"><button id="eye" class="fc" aria-label="Подсказки"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/><line class="sl" x1="3.5" y1="3.5" x2="20.5" y2="20.5"/></svg></button><button id="fb" class="fc" aria-label="Перевод">文A</button><button id="cm" class="fc" aria-label="Транскрипция или перевод">IPA</button><a id="rv" class="fc" target="_blank" rel="noopener" aria-label="Reverso">R</a></div><button id="fabt" aria-label="Кнопки"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 5 8 12 15 19"/></svg></button></div>
 <div id="dim" class="hide"></div>
 <div id="sheet" class="sheet hide"></div>
 <script>
 var chapters=[],idx=0,bookId="book",gen=0,blocks=[],queue=[],active=0,paused=false,io=null;
 var $=function(i){return document.getElementById(i)},book=$("book");
-var S={fs:26,pad:36,theme:"white",ru:true,cap:"ipa",rf:"bad",col:"links",cSel:null,cRu0:null,cRu1:null,cIp0:null,cIp1:null,rs:1,is:1,eye:false,lh:2.1,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
+var S={fs:26,pad:36,theme:"white",ru:true,cap:"ipa",rf:"caveat",fo:["eye","fb","cm","rv"],col:"links",cSel:null,cRu0:null,cRu1:null,cIp0:null,cIp1:null,rs:1,is:1,eye:false,lh:2.1,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
+if(!S.v4){S.v4=1;S.rf="caveat";S.cRu1=null}
+if(!Array.isArray(S.fo)||S.fo.length!==4)S.fo=["eye","fb","cm","rv"];
 if(!S.v3){S.v3=1;if(!S.lh||S.lh>=2.5)S.lh=2.1}
 if(S.cRu){S.cRu1=S.cRu;delete S.cRu}if(S.cIp){S.cIp1=S.cIp;delete S.cIp}
 (function(){
@@ -1198,7 +1236,32 @@ function applyS(){
   try{localStorage.setItem("rr4",JSON.stringify(S))}catch(x){}
   rerenderAll();
 }
-$("aa").onclick=function(){$("set").classList.toggle("hide");vCount()};
+$("aa").onclick=function(){$("toc").classList.add("hide");$("set").classList.toggle("hide");vCount();renderFol()};
+document.querySelectorAll("#set .tabs button").forEach(function(b){b.onclick=function(){
+  document.querySelectorAll("#set .tabs button").forEach(function(x){x.classList.toggle("on",x===b)});
+  document.querySelectorAll("#set .tp").forEach(function(t){t.classList.toggle("hide",t.id!==b.getAttribute("data-tab"))});
+}});
+var FON={eye:"Подсказки (глаз)",fb:"Перевод (文A)",cm:"IPA / СЛ / ФР",rv:"Reverso (R)"};
+function renderFab(){var box=$("fabb");S.fo.forEach(function(k){var el=$(k==="eye"?"eye":k);if(el)box.appendChild(el)})}
+function renderFol(){
+  var vis=S.fo.slice().reverse();
+  $("fol").innerHTML=vis.map(function(k,i){return '<div class="forow"><span>'+FON[k]+'</span><button data-fo="'+k+':up"'+(i===0?" disabled":"")+'>↑</button><button data-fo="'+k+':dn"'+(i===vis.length-1?" disabled":"")+'>↓</button></div>'}).join("");
+}
+$("fol").addEventListener("click",function(e){
+  var b=e.target.closest("[data-fo]");if(!b)return;var pr=b.getAttribute("data-fo").split(":"),i=S.fo.indexOf(pr[0]);
+  var j=pr[1]==="up"?i+1:i-1;if(j<0||j>=S.fo.length)return;var t=S.fo[i];S.fo[i]=S.fo[j];S.fo[j]=t;
+  try{localStorage.setItem("rr4",JSON.stringify(S))}catch(x){}renderFab();renderFol();
+});
+$("fabt").onclick=function(){$("fab").classList.toggle("closed")};
+renderFab();
+var chapTitles=[];
+function renderToc(){
+  $("tocl").innerHTML=chapTitles.map(function(t,i){return '<button class="tci'+(i===idx?" on":"")+'" data-i="'+i+'">'+esc(t)+"</button>"}).join("");
+  var on=$("tocl").querySelector(".on");if(on)on.scrollIntoView({block:"center"});
+}
+$("tocb").onclick=function(){$("set").classList.add("hide");$("sp").classList.add("hide");var t=$("toc");t.classList.toggle("hide");if(!t.classList.contains("hide"))renderToc()};
+$("tocx").onclick=function(){$("toc").classList.add("hide")};
+$("tocl").addEventListener("click",function(e){var b=e.target.closest(".tci");if(!b)return;$("toc").classList.add("hide");show(+b.getAttribute("data-i"))});
 $("vRev").onclick=function(){rvOpen("rev")};$("vList").onclick=function(){rvOpen("list")};
 $("rvx").onclick=rvClose;$("rvt1").onclick=rvStart;$("rvt2").onclick=rvList;
 $("rvb").addEventListener("click",function(e){var d=e.target.closest(".vdel");if(d){vDel(d.getAttribute("data-w")).then(rvList)}});
@@ -1335,12 +1398,13 @@ async function openBook(f,fname){
     }
     if(!chapters.length)throw new Error("empty");
     $("empty").classList.add("hide");book.classList.remove("hide");
-    $("openb").classList.add("hide");$("sb").classList.remove("hide");$("eye").classList.remove("hide");
+    $("openb").classList.add("hide");$("sb").classList.remove("hide");$("tocb").classList.remove("hide");
     var d=document.createElement("div");
-    texts=chapters.map(function(h){d.innerHTML=h;return d.textContent});lower=texts.map(function(x){return x.toLowerCase()});
+    texts=chapters.map(function(h){d.innerHTML=h;return d.textContent});
+    chapTitles=chapters.map(function(h,i){d.innerHTML=h;var hd=d.querySelector("h1,h2,h3,h4");var t=(hd&&hd.textContent.trim()?hd.textContent:d.textContent).replace(/\s+/g," ").trim();return (t.length>70?t.slice(0,68)+"…":t)||("Глава "+(i+1))});lower=texts.map(function(x){return x.toLowerCase()});
     var pos=loadPos(),ok=pos&&pos.ch<chapters.length;
     show(ok?pos.ch:0);if(ok)gotoWord(pos.i);
-  }catch(err){if(!chapters.length){$("openb").classList.remove("hide");$("sb").classList.add("hide");$("eye").classList.add("hide")}$("empty").classList.remove("hide");$("empty").textContent="Не удалось прочитать этот EPUB."}
+  }catch(err){if(!chapters.length){$("openb").classList.remove("hide");$("sb").classList.add("hide");$("tocb").classList.add("hide")}$("empty").classList.remove("hide");$("empty").textContent="Не удалось прочитать этот EPUB."}
 }
 applyS();
 kv("b","readonly",function(s){return s.get("last")}).then(function(v){if(v&&v.buf)openBook(v.buf,v.name)});
