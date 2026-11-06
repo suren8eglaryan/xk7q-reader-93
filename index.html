@@ -15,7 +15,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--fg);font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif}
 .hide{display:none!important}
-#top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:8px;align-items:center;padding:8px 12px 26px;margin-bottom:-14px;background:linear-gradient(to bottom,var(--bg) 0,var(--bg) 55%,transparent 100%);font:15px -apple-system,Helvetica,sans-serif;pointer-events:none}
+#top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:8px;align-items:center;padding:16px 12px 16px;margin-bottom:-6px;background:linear-gradient(to bottom,var(--bg) 0,var(--bg) 70%,transparent 100%);font:15px -apple-system,Helvetica,sans-serif;pointer-events:none}
 #top>*{pointer-events:auto}
 #top button,#top label.btn{background:var(--bar)}
 #title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.55}
@@ -35,7 +35,7 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 .w,.r{border-radius:4px}
 .w.sel,.g.sel,.r.sel{color:var(--sel)}
 .w.hit{background:rgba(128,128,128,.3)}
-#set,#sp{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:6;max-height:75vh;overflow:auto;padding:12px;border-radius:14px;background:var(--bar);box-shadow:0 6px 24px rgba(0,0,0,.25);font:15px -apple-system,Helvetica,sans-serif;display:flex;flex-direction:column;gap:10px}
+#set,#sp{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 70px);z-index:6;max-height:75vh;overflow:auto;padding:12px;border-radius:14px;background:var(--bar);box-shadow:0 6px 24px rgba(0,0,0,.25);font:15px -apple-system,Helvetica,sans-serif;display:flex;flex-direction:column;gap:10px}
 #set div,#sp .top{display:flex;gap:8px;align-items:center}
 #set span{width:64px;flex:none}
 #set button{flex:1}
@@ -267,7 +267,7 @@ body.noscroll{overflow:hidden}
 #top .ic{display:flex;align-items:center;justify-content:center;padding:7px 10px;color:var(--fg)}
 #top #sb,#top #tocb{order:0}
 #eye{padding:0}
-#toc{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:6;max-height:75vh;overflow:auto;padding:12px;border-radius:14px;background:var(--bar);box-shadow:0 6px 24px rgba(0,0,0,.25);font:15px -apple-system,Helvetica,sans-serif}
+#toc{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 70px);z-index:6;max-height:75vh;overflow:auto;padding:12px;border-radius:14px;background:var(--bar);box-shadow:0 6px 24px rgba(0,0,0,.25);font:15px -apple-system,Helvetica,sans-serif}
 #toc .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 #toc .ic,#sp .ic{display:flex;align-items:center;justify-content:center;padding:6px;background:var(--bg)}
 #tocl{display:flex;flex-direction:column}
@@ -324,9 +324,9 @@ body.noscroll{overflow:hidden}
 body.hasbook #top:not(.menu)>*:not(#title){display:none!important}
 body.hasbook #top.menu>#title{display:none}
 body:not(.hasbook) #title{display:none}
-#bot{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:34px 16px calc(4px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--bg) 0,var(--bg) 62%,transparent 100%);pointer-events:none;font:11px -apple-system,Helvetica,sans-serif}
+#bot{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--bg) 0,var(--bg) 70%,transparent 100%);pointer-events:none;font:11px -apple-system,Helvetica,sans-serif}
 #bot .pw{display:flex;align-items:center;justify-content:center;gap:14px;max-width:340px;margin:0 auto}
-#prog{pointer-events:auto;flex:0 1 220px;display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:8px 0 4px;background:transparent;color:var(--fg);border-radius:0}
+#prog{pointer-events:auto;flex:0 1 220px;display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:8px 0;background:transparent;color:var(--fg);border-radius:0}
 #prog .trk{display:block;height:3px;border-radius:2px;background:rgba(128,128,128,.22);overflow:hidden;position:relative}
 #progf{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--fg);opacity:.5;border-radius:2px}
 #progt{text-align:center;opacity:.5;font-variant-numeric:tabular-nums;line-height:1}
@@ -334,7 +334,7 @@ body:not(.hasbook) #title{display:none}
 #bot.nav .pn{opacity:1;pointer-events:auto}
 #top #sb{margin-left:auto}
 #top #sb.hide~#aa{margin-left:auto}
-#fab{bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+#fab{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 </style>
 </head>
 <body>
@@ -370,7 +370,7 @@ body:not(.hasbook) #title{display:none}
   <div id="fol" class="fol"></div>
   <div class="sub">Книга</div>
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 00:45</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 00:55</div>
   </div>
   <div class="tp hide" id="tB">
   <div><span>Адрес</span><input id="aUrl" placeholder="https://…/v1" autocapitalize="off" autocorrect="off"></div>
