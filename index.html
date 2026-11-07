@@ -346,6 +346,9 @@ body.hasbook:not(.bars) #bot,body.hasbook:not(.bars) #top{pointer-events:none!im
 #bot::before{bottom:0;background:linear-gradient(to top,var(--bg) 0,var(--bg) calc(100% - var(--fd)),transparent 100%)}
 body.hasbook:not(.bars) #top{--ph:44px;--fd:14px}
 body.hasbook:not(.bars) #bot{--ph:max(44px,calc(31px + env(safe-area-inset-bottom,0px)));--fd:14px}
+#top{padding-left:var(--txl,12px)!important;padding-right:var(--txr,12px)!important}
+#bot{padding-left:var(--txl,16px)!important;padding-right:var(--txr,16px)!important}
+#bot .pw{max-width:none;margin:0;justify-content:space-between}
 </style>
 </head>
 <body>
@@ -381,7 +384,7 @@ body.hasbook:not(.bars) #bot{--ph:max(44px,calc(31px + env(safe-area-inset-botto
   <div id="fol" class="fol"></div>
   <div class="sub">Книга</div>
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 11:55</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 12:05</div>
   </div>
   <div class="tp hide" id="tB">
   <div><span>Адрес</span><input id="aUrl" placeholder="https://…/v1" autocapitalize="off" autocorrect="off"></div>
@@ -551,7 +554,7 @@ $("toast").onclick=function(){if(retry){var f=retry;retry=null;$("toast").classL
 function show(i){
   if(i<0||i>=chapters.length)return;
   idx=i;gen++;queue=[];paused=false;$("toast").classList.add("hide");
-  book.innerHTML=chapters[i];wrapWords(book);clearSel();window.scrollTo(0,0);document.body.classList.add("hasbook");$("bot").classList.remove("hide");setTimeout(function(){typeof progUpd==="function"&&progUpd()},0);book.querySelectorAll(SEL).forEach(function(e,k){e._k=k});paintedEl=null;watchEye();
+  book.innerHTML=chapters[i];wrapWords(book);clearSel();window.scrollTo(0,0);document.body.classList.add("hasbook");$("bot").classList.remove("hide");setTimeout(function(){typeof progUpd==="function"&&progUpd();edgeUpd()},0);book.querySelectorAll(SEL).forEach(function(e,k){e._k=k});paintedEl=null;watchEye();
 }
 var selW=[];
 var note=null,tapTok=0;
@@ -1292,7 +1295,7 @@ function applyS(){
   S.cSel?st.setProperty("--sel",S.cSel):st.removeProperty("--sel");
   [["cRu0","--ru0"],["cRu1","--ru1"],["cIp0","--ip0"],["cIp1","--ip1"]].forEach(function(p){S[p[0]]?st.setProperty(p[1],S[p[0]]):st.removeProperty(p[1])});
   $("eye").classList.toggle("off",!S.eye);if(typeof paintAct==="function"&&act)paintAct();$("cm").textContent=S.cap==="ru"?"СЛ":S.cap==="ph"?"ФР":"IPA";st.setProperty("--lh",S.lh||2.1);
-  book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";
+  book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";setTimeout(edgeUpd,0);
   var cs=getComputedStyle(de);
   $("cSel").value=S.cSel||cs.getPropertyValue("--sel").trim();
   [["cRu0","--ru0"],["cRu1","--ru1"],["cIp0","--ip0"],["cIp1","--ip1"]].forEach(function(p){$(p[0]).value=S[p[0]]||cs.getPropertyValue(p[1]).trim()});
@@ -1462,6 +1465,9 @@ document.addEventListener("click",function(e){
   var empty=(tg===bd||tg===document.documentElement||tg.closest("#book,#ovs"))&&!tg.closest(".w,.lb,a,img");
   if(empty)bd.classList.add("bars");
 },true);
+function edgeUpd(){var r=book.getBoundingClientRect();if(!r.width)return;var de=document.documentElement,cw=de.clientWidth;
+  de.style.setProperty("--txl",Math.round(r.left+S.pad)+"px");de.style.setProperty("--txr",Math.round(cw-r.right+S.pad)+"px")}
+window.addEventListener("resize",edgeUpd);
 function hideBars(){var t=$("top");document.body.classList.remove("bars");t.classList.remove("menu");$("bot").classList.remove("nav");["set","toc","sp"].forEach(function(id){$(id).classList.add("hide")})}
 function progUpd(){
   if(!chapters.length||!texts||!texts.length)return;
