@@ -368,6 +368,10 @@ body.sel #bot .sw *{pointer-events:auto!important}
 #shome #ob2{flex:1}
 #set .forow.spr span{opacity:.55}
 #set .tabs button svg{display:inline-block}
+#set .tp>div>button[data-a="t:white"]{background:#fff;color:#1d1d1b;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+#set .tp>div>button[data-a="t:beige"]{background:#f0eee0;color:#1d1d1b;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+#set .tp>div>button[data-a="t:dark"]{background:#1b1c1a;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+#set .tp>div>button.tsel{box-shadow:inset 0 0 0 2px var(--fg)!important;font-weight:600}
 </style>
 </head>
 <body>
@@ -382,10 +386,10 @@ body.sel #bot .sw *{pointer-events:auto!important}
 <div id="toc" class="hide"><div class="top"><b>Оглавление</b><button id="tocx" class="ic" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div><div id="tocl"></div></div>
 <div id="sp" class="hide"><div class="top"><input id="sq" type="search" placeholder="Поиск по книге"><button id="sgo">Найти</button><button id="sx" class="ic" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div><div id="scount"></div><div id="sres"></div></div>
 <div id="set" class="hide">
-  <div class="tabs" role="tablist"><button data-tab="tA">Аа</button><button data-tab="tD" aria-label="Оформление"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16.6A4.4 4.4 0 0 0 21 10.8C21 6.5 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.1"/><circle cx="10.5" cy="7.3" r="1.1"/><circle cx="15" cy="7.3" r="1.1"/></svg></button><button data-tab="tB">API</button><button data-tab="tC">Словарь</button></div>
+  <div class="tabs" role="tablist"><button data-tab="tA">Аа</button><button data-tab="tD" aria-label="Оформление"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16.6A4.4 4.4 0 0 0 21 10.8C21 6.5 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.1"/><circle cx="10.5" cy="7.3" r="1.1"/><circle cx="15" cy="7.3" r="1.1"/></svg></button><button data-tab="tB" aria-label="Ключ API"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><circle cx="8" cy="15" r="4"/><line x1="10.85" y1="12.15" x2="19" y2="4"/><line x1="16" y1="7" x2="18.5" y2="9.5"/><line x1="18" y1="5" x2="20.5" y2="7.5"/></svg></button><button data-tab="tC" aria-label="Словарь"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2v.5A1.5 1.5 0 0 0 5.5 21H19"/><line x1="8" y1="7.5" x2="15" y2="7.5"/><line x1="8" y1="11" x2="13" y2="11"/></svg></button></div>
   <div id="shome">
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 16:15</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 16:25</div>
   </div>
   <div class="tp hide" id="tA">
   <div class="sub">Текст книги</div>
@@ -1325,7 +1329,7 @@ function applyS(){
   de.setAttribute("data-theme",S.theme);st.setProperty("--cf",S.cf||1);
   S.cSel?st.setProperty("--sel",S.cSel):st.removeProperty("--sel");
   [["cRu0","--ru0"],["cRu1","--ru1"],["cIp0","--ip0"],["cIp1","--ip1"]].forEach(function(p){S[p[0]]?st.setProperty(p[1],S[p[0]]):st.removeProperty(p[1])});
-  $("eye").classList.toggle("off",!S.eye);if(typeof paintAct==="function"&&act)paintAct();$("cm").textContent=S.sc==="ipa"?"文A":"Æ";$("wp").textContent=S.sw==="w"?"Ph":"W";$("cm").classList.toggle("ae",S.sc!=="ipa");$("eyet").textContent=S.eye?"Вкл":"Выкл";document.querySelectorAll("[data-a^='cap:']").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-a")==="cap:"+S.cap)});st.setProperty("--lh",S.lh||2.1);
+  $("eye").classList.toggle("off",!S.eye);if(typeof paintAct==="function"&&act)paintAct();$("cm").textContent=S.sc==="ipa"?"文A":"Æ";$("wp").textContent=S.sw==="w"?"Ph":"W";$("cm").classList.toggle("ae",S.sc!=="ipa");$("eyet").textContent=S.eye?"Вкл":"Выкл";document.querySelectorAll("[data-a^='t:']").forEach(function(b){b.classList.toggle("tsel",b.getAttribute("data-a")==="t:"+S.theme)});document.querySelectorAll("[data-a^='cap:']").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-a")==="cap:"+S.cap)});st.setProperty("--lh",S.lh||2.1);
   book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";setTimeout(edgeUpd,0);
   var cs=getComputedStyle(de);
   $("cSel").value=S.cSel||cs.getPropertyValue("--sel").trim();
