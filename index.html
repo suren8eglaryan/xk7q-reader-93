@@ -352,8 +352,11 @@ body.hasbook:not(.bars) #bot{--ph:max(44px,calc(31px + env(safe-area-inset-botto
 /* selection bar */
 #bot .sw{display:none;align-items:center;gap:8px;height:36px}
 #bot .sw .sp{flex:1}
-#bot .ic{flex:none;height:36px;min-width:40px;display:flex;align-items:center;justify-content:center;padding:0 10px;background:var(--bar);color:var(--fg);border-radius:10px;text-decoration:none;opacity:1;box-shadow:none;font:600 15px -apple-system,Helvetica,sans-serif}
+#bot .ic{flex:none;height:36px;width:42px;min-width:0;display:flex;align-items:center;justify-content:center;padding:0 10px;background:var(--bar);color:var(--fg);border-radius:10px;text-decoration:none;opacity:1;box-shadow:none;font:600 15px -apple-system,Helvetica,sans-serif}
 body.sel #bot .sw{display:flex}
+#bot .sw .ic{padding:0;font-size:16px;letter-spacing:0}
+#bot #cm{font-size:17px}
+#bot .ic.dis{opacity:.4}
 body.sel #bot .pw{display:none}
 body.sel #bot{--ph:max(88px,calc(75px + env(safe-area-inset-bottom,0px)))!important;--fd:24px!important;pointer-events:auto!important}
 body.sel #bot>.sw{opacity:1!important;pointer-events:auto!important}
@@ -370,7 +373,7 @@ body.sel #bot .sw *{pointer-events:auto!important}
   <span id="title"></span>
   <button id="aa" class="ic" aria-label="Настройки"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
 </div>
-<div id="empty">Откройте EPUB-файл.<br>Тап по слову выделяет фразу. Над выделенной фразой появляется перевод, внизу — кнопки AI, IPA и Reverso.<br>Сначала введите адрес, ключ и модель: шестерёнка → API.</div>
+<div id="empty">Откройте EPUB-файл.<br>Тап по слову выделяет фразу. Над выделенной фразой появляется перевод, внизу — кнопки AI, W/Ph, æ и Reverso.<br>Сначала введите адрес, ключ и модель: шестерёнка → API.</div>
 <div id="toc" class="hide"><div class="top"><b>Оглавление</b><button id="tocx" class="ic" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div><div id="tocl"></div></div>
 <div id="sp" class="hide"><div class="top"><input id="sq" type="search" placeholder="Поиск по книге"><button id="sgo">Найти</button><button id="sx" class="ic" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div><div id="scount"></div><div id="sres"></div></div>
 <div id="set" class="hide">
@@ -396,7 +399,7 @@ body.sel #bot .sw *{pointer-events:auto!important}
   <div><span>Режим</span><button data-a="cap:ipa">IPA</button><button data-a="cap:ru">Слова</button><button data-a="cap:ph">Фразы</button></div>
   <div class="sub">Книга</div>
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 14:55</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 15:10</div>
   </div>
   <div class="tp hide" id="tB">
   <div><span>Адрес</span><input id="aUrl" placeholder="https://…/v1" autocapitalize="off" autocorrect="off"></div>
@@ -414,16 +417,16 @@ body.sel #bot .sw *{pointer-events:auto!important}
 <div id="book" class="hide" lang="en"></div>
 <div id="toast" class="hide"></div>
 <div id="rvw" class="hide"><div class="rvh"><button id="rvt1" class="on">Повторение</button><button id="rvt2">Все слова</button><button class="ib" id="rvx">✕</button></div><div id="rvb"></div></div>
-<div id="bot" class="hide"><div class="sw" id="selbar"><button id="fb" class="ic tx" aria-label="AI перевод">AI</button><span class="sp"></span><button id="cm" class="ic tx" aria-label="Транскрипция или перевод">IPA</button><a id="rv" class="ic btn" target="_blank" rel="noopener" aria-label="Reverso"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5a7.5 7.5 0 0 1 13.4-3.6"/><polyline points="18.6 3.4 18.4 7.2 14.6 7"/><path d="M19.5 13.5a7.5 7.5 0 0 1-13.4 3.6"/><polyline points="5.4 20.6 5.6 16.8 9.4 17"/></svg></a></div><div class="pw"><button id="prev" class="ic pn" aria-label="Предыдущая глава"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 5 8 12 15 19"/></svg></button><button id="prog" aria-label="Прогресс чтения"><span class="trk"><i id="progf"></i></span><span id="progt">0%</span></button><button id="next" class="ic pn" aria-label="Следующая глава"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 5 16 12 9 19"/></svg></button></div></div>
+<div id="bot" class="hide"><div class="sw" id="selbar"><button id="fb" class="ic tx" aria-label="AI перевод">AI</button><span class="sp"></span><button id="wp" class="ic tx" aria-label="Слово или фраза">W</button><button id="cm" class="ic tx" aria-label="Транскрипция или перевод">IPA</button><a id="rv" class="ic btn" target="_blank" rel="noopener" aria-label="Reverso"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5a7.5 7.5 0 0 1 13.4-3.6"/><polyline points="18.6 3.4 18.4 7.2 14.6 7"/><path d="M19.5 13.5a7.5 7.5 0 0 1-13.4 3.6"/><polyline points="5.4 20.6 5.6 16.8 9.4 17"/></svg></a></div><div class="pw"><button id="prev" class="ic pn" aria-label="Предыдущая глава"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 5 8 12 15 19"/></svg></button><button id="prog" aria-label="Прогресс чтения"><span class="trk"><i id="progf"></i></span><span id="progt">0%</span></button><button id="next" class="ic pn" aria-label="Следующая глава"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 5 16 12 9 19"/></svg></button></div></div>
 <div id="dim" class="hide"></div>
 <div id="sheet" class="sheet hide"></div>
 <script>
 var chapters=[],idx=0,bookId="book",gen=0,blocks=[],queue=[],active=0,paused=false,io=null;
 var $=function(i){return document.getElementById(i)},book=$("book");
-var S={fs:26,pad:36,theme:"white",ru:true,cap:"ipa",rf:"caveat",fo:["eye","fb","cm","rv"],sc:"ru",col:"links",cSel:null,cRu0:null,cRu1:null,cIp0:null,cIp1:null,rs:1,is:1,eye:false,lh:2.1,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
+var S={fs:26,pad:36,theme:"white",ru:true,cap:"ipa",rf:"caveat",fo:["eye","fb","cm","rv"],sc:"ru",sw:"ph",col:"links",cSel:null,cRu0:null,cRu1:null,cIp0:null,cIp1:null,rs:1,is:1,eye:false,lh:2.1,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
 if(!S.v6){S.v6=1;S.cIp1=null}
-if(S.sc!=="ipa")S.sc="ru";
+if(S.sc!=="ipa")S.sc="ru";if(S.sw!=="w")S.sw="ph";
 if(!S.v5){S.v5=1;S.cSel=null;S.cRu1=null}
 if(!S.v4){S.v4=1;S.rf="caveat";S.cRu1=null}
 if(!Array.isArray(S.fo)||S.fo.length!==4)S.fo=["eye","fb","cm","rv"];
@@ -665,7 +668,7 @@ function renderPara(el){
   });
   if(!S.eye&&el._pins)el._pins.forEach(function(p){var sn=ss[p.k];if(!sn)return;phr.push({ws:p.w.map(function(i){return el._ws[sn[0]+i]}).filter(Boolean),txt:p.txt,on:!!(a&&a.k===p.k&&sameIds(phIdsOf(a),p.w))})});
   phr=phr.filter(function(p){return !p.on});
-  if(a&&S.sc!=="ipa"){var sTx=a.idi?(a.idi.m&&a.idi.m[0]||""):(a.blk&&a.blk.ru&&a.blk.ru[0]||"");if(sTx)phr.push({ws:phIdsOf(a).map(function(i){return a.ws[i]}).filter(Boolean),txt:sTx,on:true})}
+  if(a&&S.sc!=="ipa"&&S.sw!=="w"){var sTx=a.idi?(a.idi.m&&a.idi.m[0]||""):(a.blk&&a.blk.ru&&a.blk.ru[0]||"");if(sTx)phr.push({ws:phIdsOf(a).map(function(i){return a.ws[i]}).filter(Boolean),txt:sTx,on:true})}
   if(!list.length&&!phr.length)return;
   var cs=getComputedStyle(el),F=parseFloat(cs.fontSize),fam=cs.fontFamily;
   var c=fmc(cs.fontStyle+" "+cs.fontWeight+" "+F+"px "+fam),mx=c.measureText("x"),xh=mx.actualBoundingBoxAscent||F*0.45,asc=mx.fontBoundingBoxAscent||F*0.9;
@@ -688,7 +691,7 @@ function renderPara(el){
     var rs=[].slice.call(rg.getClientRects()).filter(function(r){return r.width>1});
     if(!rs.length)return;
     if(it.on&&it.kind){var col=getComputedStyle(w).color;rs.forEach(function(r){ov.appendChild(line(r.left-br.left,r.top-br.top+asc+F*0.17,r.width,it.kind,col))})}
-    var txt=it.on?(S.sc==="ipa"?ip:""):(!S.eye||S.cap==="ph"?"":(S.cap==="ru"?ru:ip)),isRu=it.on?S.sc!=="ipa":S.cap==="ru";
+    var txt=it.on?(S.sc==="ipa"?ip:(S.sw==="w"?ru:"")):(!S.eye||S.cap==="ph"?"":(S.cap==="ru"?ru:ip)),isRu=it.on?S.sc!=="ipa":S.cap==="ru";
     if(txt&&isRu){txt=decor(txt,el,w,w);if(capSet[el._ws.indexOf(w)])txt=txt.charAt(0).toUpperCase()+txt.slice(1)}
     if(!txt)return;
     var fs=isRu?fsR:fsI;
@@ -1309,7 +1312,7 @@ function applyS(){
   de.setAttribute("data-theme",S.theme);st.setProperty("--cf",S.cf||1);
   S.cSel?st.setProperty("--sel",S.cSel):st.removeProperty("--sel");
   [["cRu0","--ru0"],["cRu1","--ru1"],["cIp0","--ip0"],["cIp1","--ip1"]].forEach(function(p){S[p[0]]?st.setProperty(p[1],S[p[0]]):st.removeProperty(p[1])});
-  $("eye").classList.toggle("off",!S.eye);if(typeof paintAct==="function"&&act)paintAct();$("cm").textContent=S.sc==="ipa"?"文A":"IPA";$("eyet").textContent=S.eye?"Вкл":"Выкл";document.querySelectorAll("[data-a^='cap:']").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-a")==="cap:"+S.cap)});st.setProperty("--lh",S.lh||2.1);
+  $("eye").classList.toggle("off",!S.eye);if(typeof paintAct==="function"&&act)paintAct();$("cm").textContent=S.sc==="ipa"?"文A":"æ";$("wp").textContent=S.sw==="w"?"Ph":"W";$("wp").classList.toggle("dis",S.sc==="ipa");$("eyet").textContent=S.eye?"Вкл":"Выкл";document.querySelectorAll("[data-a^='cap:']").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-a")==="cap:"+S.cap)});st.setProperty("--lh",S.lh||2.1);
   book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";setTimeout(edgeUpd,0);
   var cs=getComputedStyle(de);
   $("cSel").value=S.cSel||cs.getPropertyValue("--sel").trim();
@@ -1383,6 +1386,7 @@ $("rfSel").onchange=function(){S.rf=this.value;applyS();loadRF()};
 loadRF();
 $("eye").onclick=function(){S.eye=!S.eye;applyS();watchEye()};
 $("cm").onclick=function(){S.sc=S.sc==="ipa"?"ru":"ipa";applyS()};
+$("wp").onclick=function(){if(S.sc==="ipa")S.sc="ru";S.sw=S.sw==="w"?"ph":"w";applyS()};
 $("ob2").onclick=function(){$("set").classList.add("hide");$("file").click()};
 $("aPre").onchange=function(){if(this.value)$("aMod").value=this.value};
 function mstat(t,err){var e=$("mst");e.textContent=t;e.classList.remove("hide");e.style.color=err?"#d33":""}
