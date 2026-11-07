@@ -363,6 +363,11 @@ body.sel #bot>.sw{opacity:1!important;pointer-events:auto!important}
 body.sel #bot .sw *{pointer-events:auto!important}
 .eyeb{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:8px}
 .eyeb b{font-weight:500}
+#shome{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+#shome>div{display:flex;justify-content:center}
+#shome #ob2{flex:1}
+#set .forow.spr span{opacity:.55}
+#set .tabs button svg{display:inline-block}
 </style>
 </head>
 <body>
@@ -377,13 +382,16 @@ body.sel #bot .sw *{pointer-events:auto!important}
 <div id="toc" class="hide"><div class="top"><b>Оглавление</b><button id="tocx" class="ic" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div><div id="tocl"></div></div>
 <div id="sp" class="hide"><div class="top"><input id="sq" type="search" placeholder="Поиск по книге"><button id="sgo">Найти</button><button id="sx" class="ic" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div><div id="scount"></div><div id="sres"></div></div>
 <div id="set" class="hide">
-  <div class="tabs" role="tablist"><button data-tab="tA" class="on">Аа</button><button data-tab="tB">API</button><button data-tab="tC">Словарь</button></div>
-  <div class="tp" id="tA">
+  <div class="tabs" role="tablist"><button data-tab="tA">Аа</button><button data-tab="tD" aria-label="Оформление"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16.6A4.4 4.4 0 0 0 21 10.8C21 6.5 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.1"/><circle cx="10.5" cy="7.3" r="1.1"/><circle cx="15" cy="7.3" r="1.1"/></svg></button><button data-tab="tB">API</button><button data-tab="tC">Словарь</button></div>
+  <div id="shome">
+  <div><button id="ob2">Открыть другую книгу</button></div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 16:15</div>
+  </div>
+  <div class="tp hide" id="tA">
   <div class="sub">Текст книги</div>
   <div><span>Размер</span><button data-a="f-">A−</button><button data-a="f+">A+</button></div>
   <div><span>Строки</span><button data-a="l-">Теснее</button><button data-a="l+">Свободнее</button></div>
   <div><span>Поля</span><button data-a="p-">Меньше</button><button data-a="p+">Больше</button></div>
-  <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Беж.</button><button data-a="t:dark">Тёмный</button></div>
   <div><span>Выделение</span><input type="color" id="cSel"><button data-a="cs0">Сброс</button></div>
   <div class="sub">Подсказки над словами</div>
   <div><span>Шрифт</span><select id="rfSel"></select></div>
@@ -397,9 +405,13 @@ body.sel #bot .sw *{pointer-events:auto!important}
   <div class="sub">Подсказки у всех слов</div>
   <div><span>Показ</span><button id="eye" class="eyeb"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/><line class="sl" x1="3.5" y1="3.5" x2="20.5" y2="20.5"/></svg><b id="eyet">Выкл</b></button></div>
   <div><span>Режим</span><button data-a="cap:ipa">IPA</button><button data-a="cap:ru">Слова</button><button data-a="cap:ph">Фразы</button></div>
-  <div class="sub">Книга</div>
-  <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 15:45</div>
+  </div>
+  <div class="tp hide" id="tD">
+  <div class="sub">Тема</div>
+  <div><span>Фон</span><button data-a="t:white">Белый</button><button data-a="t:beige">Бежевый</button><button data-a="t:dark">Тёмный</button></div>
+  <div class="sub">Нижнее меню (слева направо)</div>
+  <div id="bol" class="fol"></div>
+  <div class="hint">«Промежуток» делит кнопки на левую и правую группы.</div>
   </div>
   <div class="tp hide" id="tB">
   <div><span>Адрес</span><input id="aUrl" placeholder="https://…/v1" autocapitalize="off" autocorrect="off"></div>
@@ -423,9 +435,10 @@ body.sel #bot .sw *{pointer-events:auto!important}
 <script>
 var chapters=[],idx=0,bookId="book",gen=0,blocks=[],queue=[],active=0,paused=false,io=null;
 var $=function(i){return document.getElementById(i)},book=$("book");
-var S={fs:26,pad:36,theme:"white",ru:true,cap:"ipa",rf:"caveat",fo:["eye","fb","cm","rv"],sc:"ru",sw:"ph",col:"links",cSel:null,cRu0:null,cRu1:null,cIp0:null,cIp1:null,rs:1,is:1,eye:false,lh:2.1,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
+var S={fs:26,pad:36,theme:"white",ru:true,cap:"ipa",rf:"caveat",fo:["eye","fb","cm","rv"],sc:"ru",sw:"ph",bo:["fb","sp","wp","cm","rv"],col:"links",cSel:null,cRu0:null,cRu1:null,cIp0:null,cIp1:null,rs:1,is:1,eye:false,lh:2.1,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
 if(!S.v6){S.v6=1;S.cIp1=null}
+if(!Array.isArray(S.bo)||S.bo.length!==5||["fb","sp","wp","cm","rv"].some(function(k){return S.bo.indexOf(k)<0}))S.bo=["fb","sp","wp","cm","rv"];
 if(S.sc!=="ipa")S.sc="ru";if(S.sw!=="w")S.sw="ph";
 if(!S.v5){S.v5=1;S.cSel=null;S.cRu1=null}
 if(!S.v4){S.v4=1;S.rf="caveat";S.cRu1=null}
@@ -1320,11 +1333,24 @@ function applyS(){
   try{localStorage.setItem("rr4",JSON.stringify(S))}catch(x){}
   rerenderAll();
 }
-$("aa").onclick=function(){$("toc").classList.add("hide");$("set").classList.toggle("hide");vCount()};
-document.querySelectorAll("#set .tabs button").forEach(function(b){b.onclick=function(){
-  document.querySelectorAll("#set .tabs button").forEach(function(x){x.classList.toggle("on",x===b)});
-  document.querySelectorAll("#set .tp").forEach(function(t){t.classList.toggle("hide",t.id!==b.getAttribute("data-tab"))});
-}});
+function setTab(id){
+  document.querySelectorAll("#set .tabs button").forEach(function(x){x.classList.toggle("on",x.getAttribute("data-tab")===id)});
+  document.querySelectorAll("#set .tp").forEach(function(t){t.classList.toggle("hide",t.id!==id)});
+  $("shome").classList.toggle("hide",!!id);if(id==="tD")renderBol();
+}
+$("aa").onclick=function(){$("toc").classList.add("hide");var st=$("set");st.classList.toggle("hide");if(!st.classList.contains("hide"))setTab("");vCount()};
+document.querySelectorAll("#set .tabs button").forEach(function(b){b.onclick=function(){var id=b.getAttribute("data-tab");setTab(b.classList.contains("on")?"":id)}});
+var BON={fb:"AI",wp:"W / Ph",cm:"Æ / 文A",rv:"Reverso",sp:"— промежуток —"};
+function renderSelBar(){var box=$("selbar");S.bo.forEach(function(k){var el=k==="sp"?box.querySelector(".sp"):$(k);if(el)box.appendChild(el)})}
+function renderBol(){
+  $("bol").innerHTML=S.bo.map(function(k,i){return '<div class="forow'+(k==="sp"?" spr":"")+'"><span>'+BON[k]+'</span><button data-bo="'+k+':up"'+(i===0?" disabled":"")+'>↑</button><button data-bo="'+k+':dn"'+(i===S.bo.length-1?" disabled":"")+'>↓</button></div>'}).join("");
+}
+$("bol").addEventListener("click",function(e){
+  var b=e.target.closest("[data-bo]");if(!b)return;var pr=b.getAttribute("data-bo").split(":"),i=S.bo.indexOf(pr[0]),j=pr[1]==="up"?i-1:i+1;
+  if(j<0||j>=S.bo.length)return;var t=S.bo[i];S.bo[i]=S.bo[j];S.bo[j]=t;
+  try{localStorage.setItem("rr4",JSON.stringify(S))}catch(x){}renderSelBar();renderBol();
+});
+renderSelBar();
 var chapTitles=[];
 var tocTree=null,tocOpen={};
 function tocFind(list){var best=null;(function walk(l){l.forEach(function(n){if(n.ch>=0&&n.ch<=idx&&(!best||n.ch>=best.ch))best=n;walk(n.k)})})(list);return best}
