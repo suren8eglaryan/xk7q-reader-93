@@ -321,8 +321,6 @@ body.noscroll{overflow:hidden}
 
 /* top menu toggle + bottom bar */
 #title{text-align:center;line-height:36px;min-height:36px;cursor:pointer;pointer-events:auto}
-body.hasbook #top:not(.menu)>*:not(#title){display:none!important}
-body.hasbook #top.menu>#title{display:none}
 body:not(.hasbook) #title{display:none}
 #bot{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:38px 16px 14px;background:linear-gradient(to top,var(--bg) 0,var(--bg) calc(100% - 24px),transparent 100%);pointer-events:none;font:11px -apple-system,Helvetica,sans-serif}
 #bot .pw{display:flex;align-items:center;justify-content:center;gap:14px;max-width:340px;margin:0 auto}
@@ -331,8 +329,8 @@ body:not(.hasbook) #title{display:none}
 #progf{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--fg);opacity:.5;border-radius:2px}
 #progt{position:absolute;left:0;right:0;top:calc(50% + 7px);text-align:center;opacity:.5;font-variant-numeric:tabular-nums;line-height:1}
 #bot .pn{flex:none;width:40px;height:34px;display:flex;align-items:center;justify-content:center;padding:0;background:var(--bar);color:var(--fg);opacity:0;pointer-events:none;transition:opacity .15s}
-#bot.nav .pn{opacity:1;pointer-events:auto}
-#top #sb{margin-left:auto}
+#bot .pn{opacity:1;pointer-events:auto}
+#top #tocb{order:1}#top #title{order:2;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#top #sb{order:3}#top #aa{order:4}
 #top #sb.hide~#aa{margin-left:auto}
 #fab{bottom:96px}
 /* auto-hide plates */
@@ -375,7 +373,7 @@ body.hasbook #bot,body.hasbook #top{pointer-events:auto!important}
   <div id="fol" class="fol"></div>
   <div class="sub">Книга</div>
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 10:20</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 11:25</div>
   </div>
   <div class="tp hide" id="tB">
   <div><span>Адрес</span><input id="aUrl" placeholder="https://…/v1" autocapitalize="off" autocorrect="off"></div>
@@ -1445,7 +1443,7 @@ function goHit(r,len){
 $("sb").onclick=function(){if(!chapters.length)return;$("sp").classList.toggle("hide");if(!$("sp").classList.contains("hide"))$("sq").focus()};
 $("sx").onclick=closeSearch;$("sgo").onclick=doSearch;
 $("sq").addEventListener("keydown",function(e){if(e.key==="Enter")doSearch()});
-$("title").onclick=function(e){e.stopPropagation();$("top").classList.add("menu")};
+
 document.addEventListener("click",function(e){
   var tg=e.target,bd=document.body;
   if(!bd.classList.contains("hasbook"))return;
@@ -1464,7 +1462,7 @@ function progUpd(){
   $("progf").style.width=pc.toFixed(2)+"%";
   $("progt").textContent=r+"%";
 }
-$("prog").onclick=function(){$("bot").classList.toggle("nav")};
+
 window.addEventListener("scroll",function(){requestAnimationFrame(progUpd)},{passive:true});
 window.addEventListener("resize",progUpd);
 $("prev").onclick=function(){show(idx-1)};$("next").onclick=function(){show(idx+1)};
