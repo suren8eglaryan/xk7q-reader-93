@@ -335,6 +335,10 @@ body:not(.hasbook) #title{display:none}
 #top #sb{margin-left:auto}
 #top #sb.hide~#aa{margin-left:auto}
 #fab{bottom:96px}
+/* auto-hide plates */
+#top,#bot{transition:opacity .2s}
+body.hasbook:not(.bars) #top,body.hasbook:not(.bars) #bot{opacity:0;pointer-events:none}
+body.hasbook:not(.bars) #top *,body.hasbook:not(.bars) #bot *{pointer-events:none!important}
 </style>
 </head>
 <body>
@@ -370,7 +374,7 @@ body:not(.hasbook) #title{display:none}
   <div id="fol" class="fol"></div>
   <div class="sub">Книга</div>
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 01:25</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 07:15</div>
   </div>
   <div class="tp hide" id="tB">
   <div><span>Адрес</span><input id="aUrl" placeholder="https://…/v1" autocapitalize="off" autocorrect="off"></div>
@@ -1442,11 +1446,14 @@ $("sx").onclick=closeSearch;$("sgo").onclick=doSearch;
 $("sq").addEventListener("keydown",function(e){if(e.key==="Enter")doSearch()});
 $("title").onclick=function(e){e.stopPropagation();$("top").classList.add("menu")};
 document.addEventListener("click",function(e){
-  if(!e.target.closest("#bot"))$("bot").classList.remove("nav");
-  var t=$("top");if(!t.classList.contains("menu"))return;
-  if(e.target.closest("#top,#set,#toc,#sp,.sheet,#dim,#rvw,#toast"))return;
-  t.classList.remove("menu");["set","toc","sp"].forEach(function(id){$(id).classList.add("hide")});
+  var tg=e.target,bd=document.body;
+  if(!bd.classList.contains("hasbook"))return;
+  if(tg.closest("#top,#bot,#set,#toc,#sp"))return;
+  if(bd.classList.contains("bars")){hideBars();return}
+  var empty=(tg===bd||tg===document.documentElement||tg.closest("#book,#ovs"))&&!tg.closest(".w,.lb,a,img");
+  if(empty)bd.classList.add("bars");
 },true);
+function hideBars(){var t=$("top");document.body.classList.remove("bars");t.classList.remove("menu");$("bot").classList.remove("nav");["set","toc","sp"].forEach(function(id){$(id).classList.add("hide")})}
 function progUpd(){
   if(!chapters.length||!texts||!texts.length)return;
   var tot=0,bef=0;for(var i=0;i<texts.length;i++){tot+=texts[i].length;if(i<idx)bef+=texts[i].length}
