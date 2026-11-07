@@ -168,8 +168,8 @@ button.on{font-weight:600;box-shadow:inset 0 0 0 1px rgba(128,128,128,.45)}
 #cm{opacity:.35;box-shadow:none;font-size:15px;letter-spacing:.02em}
 #rv{opacity:.35;color:var(--fg);text-decoration:none;box-shadow:none}
 #mst{font:13px -apple-system,Helvetica,sans-serif;opacity:.8;line-height:1.35}
-:root{--ru0:#cdcdcd;--ip0:#cdcdcd;--ru1:#000;--ip1:#7cc4a0}
-:root[data-theme="dark"]{--ru0:#5c5c56;--ip0:#5c5c56;--ru1:#fff;--ip1:#8ad6b0}
+:root{--ru0:#cdcdcd;--ip0:#cdcdcd;--ru1:#000;--ip1:#000}
+:root[data-theme="dark"]{--ru0:#5c5c56;--ip0:#5c5c56;--ru1:#fff;--ip1:#fff}
 :root[data-theme="beige"]{--ru0:#c6c2b6;--ip0:#c6c2b6}
 .w.ann{text-decoration:none!important}
 #ovs{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:2}
@@ -349,6 +349,17 @@ body.hasbook:not(.bars) #bot{--ph:max(44px,calc(31px + env(safe-area-inset-botto
 #top{padding-left:var(--txl,12px)!important;padding-right:var(--txr,12px)!important}
 #bot{padding-left:var(--txl,16px)!important;padding-right:var(--txr,16px)!important}
 #bot .pw{max-width:none;margin:0;justify-content:space-between}
+/* selection bar */
+#bot .sw{display:none;align-items:center;gap:8px;height:36px}
+#bot .sw .sp{flex:1}
+#bot .ic{flex:none;height:36px;min-width:40px;display:flex;align-items:center;justify-content:center;padding:0 10px;background:var(--bar);color:var(--fg);border-radius:10px;text-decoration:none;opacity:1;box-shadow:none;font:600 15px -apple-system,Helvetica,sans-serif}
+body.sel #bot .sw{display:flex}
+body.sel #bot .pw{display:none}
+body.sel #bot{--ph:max(88px,calc(75px + env(safe-area-inset-bottom,0px)))!important;--fd:24px!important;pointer-events:auto!important}
+body.sel #bot>.sw{opacity:1!important;pointer-events:auto!important}
+body.sel #bot .sw *{pointer-events:auto!important}
+.eyeb{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:8px}
+.eyeb b{font-weight:500}
 </style>
 </head>
 <body>
@@ -359,7 +370,7 @@ body.hasbook:not(.bars) #bot{--ph:max(44px,calc(31px + env(safe-area-inset-botto
   <span id="title"></span>
   <button id="aa" class="ic" aria-label="Настройки"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
 </div>
-<div id="empty">Откройте EPUB-файл.<br>Тап по слову выделяет фразу. Кнопки справа выдвигаются стрелочкой внизу экрана.<br>Сначала введите адрес, ключ и модель: шестерёнка → API.</div>
+<div id="empty">Откройте EPUB-файл.<br>Тап по слову выделяет фразу. Над выделенной фразой появляется перевод, внизу — кнопки AI, IPA и Reverso.<br>Сначала введите адрес, ключ и модель: шестерёнка → API.</div>
 <div id="toc" class="hide"><div class="top"><b>Оглавление</b><button id="tocx" class="ic" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div><div id="tocl"></div></div>
 <div id="sp" class="hide"><div class="top"><input id="sq" type="search" placeholder="Поиск по книге"><button id="sgo">Найти</button><button id="sx" class="ic" aria-label="Закрыть"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div><div id="scount"></div><div id="sres"></div></div>
 <div id="set" class="hide">
@@ -380,11 +391,12 @@ body.hasbook:not(.bars) #bot{--ph:max(44px,calc(31px + env(safe-area-inset-botto
   <div class="hint">Левый цвет — обычный, правый — у выделенной фразы.</div>
   <div class="sub">Карточки</div>
   <div><span>Размер</span><button data-a="c-">A−</button><button data-a="c+">A+</button></div>
-  <div class="sub">Кнопки справа (сверху вниз)</div>
-  <div id="fol" class="fol"></div>
+  <div class="sub">Подсказки у всех слов</div>
+  <div><span>Показ</span><button id="eye" class="eyeb"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/><line class="sl" x1="3.5" y1="3.5" x2="20.5" y2="20.5"/></svg><b id="eyet">Выкл</b></button></div>
+  <div><span>Режим</span><button data-a="cap:ipa">IPA</button><button data-a="cap:ru">Слова</button><button data-a="cap:ph">Фразы</button></div>
   <div class="sub">Книга</div>
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 12:05</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 14:55</div>
   </div>
   <div class="tp hide" id="tB">
   <div><span>Адрес</span><input id="aUrl" placeholder="https://…/v1" autocapitalize="off" autocorrect="off"></div>
@@ -402,15 +414,16 @@ body.hasbook:not(.bars) #bot{--ph:max(44px,calc(31px + env(safe-area-inset-botto
 <div id="book" class="hide" lang="en"></div>
 <div id="toast" class="hide"></div>
 <div id="rvw" class="hide"><div class="rvh"><button id="rvt1" class="on">Повторение</button><button id="rvt2">Все слова</button><button class="ib" id="rvx">✕</button></div><div id="rvb"></div></div>
-<div id="bot" class="hide"><div class="pw"><button id="prev" class="ic pn" aria-label="Предыдущая глава"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 5 8 12 15 19"/></svg></button><button id="prog" aria-label="Прогресс чтения"><span class="trk"><i id="progf"></i></span><span id="progt">0%</span></button><button id="next" class="ic pn" aria-label="Следующая глава"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 5 16 12 9 19"/></svg></button></div></div>
-<div id="fab" class="closed"><div id="fabb"><button id="eye" class="fc" aria-label="Подсказки"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/><line class="sl" x1="3.5" y1="3.5" x2="20.5" y2="20.5"/></svg></button><button id="fb" class="fc" aria-label="Перевод">文A</button><button id="cm" class="fc" aria-label="Транскрипция или перевод">IPA</button><a id="rv" class="fc" target="_blank" rel="noopener" aria-label="Reverso">R</a></div><button id="fabt" aria-label="Кнопки"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 5 8 12 15 19"/></svg></button></div>
+<div id="bot" class="hide"><div class="sw" id="selbar"><button id="fb" class="ic tx" aria-label="AI перевод">AI</button><span class="sp"></span><button id="cm" class="ic tx" aria-label="Транскрипция или перевод">IPA</button><a id="rv" class="ic btn" target="_blank" rel="noopener" aria-label="Reverso"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5a7.5 7.5 0 0 1 13.4-3.6"/><polyline points="18.6 3.4 18.4 7.2 14.6 7"/><path d="M19.5 13.5a7.5 7.5 0 0 1-13.4 3.6"/><polyline points="5.4 20.6 5.6 16.8 9.4 17"/></svg></a></div><div class="pw"><button id="prev" class="ic pn" aria-label="Предыдущая глава"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 5 8 12 15 19"/></svg></button><button id="prog" aria-label="Прогресс чтения"><span class="trk"><i id="progf"></i></span><span id="progt">0%</span></button><button id="next" class="ic pn" aria-label="Следующая глава"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 5 16 12 9 19"/></svg></button></div></div>
 <div id="dim" class="hide"></div>
 <div id="sheet" class="sheet hide"></div>
 <script>
 var chapters=[],idx=0,bookId="book",gen=0,blocks=[],queue=[],active=0,paused=false,io=null;
 var $=function(i){return document.getElementById(i)},book=$("book");
-var S={fs:26,pad:36,theme:"white",ru:true,cap:"ipa",rf:"caveat",fo:["eye","fb","cm","rv"],col:"links",cSel:null,cRu0:null,cRu1:null,cIp0:null,cIp1:null,rs:1,is:1,eye:false,lh:2.1,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
+var S={fs:26,pad:36,theme:"white",ru:true,cap:"ipa",rf:"caveat",fo:["eye","fb","cm","rv"],sc:"ru",col:"links",cSel:null,cRu0:null,cRu1:null,cIp0:null,cIp1:null,rs:1,is:1,eye:false,lh:2.1,cf:1,ital:false,always:false,api:{url:"https://openrouter.ai/api/v1",key:"",model:""}};
 try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign(S,sv)}catch(x){}
+if(!S.v6){S.v6=1;S.cIp1=null}
+if(S.sc!=="ipa")S.sc="ru";
 if(!S.v5){S.v5=1;S.cSel=null;S.cRu1=null}
 if(!S.v4){S.v4=1;S.rf="caveat";S.cRu1=null}
 if(!Array.isArray(S.fo)||S.fo.length!==4)S.fo=["eye","fb","cm","rv"];
@@ -562,7 +575,7 @@ function clearNote(){if(note&&note.parentNode)note.parentNode.removeChild(note);
 function clearSel(){
   closeSheet();tapTok++;busy(false,"",busyOwner);clearNote();
   act=null;selW=[];paintAct();upd();
-  $("fb").classList.remove("act");
+  $("fb").classList.remove("act");document.body.classList.remove("sel");
 }
 function upd(){
   var p=selW.map(function(w){return w.textContent}).join(" ");
@@ -651,6 +664,8 @@ function renderPara(el){
     if(S.cap==="ph")(d.b||[]).forEach(function(b){if(b.ru&&b.ru[0])phr.push({ws:b.w.map(function(i){return el._ws[sn[0]+i]}).filter(Boolean),txt:b.ru[0],on:!!(a&&+k===a.k&&a.blk&&sameIds(b.w,a.blk.w))})});
   });
   if(!S.eye&&el._pins)el._pins.forEach(function(p){var sn=ss[p.k];if(!sn)return;phr.push({ws:p.w.map(function(i){return el._ws[sn[0]+i]}).filter(Boolean),txt:p.txt,on:!!(a&&a.k===p.k&&sameIds(phIdsOf(a),p.w))})});
+  phr=phr.filter(function(p){return !p.on});
+  if(a&&S.sc!=="ipa"){var sTx=a.idi?(a.idi.m&&a.idi.m[0]||""):(a.blk&&a.blk.ru&&a.blk.ru[0]||"");if(sTx)phr.push({ws:phIdsOf(a).map(function(i){return a.ws[i]}).filter(Boolean),txt:sTx,on:true})}
   if(!list.length&&!phr.length)return;
   var cs=getComputedStyle(el),F=parseFloat(cs.fontSize),fam=cs.fontFamily;
   var c=fmc(cs.fontStyle+" "+cs.fontWeight+" "+F+"px "+fam),mx=c.measureText("x"),xh=mx.actualBoundingBoxAscent||F*0.45,asc=mx.fontBoundingBoxAscent||F*0.9;
@@ -673,7 +688,7 @@ function renderPara(el){
     var rs=[].slice.call(rg.getClientRects()).filter(function(r){return r.width>1});
     if(!rs.length)return;
     if(it.on&&it.kind){var col=getComputedStyle(w).color;rs.forEach(function(r){ov.appendChild(line(r.left-br.left,r.top-br.top+asc+F*0.17,r.width,it.kind,col))})}
-    var txt=!S.eye||S.cap==="ph"?"":(it.on?ru:(S.cap==="ru"?ru:ip)),isRu=it.on||S.cap==="ru";
+    var txt=it.on?(S.sc==="ipa"?ip:""):(!S.eye||S.cap==="ph"?"":(S.cap==="ru"?ru:ip)),isRu=it.on?S.sc!=="ipa":S.cap==="ru";
     if(txt&&isRu){txt=decor(txt,el,w,w);if(capSet[el._ws.indexOf(w)])txt=txt.charAt(0).toUpperCase()+txt.slice(1)}
     if(!txt)return;
     var fs=isRu?fsR:fsI;
@@ -1218,7 +1233,7 @@ function tapWord(w){
   var gTop=(wasOpen&&act&&act.el===o.el&&act.k===o.k&&$("b3"))?$("b3").scrollTop:0;
   act={w:w,el:o.el,k:o.k,sn:o.sn,ws:o.el._ws.slice(o.sn[0],o.sn[1]+1),id:id,A:null,pA:null,blk:null,idi:null,gTop:gTop,lv:2};
   selW=[w];upd();paintAct();
-  $("fb").classList.add("act");
+  $("fb").classList.add("act");document.body.classList.add("sel");document.body.classList.remove("bars");
   analyze(act,wasOpen);
 }
 $("sheet").addEventListener("click",function(e){
@@ -1294,7 +1309,7 @@ function applyS(){
   de.setAttribute("data-theme",S.theme);st.setProperty("--cf",S.cf||1);
   S.cSel?st.setProperty("--sel",S.cSel):st.removeProperty("--sel");
   [["cRu0","--ru0"],["cRu1","--ru1"],["cIp0","--ip0"],["cIp1","--ip1"]].forEach(function(p){S[p[0]]?st.setProperty(p[1],S[p[0]]):st.removeProperty(p[1])});
-  $("eye").classList.toggle("off",!S.eye);if(typeof paintAct==="function"&&act)paintAct();$("cm").textContent=S.cap==="ru"?"СЛ":S.cap==="ph"?"ФР":"IPA";st.setProperty("--lh",S.lh||2.1);
+  $("eye").classList.toggle("off",!S.eye);if(typeof paintAct==="function"&&act)paintAct();$("cm").textContent=S.sc==="ipa"?"文A":"IPA";$("eyet").textContent=S.eye?"Вкл":"Выкл";document.querySelectorAll("[data-a^='cap:']").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-a")==="cap:"+S.cap)});st.setProperty("--lh",S.lh||2.1);
   book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";setTimeout(edgeUpd,0);
   var cs=getComputedStyle(de);
   $("cSel").value=S.cSel||cs.getPropertyValue("--sel").trim();
@@ -1302,24 +1317,11 @@ function applyS(){
   try{localStorage.setItem("rr4",JSON.stringify(S))}catch(x){}
   rerenderAll();
 }
-$("aa").onclick=function(){$("toc").classList.add("hide");$("set").classList.toggle("hide");vCount();renderFol()};
+$("aa").onclick=function(){$("toc").classList.add("hide");$("set").classList.toggle("hide");vCount()};
 document.querySelectorAll("#set .tabs button").forEach(function(b){b.onclick=function(){
   document.querySelectorAll("#set .tabs button").forEach(function(x){x.classList.toggle("on",x===b)});
   document.querySelectorAll("#set .tp").forEach(function(t){t.classList.toggle("hide",t.id!==b.getAttribute("data-tab"))});
 }});
-var FON={eye:"Подсказки (глаз)",fb:"Перевод (文A)",cm:"IPA / СЛ / ФР",rv:"Reverso (R)"};
-function renderFab(){var box=$("fabb");S.fo.forEach(function(k){var el=$(k==="eye"?"eye":k);if(el)box.appendChild(el)})}
-function renderFol(){
-  var vis=S.fo.slice().reverse();
-  $("fol").innerHTML=vis.map(function(k,i){return '<div class="forow"><span>'+FON[k]+'</span><button data-fo="'+k+':up"'+(i===0?" disabled":"")+'>↑</button><button data-fo="'+k+':dn"'+(i===vis.length-1?" disabled":"")+'>↓</button></div>'}).join("");
-}
-$("fol").addEventListener("click",function(e){
-  var b=e.target.closest("[data-fo]");if(!b)return;var pr=b.getAttribute("data-fo").split(":"),i=S.fo.indexOf(pr[0]);
-  var j=pr[1]==="up"?i+1:i-1;if(j<0||j>=S.fo.length)return;var t=S.fo[i];S.fo[i]=S.fo[j];S.fo[j]=t;
-  try{localStorage.setItem("rr4",JSON.stringify(S))}catch(x){}renderFab();renderFol();
-});
-$("fabt").onclick=function(){$("fab").classList.toggle("closed")};
-renderFab();
 var chapTitles=[];
 var tocTree=null,tocOpen={};
 function tocFind(list){var best=null;(function walk(l){l.forEach(function(n){if(n.ch>=0&&n.ch<=idx&&(!best||n.ch>=best.ch))best=n;walk(n.k)})})(list);return best}
@@ -1355,6 +1357,7 @@ $("set").addEventListener("click",function(e){
   if(a==="f+")S.fs=Math.min(40,S.fs+1);
   if(a==="c-")S.cf=Math.max(0.8,+(S.cf-0.08).toFixed(2));
   if(a==="c+")S.cf=Math.min(1.6,+(S.cf+0.08).toFixed(2));
+  if(a.indexOf("cap:")===0)S.cap=a.slice(4);
   if(a==="p-")S.pad=Math.max(4,S.pad-4);
   if(a==="p+")S.pad=Math.min(90,S.pad+4);
   if(a.indexOf("t:")===0)S.theme=a.slice(2);
@@ -1379,7 +1382,7 @@ $("rfSel").value=S.rf||"bad";
 $("rfSel").onchange=function(){S.rf=this.value;applyS();loadRF()};
 loadRF();
 $("eye").onclick=function(){S.eye=!S.eye;applyS();watchEye()};
-$("cm").onclick=function(){S.cap=S.cap==="ipa"?"ru":S.cap==="ru"?"ph":"ipa";applyS();toast(S.cap==="ipa"?"Над словами: транскрипция":S.cap==="ru"?"Над словами: перевод слов":"Над фразами: перевод фраз",1)};
+$("cm").onclick=function(){S.sc=S.sc==="ipa"?"ru":"ipa";applyS()};
 $("ob2").onclick=function(){$("set").classList.add("hide");$("file").click()};
 $("aPre").onchange=function(){if(this.value)$("aMod").value=this.value};
 function mstat(t,err){var e=$("mst");e.textContent=t;e.classList.remove("hide");e.style.color=err?"#d33":""}
@@ -1459,6 +1462,7 @@ document.addEventListener("click",function(e){
   var tg=e.target,bd=document.body;
   if(!bd.classList.contains("hasbook"))return;
   var shown=bd.classList.contains("bars");
+  if(bd.classList.contains("sel")&&tg.closest("#bot"))return;
   if(tg.closest("#top,#bot")){if(!shown){bd.classList.add("bars");e.stopPropagation();e.preventDefault()}return}
   if(tg.closest("#set,#toc,#sp"))return;
   if(shown){hideBars();return}
