@@ -326,19 +326,20 @@ body.hasbook #top.menu>#title{display:none}
 body:not(.hasbook) #title{display:none}
 #bot{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:38px 16px 14px;background:linear-gradient(to top,var(--bg) 0,var(--bg) calc(100% - 24px),transparent 100%);pointer-events:none;font:11px -apple-system,Helvetica,sans-serif}
 #bot .pw{display:flex;align-items:center;justify-content:center;gap:14px;max-width:340px;margin:0 auto}
-#prog{pointer-events:auto;flex:0 1 220px;display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:5px 0;background:transparent;color:var(--fg);border-radius:0}
+#prog{pointer-events:auto;position:relative;flex:0 1 220px;display:flex;flex-direction:column;justify-content:center;align-items:stretch;height:34px;padding:0;background:transparent;color:var(--fg);border-radius:0}
 #prog .trk{display:block;height:3px;border-radius:2px;background:rgba(128,128,128,.22);overflow:hidden;position:relative}
 #progf{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--fg);opacity:.5;border-radius:2px}
-#progt{text-align:center;opacity:.5;font-variant-numeric:tabular-nums;line-height:1}
+#progt{position:absolute;left:0;right:0;top:calc(50% + 7px);text-align:center;opacity:.5;font-variant-numeric:tabular-nums;line-height:1}
 #bot .pn{flex:none;width:40px;height:34px;display:flex;align-items:center;justify-content:center;padding:0;background:var(--bar);color:var(--fg);opacity:0;pointer-events:none;transition:opacity .15s}
 #bot.nav .pn{opacity:1;pointer-events:auto}
 #top #sb{margin-left:auto}
 #top #sb.hide~#aa{margin-left:auto}
 #fab{bottom:96px}
 /* auto-hide plates */
-#top,#bot{transition:opacity .2s}
-body.hasbook:not(.bars) #top,body.hasbook:not(.bars) #bot{opacity:0;pointer-events:none}
+#top>*,#bot>*{transition:opacity .2s}
+body.hasbook:not(.bars) #top>*,body.hasbook:not(.bars) #bot>*{opacity:0;pointer-events:none!important}
 body.hasbook:not(.bars) #top *,body.hasbook:not(.bars) #bot *{pointer-events:none!important}
+body.hasbook #bot,body.hasbook #top{pointer-events:auto!important}
 </style>
 </head>
 <body>
@@ -374,7 +375,7 @@ body.hasbook:not(.bars) #top *,body.hasbook:not(.bars) #bot *{pointer-events:non
   <div id="fol" class="fol"></div>
   <div class="sub">Книга</div>
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 07:15</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 10:20</div>
   </div>
   <div class="tp hide" id="tB">
   <div><span>Адрес</span><input id="aUrl" placeholder="https://…/v1" autocapitalize="off" autocorrect="off"></div>
@@ -1448,10 +1449,10 @@ $("title").onclick=function(e){e.stopPropagation();$("top").classList.add("menu"
 document.addEventListener("click",function(e){
   var tg=e.target,bd=document.body;
   if(!bd.classList.contains("hasbook"))return;
-  if(tg.closest("#top,#bot,#set,#toc,#sp"))return;
-  if(bd.classList.contains("bars")){hideBars();return}
-  var empty=(tg===bd||tg===document.documentElement||tg.closest("#book,#ovs"))&&!tg.closest(".w,.lb,a,img");
-  if(empty)bd.classList.add("bars");
+  var shown=bd.classList.contains("bars");
+  if(tg.closest("#top,#bot")){if(!shown){bd.classList.add("bars");e.stopPropagation();e.preventDefault()}return}
+  if(tg.closest("#set,#toc,#sp"))return;
+  if(shown)hideBars();
 },true);
 function hideBars(){var t=$("top");document.body.classList.remove("bars");t.classList.remove("menu");$("bot").classList.remove("nav");["set","toc","sp"].forEach(function(id){$(id).classList.add("hide")})}
 function progUpd(){
