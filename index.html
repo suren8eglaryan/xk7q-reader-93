@@ -334,7 +334,7 @@ body:not(.hasbook) #title{display:none}
 #progt{position:absolute;left:0;right:0;top:calc(50% + 7px);text-align:center;opacity:.5;font-variant-numeric:tabular-nums;line-height:1}
 #bot .pn{flex:none;width:40px;height:36px;display:flex;align-items:center;justify-content:center;padding:0;background:var(--bar);color:var(--fg);opacity:0;pointer-events:none;transition:opacity .15s}
 #bot .pn{opacity:1;pointer-events:auto}
-#top #tocb{order:1}#top #title{order:2;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#top #sb{order:3}#top #aa{order:4}
+#top #tocb{order:1}#top #sb{order:2}#top #title{order:3;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#top #eye{order:4}#top #aa{order:5}
 #top #sb.hide~#aa{margin-left:auto}
 #fab{bottom:max(96px,calc(83px + env(safe-area-inset-bottom,0px)))}
 /* auto-hide plates */
@@ -377,6 +377,11 @@ body.sel #bot .sw *{pointer-events:auto!important}
 #set .tp>div>button[data-a="t:dark"]{background:#1b1c1a;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 #set .tp>div>button.tsel{box-shadow:inset 0 0 0 2px var(--fg)!important;font-weight:600}
 #set .tp>div>b.val{flex:none;width:52px;text-align:center;font-weight:500;font-size:14px;opacity:.7;font-variant-numeric:tabular-nums}
+#eyem{position:absolute;z-index:9;display:flex;flex-direction:column;gap:8px}
+#eyem .ic{width:100%;height:36px;padding:0;display:flex;align-items:center;justify-content:center;font:600 16px -apple-system,Helvetica,sans-serif;color:var(--fg);background:var(--bar);box-shadow:0 2px 10px rgba(0,0,0,.12)}
+#eyem .ic.on{box-shadow:inset 0 0 0 2px var(--fg)}
+#top #eye{padding:7px 10px;width:auto;height:auto}
+#secp{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(max(88px,calc(75px + env(safe-area-inset-bottom,0px))) + 8px);z-index:6;padding:5px 12px;border-radius:12px;background:var(--bar);color:var(--fg);font:12px -apple-system,Helvetica,sans-serif;opacity:.85;pointer-events:none;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -385,6 +390,8 @@ body.sel #bot .sw *{pointer-events:auto!important}
   <button id="tocb" class="ic hide" aria-label="Оглавление"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg></button>
   <button id="sb" class="ic hide" aria-label="Поиск"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><line x1="16" y1="16" x2="20.5" y2="20.5"/></svg></button>
   <span id="title"></span>
+  <button id="eye" class="ic hide" aria-label="Подсказки"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/><line class="sl" x1="3.5" y1="3.5" x2="20.5" y2="20.5"/></svg></button>
+  <div id="eyem" class="hide"><button data-em="ru" class="ic">文A</button><button data-em="ipa" class="ic">Æ</button><button data-em="off" class="ic" aria-label="Скрыть все"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/><line x1="3.5" y1="3.5" x2="20.5" y2="20.5"/></svg></button></div>
   <button id="aa" class="ic" aria-label="Настройки"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
 </div>
 <div id="empty">Откройте EPUB-файл.<br>Тап по слову выделяет фразу. Над выделенной фразой появляется перевод, внизу — кнопки AI, ластик, W/Ph, Æ и Reverso.<br>Сначала введите адрес, ключ и модель: шестерёнка → API.</div>
@@ -394,7 +401,7 @@ body.sel #bot .sw *{pointer-events:auto!important}
   <div class="tabs" role="tablist"><button data-tab="tA">Аа</button><button data-tab="tD" aria-label="Оформление"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16.6A4.4 4.4 0 0 0 21 10.8C21 6.5 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.1"/><circle cx="10.5" cy="7.3" r="1.1"/><circle cx="15" cy="7.3" r="1.1"/></svg></button><button data-tab="tB" aria-label="Ключ API"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><circle cx="8" cy="15" r="4"/><line x1="10.85" y1="12.15" x2="19" y2="4"/><line x1="16" y1="7" x2="18.5" y2="9.5"/><line x1="18" y1="5" x2="20.5" y2="7.5"/></svg></button><button data-tab="tC" aria-label="Словарь"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2v.5A1.5 1.5 0 0 0 5.5 21H19"/><line x1="8" y1="7.5" x2="15" y2="7.5"/><line x1="8" y1="11" x2="13" y2="11"/></svg></button></div>
   <div id="shome">
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-07 · 19:10</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-15 · 01:40</div>
   </div>
   <div class="tp hide" id="tA">
   <div class="sub">Текст книги</div>
@@ -411,8 +418,6 @@ body.sel #bot .sw *{pointer-events:auto!important}
   <div class="hint">Левый цвет — обычный, правый — у выделенной фразы.</div>
   <div class="sub">Карточки</div>
   <div><span>Размер</span><button data-a="c-">A−</button><button data-a="c+">A+</button></div>
-  <div class="sub">Подсказки у всех слов</div>
-  <div><span>Показ</span><button id="eye" class="eyeb"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/><line class="sl" x1="3.5" y1="3.5" x2="20.5" y2="20.5"/></svg><b id="eyet">Выкл</b></button></div>
   </div>
   <div class="tp hide" id="tD">
   <div class="sub">Тема</div>
@@ -448,7 +453,7 @@ try{var sv=JSON.parse(localStorage.getItem("rr4")||"null");if(sv)S=Object.assign
 if(!S.v6){S.v6=1;S.cIp1=null}
 if(Array.isArray(S.bo)&&S.bo.indexOf("er")<0){var wi=S.bo.indexOf("wp");S.bo.splice(wi<0?S.bo.length:wi,0,"er")}
 if(!Array.isArray(S.bo)||S.bo.length!==6||["fb","sp","er","wp","cm","rv"].some(function(k){return S.bo.indexOf(k)<0}))S.bo=["fb","sp","er","wp","cm","rv"];
-if(S.sc!=="ipa")S.sc="ru";if(S.sw!=="w")S.sw="ph";
+if(S.sc!=="ipa")S.sc="ru";if(S.cap!=="ipa")S.cap="ru";if(S.sw!=="w")S.sw="ph";
 if(!S.v5){S.v5=1;S.cSel=null;S.cRu1=null}
 if(!S.v4){S.v4=1;S.rf="caveat";S.cRu1=null}
 if(!Array.isArray(S.fo)||S.fo.length!==4)S.fo=["eye","fb","cm","rv"];
@@ -594,7 +599,7 @@ $("toast").onclick=function(){if(retry){var f=retry;retry=null;$("toast").classL
 function show(i){
   if(i<0||i>=chapters.length)return;
   idx=i;gen++;queue=[];paused=false;$("toast").classList.add("hide");
-  book.innerHTML=chapters[i];wrapWords(book);clearSel();window.scrollTo(0,0);document.body.classList.add("hasbook");$("bot").classList.remove("hide");setTimeout(function(){typeof progUpd==="function"&&progUpd();edgeUpd()},0);book.querySelectorAll(SEL).forEach(function(e,k){e._k=k});paintedEl=null;watchEye();
+  secKey=null;secTot=0;eq=[];if($("secp"))$("secp").classList.add("hide");book.innerHTML=chapters[i];wrapWords(book);clearSel();window.scrollTo(0,0);document.body.classList.add("hasbook");$("bot").classList.remove("hide");setTimeout(function(){typeof progUpd==="function"&&progUpd();edgeUpd()},0);book.querySelectorAll(SEL).forEach(function(e,k){e._k=k});paintedEl=null;watchEye();
 }
 var selW=[];
 var note=null,tapTok=0;
@@ -692,7 +697,8 @@ function renderPara(el){
   });
   if(!S.eye&&el._pins)el._pins.forEach(function(p){var sn=ss[p.k];if(!sn)return;phr.push({ws:p.w.map(function(i){return el._ws[sn[0]+i]}).filter(Boolean),txt:p.txt,on:!!(a&&a.k===p.k&&sameIds(phIdsOf(a),p.w))})});
   phr=phr.filter(function(p){return !p.on});
-  if(a&&S.sc!=="ipa"&&S.sw!=="w"){var sTx=a.idi?(a.idi.m&&a.idi.m[0]||""):(a.blk&&a.blk.ru&&a.blk.ru[0]||"");if(sTx)phr.push({ws:phIdsOf(a).map(function(i){return a.ws[i]}).filter(Boolean),txt:sTx,on:true})}
+  var sm=selMode();
+  if(a&&sm!=="ipa"&&S.sw!=="w"){var sTx=a.idi?(a.idi.m&&a.idi.m[0]||""):(a.blk&&a.blk.ru&&a.blk.ru[0]||"");if(sTx)phr.push({ws:phIdsOf(a).map(function(i){return a.ws[i]}).filter(Boolean),txt:sTx,on:true})}
   if(!list.length&&!phr.length)return;
   var cs=getComputedStyle(el),F=parseFloat(cs.fontSize),fam=cs.fontFamily;
   var c=fmc(cs.fontStyle+" "+cs.fontWeight+" "+F+"px "+fam),mx=c.measureText("x"),xh=mx.actualBoundingBoxAscent||F*0.45,asc=mx.fontBoundingBoxAscent||F*0.9;
@@ -715,7 +721,7 @@ function renderPara(el){
     var rs=[].slice.call(rg.getClientRects()).filter(function(r){return r.width>1});
     if(!rs.length)return;
     if(it.on&&it.kind){var col=getComputedStyle(w).color;rs.forEach(function(r){ov.appendChild(line(r.left-br.left,r.top-br.top+asc+F*0.17,r.width,it.kind,col))})}
-    var txt=it.on?(S.sc==="ipa"?ip:(S.sw==="w"?ru:"")):(!S.eye||S.cap==="ph"?"":(S.cap==="ru"?ru:ip)),isRu=it.on?S.sc!=="ipa":S.cap==="ru";
+    var txt=it.on?(sm==="ipa"?ip:(S.sw==="w"?ru:"")):(!S.eye?"":(S.cap==="ipa"?ip:ru)),isRu=it.on?sm!=="ipa":S.cap!=="ipa";
     if(txt&&isRu){txt=decor(txt,el,w,w);if(capSet[el._ws.indexOf(w)])txt=txt.charAt(0).toUpperCase()+txt.slice(1)}
     if(!txt)return;
     var fs=isRu?fsR:fsI;
@@ -873,31 +879,59 @@ function stepLevel0(a){a.lv=2;stepLevel(a)}
 /* eye: annotate whole visible text */
 var eq=[],eAct=0,ePause=false,eio=null;
 function mkA(el,k){var sn=sents(el)[k];return{w:el._ws[sn[0]],el:el,k:k,sn:sn,ws:el._ws.slice(sn[0],sn[1]+1),id:0,A:null,pA:null}}
+function leafEls(){return [].slice.call(book.querySelectorAll(SEL)).filter(function(e){return !e.querySelector(SEL)&&e.querySelector(".w")})}
+function isHead(el){
+  if(/^H[1-6]$/.test(el.tagName))return true;
+  var t=el.textContent.replace(/\s+/g," ").trim();if(!t||t.length>80||/[.!?…:;,]["”’»)]?$/.test(t))return false;
+  return getComputedStyle(el).textAlign==="center";
+}
+function sectionEls(el){
+  var all=leafEls(),i=all.indexOf(el);if(i<0)return [el];
+  var a=i;while(a>0&&!isHead(all[a]))a--;
+  var b=i+1;while(b<all.length&&!isHead(all[b]))b++;
+  return {els:all.slice(a,b),pos:i-a};
+}
+var secKey=null,secTot=0,secDone=0;
+function secShow(){
+  var p=$("secp");if(!p){p=document.createElement("div");p.id="secp";document.body.appendChild(p)}
+  if(secTot&&secDone<secTot){p.textContent="Перевод раздела: "+secDone+" / "+secTot;p.classList.remove("hide")}else p.classList.add("hide");
+}
+function queueSection(el){
+  if(!el||!book.contains(el))return;
+  var sc=sectionEls(el);if(!sc.els)return;var head=sc.els[0];
+  if(secKey===head&&head._sg===gen)return;
+  secKey=head;head._sg=gen;
+  var order=sc.els.slice(sc.pos).concat(sc.els.slice(0,sc.pos).reverse()),jobs=[];
+  order.forEach(function(e){
+    if(!e._ws)e._ws=[].slice.call(e.querySelectorAll(".w"));
+    sents(e).forEach(function(_,k){if(!(e._A&&e._A[k]))jobs.push({el:e,k:k,g:gen})});
+  });
+  jobs=jobs.slice(0,300);
+  eq=jobs;secTot=jobs.length;secDone=0;secShow();epump();
+}
 function watchEye(){
-  eq=[];ePause=false;if(eio){eio.disconnect();eio=null}
-  if(!S.eye||!S.auto||book.classList.contains("hide"))return;
+  if(eio){eio.disconnect();eio=null}
+  if(book.classList.contains("hide"))return;
+  if(S.eye)book.querySelectorAll(SEL).forEach(function(e){if(e._A)renderPara(e)});
+  if(!S.eye)return;
   eio=new IntersectionObserver(function(es){
-    es.forEach(function(e){
-      if(!e.isIntersecting)return;var el=e.target;eio.unobserve(el);
-      if(!el._ws)el._ws=[].slice.call(el.querySelectorAll(".w"));
-      sents(el).forEach(function(_,k){eq.push({el:el,k:k,g:gen})});
-    });
-    epump();
-  },{rootMargin:"600px 0px 900px 0px"});
-  book.querySelectorAll(SEL).forEach(function(e){if(!e.querySelector(SEL)&&e.querySelector(".w"))eio.observe(e)});
+    es.forEach(function(e){if(e.isIntersecting)queueSection(e.target)});
+  },{rootMargin:"0px"});
+  leafEls().forEach(function(e){eio.observe(e)});
 }
 function epump(){
-  while(!ePause&&eAct<2&&eq.length){
+  while(!ePause&&eAct<3&&eq.length){
     var j=eq.shift();
-    if(j.g!==gen||!S.eye)continue;
-    if(j.el._A&&j.el._A[j.k]){renderPara(j.el);continue}
+    if(j.g!==gen)continue;
+    if(j.el._A&&j.el._A[j.k]){secDone++;secShow();if(S.eye)renderPara(j.el);continue}
     eAct++;
     (function(j){
-      getA(mkA(j.el,j.k)).then(function(){if(j.g===gen&&S.eye)renderPara(j.el)},function(e){
+      getA(mkA(j.el,j.k)).then(function(){if(j.g!==gen)return;secDone++;secShow();if(S.eye||j.el._ov)renderPara(j.el)},function(e){
         if(j.g!==gen)return;eq.unshift(j);ePause=true;retry=function(){ePause=false;epump()};toast(e.message);
       }).then(function(){eAct--;epump()});
     })(j);
   }
+  if(!eq.length&&!eAct){secTot=0;secShow()}
 }
 function closeSheet(){
   cardTok++;clearInterval(ldIv);
@@ -962,7 +996,7 @@ function ctxUser(a){
   if(ws[sn[1]+1])rg.setEndBefore(ws[sn[1]+1]);else rg.setEnd(o,o.childNodes.length);
   return "Words:\n"+a.ws.map(function(w,i){return i+":"+w.textContent}).join(" ")+"\n\nSentence:\n"+rg.toString().replace(/\s+/g," ").trim()+"\n\nParagraph (context only):\n"+o.textContent.replace(/\s+/g," ").trim().slice(0,1200);
 }
-function akey(a){return "m9|"+hash(ctxUser(a))}
+function akey(a){return "m10|"+hash(ctxUser(a))}
 function getA(a){
   if(a.pA)return a.pA;
   var P=a.el._P||(a.el._P={});
@@ -974,7 +1008,7 @@ async function getA0(a){
   if(a.A)return a.A;
   var o=a.el;o._A=o._A||{};
   if(o._A[a.k]){a.A=o._A[a.k];return a.A}
-  var n=a.ws.length,user=ctxUser(a),key="m6|"+hash(user),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw&&raw.v===2?raw.d:null;
+  var n=a.ws.length,user=ctxUser(a),key=akey(a),raw=await kv("t","readonly",function(st){return st.get(key)}),d=raw&&raw.v===2?raw.d:null;
   a.keyA=key;
   if(!d){
     var best=null;
@@ -1230,7 +1264,7 @@ function redo(){
   analyze(a,true);
 }
 async function analyze(a,reopen){
-  var my=++tapTok;
+  var my=++tapTok;setTimeout(function(){queueSection(a.el)},0);
   busy(true,"Анализирую…",my);
   try{await getA(a)}
   catch(e){busy(false,"",my);if(act===a){retry=function(){analyze(a,reopen)};toast(e.message)}return}
@@ -1338,7 +1372,7 @@ function applyS(){
   de.setAttribute("data-theme",S.theme);st.setProperty("--cf",S.cf||1);
   S.cSel?st.setProperty("--sel",S.cSel):st.removeProperty("--sel");
   [["cRu0","--ru0"],["cRu1","--ru1"],["cIp0","--ip0"],["cIp1","--ip1"]].forEach(function(p){S[p[0]]?st.setProperty(p[1],S[p[0]]):st.removeProperty(p[1])});
-  $("eye").classList.toggle("off",!S.eye);if(typeof paintAct==="function"&&act)paintAct();$("cm").textContent=S.sc==="ipa"?"文A":"Æ";$("wp").textContent=S.sw==="w"?"Ph":"W";$("cm").classList.toggle("ae",S.sc!=="ipa");$("eyet").textContent=S.eye?"Вкл":"Выкл";$("rsv").textContent=Math.round(S.fs*0.6*rf().sc*(S.rs||1));$("isv").textContent=Math.round(S.fs*0.48*(S.is||1));$("fsv").textContent=S.fs;document.querySelectorAll("[data-a^='t:']").forEach(function(b){b.classList.toggle("tsel",b.getAttribute("data-a")==="t:"+S.theme)});document.querySelectorAll("[data-a^='cap:']").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-a")==="cap:"+S.cap)});st.setProperty("--lh",S.lh||2.1);
+  $("eye").classList.toggle("off",!S.eye);document.querySelectorAll("#eyem [data-em]").forEach(function(b){var m=b.getAttribute("data-em");b.classList.toggle("on",m==="off"?!S.eye:(S.eye&&S.cap===m))});if(typeof paintAct==="function"&&act)paintAct();$("cm").textContent=selMode()==="ipa"?"文A":"Æ";$("wp").textContent=S.sw==="w"?"Ph":"W";$("cm").classList.toggle("ae",selMode()!=="ipa");$("rsv").textContent=Math.round(S.fs*0.6*rf().sc*(S.rs||1));$("isv").textContent=Math.round(S.fs*0.48*(S.is||1));$("fsv").textContent=S.fs;document.querySelectorAll("[data-a^='t:']").forEach(function(b){b.classList.toggle("tsel",b.getAttribute("data-a")==="t:"+S.theme)});document.querySelectorAll("[data-a^='cap:']").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-a")==="cap:"+S.cap)});st.setProperty("--lh",S.lh||2.1);
   book.style.fontSize=S.fs+"px";book.style.paddingLeft=book.style.paddingRight=S.pad+"px";setTimeout(edgeUpd,0);
   var cs=getComputedStyle(de);
   $("cSel").value=S.cSel||cs.getPropertyValue("--sel").trim();
@@ -1421,10 +1455,15 @@ $("rfSel").innerHTML=Object.keys(RFS).map(function(k){return '<option value="'+k
 $("rfSel").value=S.rf||"bad";
 $("rfSel").onchange=function(){S.rf=this.value;applyS();loadRF()};
 loadRF();
-$("eye").onclick=function(){S.eye=!S.eye;applyS();watchEye()};
-$("cm").onclick=function(){S.sc=S.sc==="ipa"?"ru":"ipa";applyS()};
+$("eye").onclick=function(e){e.stopPropagation();var m=$("eyem");if(m.classList.contains("hide")){var r=$("eye").getBoundingClientRect(),t=$("top").getBoundingClientRect();m.style.left=(r.left-t.left)+"px";m.style.width=r.width+"px";m.style.top=(r.bottom-t.top+8)+"px"}m.classList.toggle("hide")};
+$("eyem").addEventListener("click",function(e){var b=e.target.closest("[data-em]");if(!b)return;var m=b.getAttribute("data-em");
+  if(m==="off")S.eye=false;else{S.eye=true;S.cap=m}
+  $("eyem").classList.add("hide");applyS();watchEye();
+  toast(m==="off"?"Подсказки скрыты":m==="ru"?"Перевод всех слов":"Транскрипция всех слов",1)});
+function selMode(){return S.eye?(S.cap==="ipa"?"ru":"ipa"):S.sc}
+$("cm").onclick=function(){if(S.eye)S.cap=S.cap==="ipa"?"ru":"ipa";else S.sc=S.sc==="ipa"?"ru":"ipa";applyS()};
 $("er").onclick=function(){book.querySelectorAll("*").forEach(function(el){if(el._pins&&el._pins.length){el._pins=[];}});clearSel();rerenderAll()};
-$("wp").onclick=function(){if(S.sc==="ipa")S.sc="ru";S.sw=S.sw==="w"?"ph":"w";applyS()};
+$("wp").onclick=function(){if(selMode()==="ipa"){if(S.eye)S.cap="ipa";else S.sc="ru"}S.sw=S.sw==="w"?"ph":"w";applyS()};
 $("ob2").onclick=function(){$("set").classList.add("hide");$("file").click()};
 $("aPre").onchange=function(){if(this.value)$("aMod").value=this.value};
 function mstat(t,err){var e=$("mst");e.textContent=t;e.classList.remove("hide");e.style.color=err?"#d33":""}
@@ -1514,7 +1553,7 @@ document.addEventListener("click",function(e){
 function edgeUpd(){var r=book.getBoundingClientRect();if(!r.width)return;var de=document.documentElement,cw=de.clientWidth;
   de.style.setProperty("--txl",Math.round(r.left+S.pad)+"px");de.style.setProperty("--txr",Math.round(cw-r.right+S.pad)+"px")}
 window.addEventListener("resize",edgeUpd);
-function hideBars(){var t=$("top");document.body.classList.remove("bars");t.classList.remove("menu");$("bot").classList.remove("nav");["set","toc","sp"].forEach(function(id){$(id).classList.add("hide")})}
+function hideBars(){var t=$("top");$("eyem").classList.add("hide");document.body.classList.remove("bars");t.classList.remove("menu");$("bot").classList.remove("nav");["set","toc","sp"].forEach(function(id){$(id).classList.add("hide")})}
 function progUpd(){
   if(!chapters.length||!texts||!texts.length)return;
   var tot=0,bef=0;for(var i=0;i<texts.length;i++){tot+=texts[i].length;if(i<idx)bef+=texts[i].length}
@@ -1581,7 +1620,7 @@ async function openBook(f,fname){
     if(!chapters.length)throw new Error("empty");
     tocTree=null;try{tocTree=await readToc(zip,P,opf,base,fmap)}catch(x){tocTree=null}
     $("empty").classList.add("hide");book.classList.remove("hide");
-    $("openb").classList.add("hide");$("sb").classList.remove("hide");$("tocb").classList.remove("hide");
+    $("openb").classList.add("hide");$("sb").classList.remove("hide");$("tocb").classList.remove("hide");$("eye").classList.remove("hide");
     var d=document.createElement("div");
     texts=chapters.map(function(h){d.innerHTML=h;return d.textContent});
     chapTitles=chapters.map(function(h,i){d.innerHTML=h;var hd=d.querySelector("h1,h2,h3,h4");var t=(hd&&hd.textContent.trim()?hd.textContent:d.textContent).replace(/\s+/g," ").trim();return (t.length>70?t.slice(0,68)+"…":t)||("Глава "+(i+1))});lower=texts.map(function(x){return x.toLowerCase()});
