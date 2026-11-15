@@ -401,7 +401,7 @@ body.sel #bot .sw *{pointer-events:auto!important}
   <div class="tabs" role="tablist"><button data-tab="tA">Аа</button><button data-tab="tD" aria-label="Оформление"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16.6A4.4 4.4 0 0 0 21 10.8C21 6.5 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.1"/><circle cx="10.5" cy="7.3" r="1.1"/><circle cx="15" cy="7.3" r="1.1"/></svg></button><button data-tab="tB" aria-label="Ключ API"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><circle cx="8" cy="15" r="4"/><line x1="10.85" y1="12.15" x2="19" y2="4"/><line x1="16" y1="7" x2="18.5" y2="9.5"/><line x1="18" y1="5" x2="20.5" y2="7.5"/></svg></button><button data-tab="tC" aria-label="Словарь"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2v.5A1.5 1.5 0 0 0 5.5 21H19"/><line x1="8" y1="7.5" x2="15" y2="7.5"/><line x1="8" y1="11" x2="13" y2="11"/></svg></button></div>
   <div id="shome">
   <div><button id="ob2">Открыть другую книгу</button></div>
-  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-15 · 07:30</div>
+  <div id="ver" style="font-size:12px;opacity:.5;justify-content:center">Версия 2026-11-15 · 07:50</div>
   </div>
   <div class="tp hide" id="tA">
   <div class="sub">Текст книги</div>
@@ -684,18 +684,19 @@ function renderPara(el){
     });
     sentsOn[a.k]=a.A;
   }
-  if(S.eye&&el._A)Object.keys(el._A).forEach(function(k){if(el._A[k])sentsOn[k]=el._A[k]});
+  var vis=function(k){return S.eye||(el._sh&&el._sh[k])};
+  if(el._A)Object.keys(el._A).forEach(function(k){if(el._A[k]&&vis(k))sentsOn[k]=el._A[k]});
   var phr=[],capSet={};
   Object.keys(sentsOn).forEach(function(k){
     var d=sentsOn[k],sn=ss[+k];if(!d||!sn||!el._ws[sn[0]]||!/^[A-Z]/.test(el._ws[sn[0]].textContent))return;
     for(var i=0;i<=sn[1]-sn[0];i++){if(d.w&&d.w[i]&&d.w[i].ru){capSet[sn[0]+i]=1;break}}
   });
-  if(S.eye)Object.keys(sentsOn).forEach(function(k){
-    var d=sentsOn[k],sn=ss[+k];if(!d||!sn)return;
-    for(var i=0;i<=sn[1]-sn[0];i++){var gi=sn[0]+i;if(seen[gi]||!el._ws[gi])continue;list.push({w:el._ws[gi],d:(d.w&&d.w[i])||{},on:0,kind:""})}
+  Object.keys(sentsOn).forEach(function(k){
+    var d=sentsOn[k],sn=ss[+k];if(!d||!sn||!vis(k))return;
+    for(var i=0;i<=sn[1]-sn[0];i++){var gi=sn[0]+i;if(seen[gi]||!el._ws[gi])continue;list.push({w:el._ws[gi],d:(d.w&&d.w[i])||{},on:0,kind:"",vis:1})}
     if(allMode()==="ph")(d.b||[]).forEach(function(b){if(b.ru&&b.ru[0])phr.push({ws:b.w.map(function(i){return el._ws[sn[0]+i]}).filter(Boolean),txt:b.ru[0],on:!!(a&&+k===a.k&&a.blk&&sameIds(b.w,a.blk.w))})});
   });
-  if(!S.eye&&el._pins)el._pins.forEach(function(p){var sn=ss[p.k];if(!sn)return;phr.push({ws:p.w.map(function(i){return el._ws[sn[0]+i]}).filter(Boolean),txt:p.txt,on:!!(a&&a.k===p.k&&sameIds(phIdsOf(a),p.w))})});
+  if(!S.eye&&el._pins)el._pins.filter(function(p){return !(el._sh&&el._sh[p.k])}).forEach(function(p){var sn=ss[p.k];if(!sn)return;phr.push({ws:p.w.map(function(i){return el._ws[sn[0]+i]}).filter(Boolean),txt:p.txt,on:!!(a&&a.k===p.k&&sameIds(phIdsOf(a),p.w))})});
   phr=phr.filter(function(p){return !p.on});
   var sm=selMode();
   if(a&&sm!=="ipa"&&S.sw!=="w"){var sTx=a.idi?(a.idi.m&&a.idi.m[0]||""):(a.blk&&a.blk.ru&&a.blk.ru[0]||"");if(sTx)phr.push({ws:phIdsOf(a).map(function(i){return a.ws[i]}).filter(Boolean),txt:sTx,on:true})}
@@ -721,7 +722,7 @@ function renderPara(el){
     var rs=[].slice.call(rg.getClientRects()).filter(function(r){return r.width>1});
     if(!rs.length)return;
     if(it.on&&it.kind){var col=getComputedStyle(w).color;rs.forEach(function(r){ov.appendChild(line(r.left-br.left,r.top-br.top+asc+F*0.17,r.width,it.kind,col))})}
-    var txt=it.on?(sm==="ipa"?ip:(S.sw==="w"?ru:"")):(!S.eye?"":(allMode()==="ipa"?ip:allMode()==="w"?ru:"")),isRu=it.on?sm!=="ipa":allMode()!=="ipa";
+    var txt=it.on?(sm==="ipa"?ip:(S.sw==="w"?ru:"")):(!it.vis?"":(allMode()==="ipa"?ip:allMode()==="w"?ru:"")),isRu=it.on?sm!=="ipa":allMode()!=="ipa";
     if(txt&&isRu){txt=decor(txt,el,w,w);if(capSet[el._ws.indexOf(w)])txt=txt.charAt(0).toUpperCase()+txt.slice(1)}
     if(!txt)return;
     var fs=isRu?fsR:fsI;
@@ -806,7 +807,7 @@ function splitLab(txt,widths,fs,font){
 }
 function rerenderAll(){
   if(book.classList.contains("hide"))return;
-  book.querySelectorAll(SEL).forEach(function(el){if(el._ov||el._A||(act&&act.el===el))renderPara(el)});
+  leafEls().forEach(function(el){if(el._ov||el._A||(act&&act.el===el))renderPara(el)});
 }
 var LVN=["","слово","фраза","член предложения","предложение"];
 function phIdsOf(a){return a.idi?a.idi.w:(a.blk?a.blk.w:[a.id])}
@@ -879,7 +880,7 @@ function stepLevel0(a){a.lv=2;stepLevel(a)}
 /* eye: annotate whole visible text */
 var eq=[],eAct=0,ePause=false,eio=null;
 function mkA(el,k){var sn=sents(el)[k];return{w:el._ws[sn[0]],el:el,k:k,sn:sn,ws:el._ws.slice(sn[0],sn[1]+1),id:0,A:null,pA:null}}
-function leafEls(){return [].slice.call(book.querySelectorAll(SEL)).filter(function(e){return !e.querySelector(SEL)&&e.querySelector(".w")})}
+function leafEls(){var out=[],seen=new Set();book.querySelectorAll(".w").forEach(function(w){var e=w.closest(SEL)||book;if(!seen.has(e)){seen.add(e);out.push(e)}});return out}
 function isHead(el){
   if(/^H[1-6]$/.test(el.tagName))return true;
   var t=el.textContent.replace(/\s+/g," ").trim();if(!t||t.length>80||/[.!?…:;,]["”’»)]?$/.test(t))return false;
@@ -896,7 +897,7 @@ function secShow(){
   var p=$("secp");if(!p){p=document.createElement("div");p.id="secp";document.body.appendChild(p)}
   if(secTot&&secDone<secTot){p.textContent="Перевод: "+secDone+" / "+secTot;p.classList.remove("hide")}else p.classList.add("hide");
 }
-function queueFrom(el,k0){
+function queueFrom(el,k0,show){
   if(!el||!book.contains(el))return;
   var all=leafEls(),i=all.indexOf(el);if(i<0)return;
   var jobs=[],cnt=0;
@@ -905,6 +906,7 @@ function queueFrom(el,k0){
     var ss=sents(e);
     for(var k=(x===i?(k0||0):0);k<ss.length&&cnt<NQ;k++){
       cnt++;
+      if(show){e._sh=e._sh||{};e._sh[k]=1;if(e._A&&e._A[k])renderPara(e)}
       if(e._A&&e._A[k])continue;
       e._qk=e._qk||{};if(e._qk[k]===gen)continue;e._qk[k]=gen;
       jobs.push({el:e,k:k,g:gen});
@@ -919,7 +921,7 @@ function queueSection(el){queueFrom(el,0)}
 function watchEye(){
   if(eio){eio.disconnect();eio=null}
   if(book.classList.contains("hide"))return;
-  book.querySelectorAll(SEL).forEach(function(e){if(e._A||e._ov)renderPara(e)});
+  leafEls().forEach(function(e){if(e._A||e._ov)renderPara(e)});
   if(!S.eye)return;
   var first=true;
   eio=new IntersectionObserver(function(es){
@@ -939,7 +941,7 @@ function epump(){
     if(j.el._A&&j.el._A[j.k]){secDone++;secShow();if(S.eye)renderPara(j.el);continue}
     eAct++;
     (function(j){
-      getA(mkA(j.el,j.k)).then(function(){if(j.g!==gen)return;secDone++;secShow();if(S.eye||j.el._ov)renderPara(j.el)},function(e){
+      getA(mkA(j.el,j.k)).then(function(){if(j.g!==gen)return;secDone++;secShow();if(S.eye||j.el._ov||(j.el._sh&&j.el._sh[j.k]))renderPara(j.el)},function(e){
         if(j.g!==gen)return;eq.unshift(j);ePause=true;retry=function(){ePause=false;epump()};toast(e.message);
       }).then(function(){eAct--;epump()});
     })(j);
@@ -1277,7 +1279,7 @@ function redo(){
   analyze(a,true);
 }
 async function analyze(a,reopen){
-  var my=++tapTok;setTimeout(function(){queueFrom(a.el,a.k)},0);
+  var my=++tapTok;setTimeout(function(){queueFrom(a.el,a.k,true)},0);
   busy(true,"Анализирую…",my);
   try{await getA(a)}
   catch(e){busy(false,"",my);if(act===a){retry=function(){analyze(a,reopen)};toast(e.message)}return}
@@ -1470,13 +1472,13 @@ $("rfSel").onchange=function(){S.rf=this.value;applyS();loadRF()};
 loadRF();
 $("eye").onclick=function(e){e.stopPropagation();var m=$("eyem");if(m.classList.contains("hide")){var r=$("eye").getBoundingClientRect(),t=$("top").getBoundingClientRect();m.style.left=(r.left-t.left)+"px";m.style.width=r.width+"px";m.style.top=(r.bottom-t.top+8)+"px"}m.classList.toggle("hide")};
 $("eyem").addEventListener("click",function(e){var b=e.target.closest("[data-em]");if(!b)return;var m=b.getAttribute("data-em");
-  if(m==="off")S.eye=false;else{S.eye=true;S.cap=m}
+  if(m==="off"){S.eye=false;[book].concat([].slice.call(book.querySelectorAll("*"))).forEach(function(el){if(el._sh)el._sh=null;if(el._pins)el._pins=[]})}else{S.eye=true;S.cap=m}
   $("eyem").classList.add("hide");applyS();watchEye();
   toast(m==="off"?"Подсказки скрыты":m==="ru"?"Перевод всего текста":"Транскрипция всего текста",1)});
 function allMode(){return S.cap==="ipa"?"ipa":(S.sw==="w"?"w":"ph")}
 function selMode(){return S.eye?(S.cap==="ipa"?"ru":"ipa"):S.sc}
 $("cm").onclick=function(){if(S.eye)S.cap=S.cap==="ipa"?"ru":"ipa";else S.sc=S.sc==="ipa"?"ru":"ipa";applyS()};
-$("er").onclick=function(){book.querySelectorAll("*").forEach(function(el){if(el._pins&&el._pins.length){el._pins=[];}});clearSel();rerenderAll()};
+$("er").onclick=function(){[book].concat([].slice.call(book.querySelectorAll("*"))).forEach(function(el){if(el._pins&&el._pins.length)el._pins=[];if(el._sh)el._sh=null});clearSel();rerenderAll()};
 $("wp").onclick=function(){if(!S.eye&&S.sc==="ipa")S.sc="ru";S.sw=S.sw==="w"?"ph":"w";applyS()};
 $("ob2").onclick=function(){$("set").classList.add("hide");$("file").click()};
 $("aPre").onchange=function(){if(this.value)$("aMod").value=this.value};
